@@ -63,9 +63,9 @@ rMAP [options] --input <DIR> --output <OUTDIR> --reference <REF>
 
 ## Authors
 
-- Ivan Sserwadda  
-- Gerald Mboowa
-
+- [Gerald Mboowa](https://github.com/gmboowa)
+- [Ivan Sserwadda](https://github.com/GunzIvan28)
+- [Stephen Kanyerezi](https://github.com/Kanyerezi30)
 
 ---
 
