@@ -102,19 +102,19 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 ---
 
 ## Output structure
-- `trimmed/` – trimmed FASTQ files
-- `qc_reports/` – FastQC reports
-- `assembly/` – final contigs from Megahit
-- `annotation_results/` – Prokka annotations
-- `mlst_results/` – MLST profiles
-- `variants/` – VCFs from Snippy
-- `annotated_vcfs/` – SnpEff output
-- `amr_results/` – AMR gene matches
-- `mge_results/` – MGE prediction
-- `pangenome_results/` – Roary files
-- `phylogeny_results/` – Newick trees
-- `remote_blast_results/` – BLAST XML files
-- `report.txt` – consolidated plain-text report
+- `trimmed/` – trimmed FASTQ files  
+- `qc_reports/` – FastQC reports  
+- `assembly/` – final contigs from Megahit  
+- `annotation_results/` – Prokka annotations  
+- `mlst_results/` – MLST profiles  
+- `variants/` – VCFs from Snippy  
+- `amr_results/` – AMR gene matches  
+- `mge_results/` – MGE prediction  
+- `pangenome_results/` – Roary files  
+- `phylogeny_results/` – Newick trees  
+- `remote_blast_results/` – BLAST XML files  
+- `report.txt` – consolidated plain-text report  
+
 
 ---
 
