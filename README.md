@@ -1,5 +1,5 @@
 # rMAP-WDL-Cromwell-Docker
-This tool provides a ready-to-use environment for rMAP, a bioinformatics pipeline for analyzing microbial genomic data &amp; profiling AMR, Mobilome &amp; Virulome. It includes all required tools &amp; dependencies, enabling reproducible, scalable analysis of NGS data in research &amp; public health settings, particularly for low-resource environments.
+This tool provides a ready-to-use environment for rMAP, a bioinformatics pipeline for analyzing microbial genomic data &amp; profiling AMR, Mobilome &amp; Virulome. It includes all required tools &amp; dependencies, enabling reproducible, scalable analysis of NGS data in research &amp; public health settings.
 
 
 **rMAP** is a fully automated pipeline for profiling the resistome & other genomic features of ESKAPEE (*Enterococcus faecium*, *Staphylococcus aureus*, *Klebsiella pneumoniae*, *Acinetobacter baumannii*, *Pseudomonas aeruginosa*, *Enterobacter* species & *Escherichia coli*) pathogens using whole-genome sequencing (WGS) paired-end reads.
@@ -60,23 +60,23 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 ![rMAP Logo](logo.jpg)
 
-## How to Download & Run
+## How to download & run
 
-### Step 1: Clone the Repository
+### Step 1: Clone the repository
 ```bash
 git clone https://github.com/gmboowa/rMAP-WDL-Cromwell-Docker.git
 cd rMAP-WDL-Cromwell-Docker
 ```
 
-### Step 2: Prepare Inputs
+### Step 2: Prepare inputs
 
 Edit the input JSON file (e.g., `inputs.json`) with paths to your:
 - Paired-end reads
-- Reference genome (https://www.ncbi.nlm.nih.gov/datasets/genome/)
+- [**Reference genome**](https://www.ncbi.nlm.nih.gov/datasets/genome/)
 - Illumina Adapter file
 - Flags for toggling steps (true/false)
 
-## SnpEff Database References
+## SnpEff database references
 
 ```bash
 # _Escherichia coli_ (K-12 substrain, RefSeq GCA_000974405)
@@ -102,7 +102,7 @@ docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterobacter
 
 ```
 ---
-### Step 3: Run the Workflow
+### Step 3: Run the workflow
 
 
 ## Run the command
@@ -114,15 +114,15 @@ java -jar cromwell.jar run rMAP.wdl --inputs inputs.json
 To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accordingly.
 
 ---
-### Note on Pangenome & Phylogenetic Tree Construction
+### Note on pangenome & phylogenetic tree construction
 
 - Pangenome Analysis (Roary): Requires at least 3 annotated genome assemblies (in GFF3 format) for meaningful core/accessory genome separation.
 
-- Phylogenetic Tree Construction (FastTree): Minimum of 4 samples is recommended to create a useful and interpretable tree. With fewer genomes, tree resolution and branching may be trivial or misleading.
+- Phylogenetic Tree Construction (FastTree): Minimum of 4 samples is recommended to create a useful & interpretable tree. With fewer genomes, tree resolution & branching may be trivial or misleading.
 
 ---
 
-## Output Structure
+## Output structure
 - `trimmed/` – trimmed FASTQ files
 - `qc_reports/` – FastQC reports
 - `assembly/` – final contigs from Megahit
@@ -139,13 +139,13 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 
 ---
 
-## Sample Input JSON
+## Sample input JSON
 ```json
 {
   "rMAP.input_reads": ["sample1_R1.fastq.gz", "sample1_R2.fastq.gz"],
   "rMAP.adapters": "adapters.fa",
   "rMAP.reference_genome": "ref_genome.fasta",
-  "rMAP.snpeff_organism": "gnmKlebsiella_pneumoniae_subsp_pneumoniae_HS11286",
+  "rMAP.snpeff_organism": "Klebsiella_pneumoniae_subsp_pneumoniae_HS11286",
   "rMAP.do_trimming": true,
   "rMAP.do_quality_control": true,
   "rMAP.do_assembly": true,
@@ -167,7 +167,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 
 ---
 
-## Tools Used (with Docker Images)
+## Tools used (with Docker images)
 | Step                | Tool          | Docker Image                          |
 |---------------------|---------------|----------------------------------------|
 | Trimming            | Trimmomatic   | `staphb/trimmomatic:0.39`             |
@@ -186,7 +186,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 
 ---
 
-## Authors & Contributors
+## Authors & contributors
 
 - [Gerald Mboowa](https://github.com/gmboowa)
 - [Ivan Sserwadda](https://github.com/GunzIvan28)
@@ -196,7 +196,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 ## Resources
 
 - GitHub: [https://github.com/GunzIvan28/rMAP](https://github.com/GunzIvan28/rMAP)
-- Issues: [https://github.com/GunzIvan28/rMAP/issues](https://github.com/GunzIvan28/rMAP/issues)
+
 
 ---
 
