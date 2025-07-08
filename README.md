@@ -142,23 +142,28 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 ## Sample input JSON
 ```json
 {
-  "rMAP.input_reads": ["sample1_R1.fastq.gz", "sample1_R2.fastq.gz"],
-  "rMAP.adapters": "adapters.fa",
-  "rMAP.reference_genome": "ref_genome.fasta",
-  "rMAP.snpeff_organism": "Klebsiella_pneumoniae_subsp_pneumoniae_HS11286",
+  "rMAP.input_reads": [
+    "~/test_data/A55870_1.fastq.gz",
+    "~/test_data/A55870_2.fastq.gz",
+    "~/test_data/A55888_1.fastq.gz",
+    "~/test_data/A55888_2.fastq.gz"
+  ],
+  "rMAP.adapters": "~/adapters.fa",
+  "rMAP.reference_genome": "~/GCF_000016305.1_ASM1630v1_genomic.fa",
+  "rMAP.snpeff_organism": "Klebsiella_pneumoniae_subsp_pneumoniae_hs11286_gca_000240185",
   "rMAP.do_trimming": true,
   "rMAP.do_quality_control": true,
   "rMAP.do_assembly": true,
-  "rMAP.do_variant_calling": true,
   "rMAP.do_annotation": true,
-  "rMAP.do_amr_profiling": true,
   "rMAP.do_mlst": true,
+  "rMAP.do_variant_calling": true,
   "rMAP.do_pangenome": false,
   "rMAP.do_phylogeny": true,
+  "rMAP.do_amr_profiling": true,
   "rMAP.do_mge_analysis": true,
   "rMAP.do_reporting": true,
-  "rMAP.do_blast": true,
   "rMAP.assembler": "megahit",
+  "rMAP.do_blast": true,
   "rMAP.blast_db": "nt",
   "rMAP.blast_max_target_seqs": 250,
   "rMAP.blast_evalue": 0.000001
