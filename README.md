@@ -28,7 +28,7 @@ This tool provides a ready-to-use environment for rMAP, a bioinformatics pipelin
 **Workflow Engine:** Cromwell
 
 ## Overview
-**rMAP-WDL-Cromwell-Docker** is a containerized, modular & scalable workflow for microbial genomics that integrates trimming, quality control, *de novo* assembly, annotation, variant calling, MLST typing, AMR profiling, mobile genetic element analysis, pangenome analysis, phylogeny & reporting.
+**rMAP-WDL-Cromwell-Docker** is a containerized, modular & scalable workflow for microbial genomics that integrates trimming, quality control, *de novo* assembly, annotation, variant calling, snpeff-based variant annotation, MLST typing, AMR profiling, mobile genetic element analysis, pangenome analysis, phylogeny & reporting.
 
 This pipeline is written in **Workflow Description Language (WDL)**, utilizes **Docker containers** for tool standardization & is designed to run on the **Cromwell execution engine**.
 
@@ -64,7 +64,7 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 ### Step 1: Clone the Repository
 ```bash
-git clone [https://github.com/gmboowa/rMAP-WDL-Cromwell-Docker.git]
+git clone https://github.com/gmboowa/rMAP-WDL-Cromwell-Docker.git
 cd rMAP-WDL-Cromwell-Docker
 ```
 
