@@ -1,9 +1,6 @@
 # rMAP-WDL-Cromwell-Docker
 This Docker image provides a ready-to-use environment for rMAP, a bioinformatics pipeline for analyzing microbial genomic data &amp; profiling AMR, Mobilome &amp; Virulome. It includes all required tools &amp; dependencies, enabling reproducible, scalable analysis of NGS data in research &amp; public health settings, particularly for low-resource environments.
 
-# rMAP: Rapid Microbial Analysis Pipeline
-
-![rMAP Logo](logo.jpg)
 
 **rMAP** is a fully automated pipeline for profiling the resistome & other genomic features of ESKAPEE (*Enterococcus faecium*, *Staphylococcus aureus*, *Klebsiella pneumoniae*, *Acinetobacter baumannii*, *Pseudomonas aeruginosa*, *Enterobacter* species & *Escherichia coli*) pathogens using whole-genome sequencing (WGS) paired-end reads.
 
@@ -24,99 +21,142 @@ This Docker image provides a ready-to-use environment for rMAP, a bioinformatics
 
 ---
 
-## Docker image🐳
+# rMAP-WDL-Cromwell-Docker
 
-The Docker image is hosted on [DockerHub](https://hub.docker.com/r/gmboowa/rmap):
+**Version:** 1.0  
+**Pipeline Type:** WDL-based, Docker-enabled  
+**Workflow Engine:** Cromwell
 
-```bash
+## Overview
+**rMAP-WDL-Cromwell-Docker** is a containerized, modular, and scalable workflow for microbial genomics that integrates trimming, quality control, de novo assembly, annotation, variant calling, MLST typing, AMR profiling, mobile genetic element analysis, pangenome analysis, phylogeny, and reporting.
 
-docker pull gmboowa/rmap:1.0
+This pipeline is written in **Workflow Description Language (WDL)**, utilizes **Docker containers** for tool standardization, and is designed to run on the **Cromwell execution engine**.
 
-docker run -it --rm gmboowa/rmap:1.0
-
-```
+## Features
+- Adapter trimming with Trimmomatic
+- FastQC-based quality control
+- Megahit-based genome assembly
+- Prokka for genome annotation
+- Snippy for variant calling
+- SnpEff for variant annotation
+- MLST profiling
+- Roary for pangenome construction
+- FastTree for phylogenetic inference
+- Abricate for AMR profiling
+- mob-suite for MGE detection
+- Remote BLAST support to NCBI
+- Auto-generated final report
 
 ---
 
-## Usage
+## Requirements
+- **Cromwell** (v84 or newer)
+- **Docker** installed and running
+- Input data: Paired-end FASTQ files
+- Reference genome (FASTA)
+- Adapter sequence file (FASTA or TXT)
+
+---
+
+
+![rMAP Logo](logo.jpg)
+
+## How to Download and Run
+
+### Step 1: Clone the Repository
+```bash
+git clone https://github.com/<your-org>/rMAP-WDL-Cromwell-Docker.git
+cd rMAP-WDL-Cromwell-Docker
+```
+
+### Step 2: Prepare Inputs
+
+Edit the input JSON file (e.g., `inputs.json`) with paths to your:
+- Paired-end reads
+- Reference genome
+- Adapter file
+- Flags for toggling steps (true/false)
+
+### Step 3: Run the Workflow
 
 ```bash
-
-Let’s say you have this '~/rmap_project' directory on your computer:
-
+java -jar cromwell.jar run rMAP.wdl --inputs inputs.json
 ```
-Basic docker run command
 
-```
-docker run -it --rm \
+To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accordingly.
 
-  -v ~/rmap_project:/data \
-  
-  gmboowa/rmap:1.0 \
-  
-  rmap --config /data/config.json
-  
-  
+---
 
-gmboowa/rmap:1.0: Your Docker image.
+## Output Structure
+- `trimmed/` – trimmed FASTQ files
+- `qc_reports/` – FastQC reports
+- `assembly/` – final contigs from Megahit
+- `annotation_results/` – Prokka annotations
+- `mlst_results/` – MLST profiles
+- `variants/` – VCFs from Snippy
+- `annotated_vcfs/` – SnpEff output
+- `amr_results/` – AMR gene matches
+- `mge_results/` – MGE prediction
+- `pangenome_results/` – Roary files
+- `phylogeny_results/` – Newick trees
+- `remote_blast_results/` – BLAST XML files
+- `report.txt` – consolidated plain-text report
 
-rmap --config /data/config.json: Runs rMAP using the configuration file inside the container.
+---
 
-Sample 'config.json' file
-
-Here’s a minimal example of a config.json needed for rMAP (adjust paths & parameters as needed):
-
-json
-
+## Sample Input JSON
+```json
 {
-  "input_files": [
-    "samples/sample1_R1.fastq.gz",
-    "samples/sample1_R2.fastq.gz"
-  ],
-  "output_dir": "results/",
-  "threads": 8,
-  "reference_genome": "refs/bacteria_ref.fasta",
-  "amr_database": "dbs/resfinder.fasta",
-  "taxonomic_classification": true,
-  "quality_control": true,
-  "assembly": true,
-  "variant_calling": true
+  "rMAP.input_reads": ["sample1_R1.fastq.gz", "sample1_R2.fastq.gz"],
+  "rMAP.adapters": "adapters.fa",
+  "rMAP.reference_genome": "ref_genome.fasta",
+  "rMAP.snpeff_organism": "gnmKlebsiella_pneumoniae_subsp_pneumoniae_HS11286",
+  "rMAP.do_trimming": true,
+  "rMAP.do_quality_control": true,
+  "rMAP.do_assembly": true,
+  "rMAP.do_variant_calling": true,
+  "rMAP.do_annotation": true,
+  "rMAP.do_amr_profiling": true,
+  "rMAP.do_mlst": true,
+  "rMAP.do_pangenome": false,
+  "rMAP.do_phylogeny": true,
+  "rMAP.do_mge_analysis": true,
+  "rMAP.do_reporting": true,
+  "rMAP.do_blast": true,
+  "rMAP.assembler": "megahit",
+  "rMAP.blast_db": "nt",
+  "rMAP.blast_max_target_seqs": 250,
+  "rMAP.blast_evalue": 0.000001
 }
-
-**Note**:
-
-Place the samples/, refs/, & dbs/ folders inside your local ~/data directory.
-
-results/ will be created inside that directory too.
-
--v ~/data:/data: Mounts your local folder into the container.
-
 ```
-
-### Required options:
-
-- `-i/--input`     Path to input raw reads (.fastq or .fastq.gz)
-- `-o/--output`    Path to output directory
-- `-r/--reference` Reference genome in `.gbk` format
-
-### Optional:
-
-- `-q/--trim`      Trimming quality threshold (default: 27)
-- `-a/--assembly`  Assembly tool: `shovill` or `megahit`
-- `-m/--amr`       Perform AMR profiling
-- `-vc/--varcall`  Perform variant calling
-- `-p/--phylogeny` Perform phylogenetic tree construction
-- `-s/--pangenome` Perform pangenome analysis
 
 ---
 
-## Authors
+## Tools Used (with Docker Images)
+| Step                | Tool          | Docker Image                          |
+|---------------------|---------------|----------------------------------------|
+| Trimming            | Trimmomatic   | `staphb/trimmomatic:0.39`             |
+| QC                  | FastQC        | `staphb/fastqc:0.11.9`                |
+| Assembly            | Megahit       | `quay.io/biocontainers/megahit:1.2.9` |
+| Annotation          | Prokka        | `staphb/prokka:1.14.6`                |
+| Variant Calling     | Snippy        | `staphb/snippy:4.6.0`                 |
+| Variant Annotation  | SnpEff        | `staphb/snpeff:latest`                |
+| MLST                | MLST          | `staphb/mlst:2.19.0`                  |
+| Pangenome           | Roary         | `staphb/roary:3.13.0`                 |
+| Phylogeny           | FastTree      | `staphb/fasttree:2.1.11`              |
+| AMR Profiling       | Abricate      | `staphb/abricate:1.0.0`               |
+| MGE Analysis        | mob-suite     | `continuumio/miniconda3:latest`       |
+| Remote BLAST        | BLAST+        | `ncbi/blast:2.14.0`                   |
+
+
+---
+
+## Authors & Contributors
 
 - [Gerald Mboowa](https://github.com/gmboowa)
 - [Ivan Sserwadda](https://github.com/GunzIvan28)
 - [Stephen Kanyerezi](https://github.com/Kanyerezi30)
 
----
 
 ## Resources
 
