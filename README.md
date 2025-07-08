@@ -3,7 +3,7 @@ This Docker image provides a ready-to-use environment for rMAP, a bioinformatics
 
 # rMAP: Rapid Microbial Analysis Pipeline
 
-![rMAP Logo](logo.png)
+![rMAP Logo](logo.jpg)
 
 **rMAP** is a fully automated pipeline for profiling the resistome & other genomic features of ESKAPEE (*Enterococcus faecium*, *Staphylococcus aureus*, *Klebsiella pneumoniae*, *Acinetobacter baumannii*, *Pseudomonas aeruginosa*, *Enterobacter* species & *Escherichia coli*) pathogens using whole-genome sequencing (WGS) paired-end reads.
 
