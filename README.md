@@ -76,31 +76,6 @@ Edit the input JSON file (e.g., `inputs.json`) with paths to your:
 - Illumina Adapter file
 - Flags for toggling steps (true/false)
 
-## SnpEff database references
-
-```bash
-# _Escherichia coli_ (K-12 substrain, RefSeq GCA_000974405)
-docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Escherichia_coli_k_12_gca_000974405
-
-# _Staphylococcus aureus subsp. aureus_ (NCTC 8325)
-docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Staphylococcus_aureus_subsp_aureus_nctc_8325
-
-# _Klebsiella pneumoniae subsp. pneumoniae_ (HS11286, RefSeq GCA_000240185)
-docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Klebsiella_pneumoniae_subsp_pneumoniae_hs11286_gca_000240185
-
-# _Acinetobacter baumannii_ (ATCC 19606 CIP 70.34)
-docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Acinetobacter_baumannii_atcc_19606_cip_70_34
-
-# _Pseudomonas aeruginosa_ (PAO1, RefSeq GCA_000006765)
-docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Pseudomonas_aeruginosa_pao1_gca_000006765
-
-# _Enterococcus faecium_ (S447)
-docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterococcus_faecium_s447
-
-# _Enterobacter cloacae_ (RefSeq GCA_001276405)
-docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterobacter_cloacae_subsp_cloacae_gca_001276405
-
-```
 ---
 ### Step 3: Run the workflow
 
@@ -147,14 +122,13 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 ```json
 {
   "rMAP.input_reads": [
-    "~/test_data/A55870_1.fastq.gz",
-    "~/test_data/A55870_2.fastq.gz",
-    "~/test_data/A55888_1.fastq.gz",
-    "~/test_data/A55888_2.fastq.gz"
+    "/Users/gerald/Desktop/test_data/A55870_1.fastq.gz",
+    "/Users/gerald/Desktop/test_data/A55870_2.fastq.gz",
+    "/Users/gerald/Desktop/test_data/A55888_1.fastq.gz",
+    "/Users/gerald/Desktop/test_data/A55888_2.fastq.gz"
   ],
-  "rMAP.adapters": "~/adapters.fa",
-  "rMAP.reference_genome": "~/GCF_000016305.1_ASM1630v1_genomic.fa",
-  "rMAP.snpeff_organism": "Klebsiella_pneumoniae_subsp_pneumoniae_hs11286_gca_000240185",
+  "rMAP.adapters": "/Users/gerald/Desktop/rMAP-Docker/config-files/adapters.fa",
+  "rMAP.reference_genome": "/Users/gerald/Desktop/GCF_000016305.1_ASM1630v1_genomic.fa",
   "rMAP.do_trimming": true,
   "rMAP.do_quality_control": true,
   "rMAP.do_assembly": true,
