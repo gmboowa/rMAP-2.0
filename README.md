@@ -122,13 +122,13 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 ```json
 {
   "rMAP.input_reads": [
-    "/Users/gerald/Desktop/test_data/A55870_1.fastq.gz",
-    "/Users/gerald/Desktop/test_data/A55870_2.fastq.gz",
-    "/Users/gerald/Desktop/test_data/A55888_1.fastq.gz",
-    "/Users/gerald/Desktop/test_data/A55888_2.fastq.gz"
+    "~/test_data/A55870_1.fastq.gz",
+    "~/test_data/A55870_2.fastq.gz",
+    "~/test_data/A55888_1.fastq.gz",
+    "~/test_data/A55888_2.fastq.gz"
   ],
-  "rMAP.adapters": "/Users/gerald/Desktop/rMAP-Docker/config-files/adapters.fa",
-  "rMAP.reference_genome": "/Users/gerald/Desktop/GCF_000016305.1_ASM1630v1_genomic.fa",
+  "rMAP.adapters": "~/adapters.fa",
+  "rMAP.reference_genome": "~/GCF_000016305.1_ASM1630v1_genomic.fa",
   "rMAP.do_trimming": true,
   "rMAP.do_quality_control": true,
   "rMAP.do_assembly": true,
