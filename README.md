@@ -178,7 +178,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 ## Resources
 
 - GitHub: [https://github.com/GunzIvan28/rMAP](https://github.com/GunzIvan28/rMAP)
-- rMAP Publication: ### rMAP: the Rapid Microbial Analysis Pipeline for ESKAPE bacterial group whole-genome sequence data  
+- rMAP Publication: rMAP: the Rapid Microbial Analysis Pipeline for ESKAPE bacterial group whole-genome sequence data  
 *Published in [Microbial Genomics](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000583)*
 
 ---
