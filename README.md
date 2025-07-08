@@ -116,11 +116,11 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 ---
 ### Note on pangenome & phylogenetic tree construction
 
-- Pangenome Analysis (Roary): Requires at least 3 annotated genome assemblies (in GFF3 format) for meaningful core/accessory genome separation.
+- Pangenome analysis (Roary): Requires at least 3 annotated genome assemblies (in GFF3 format) for meaningful core/accessory genome separation.
 
-- Phylogenetic Tree Construction (FastTree): Minimum of 4 samples is recommended to create a useful & interpretable tree. With fewer genomes, tree resolution & branching may be trivial or misleading.
+- Phylogenetic tree construction (FastTree): Minimum of 4 samples is recommended to create a useful & interpretable tree. With fewer genomes, tree resolution & branching may be trivial or misleading.
   
-- After running this tool on *Klebsiella pneumoniae* & *Escherichia coli*, proceed to analyze the assembled genomes using - [`kleborate_wf.wdl`](https://github.com/gmboowa/kleborate_wf.wdl) to enable extensive genomic characterization.
+- After running this tool on *Klebsiella pneumoniae* & *Escherichia coli*, proceed to analyze the assembled genomes using [`kleborate_wf.wdl`](https://github.com/gmboowa/kleborate_wf.wdl) to enable comprehensive genomic characterization.
 
 
 
