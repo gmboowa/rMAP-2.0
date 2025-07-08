@@ -1,5 +1,5 @@
 # rMAP-WDL-Cromwell-Docker
-This Docker image provides a ready-to-use environment for rMAP, a bioinformatics pipeline for analyzing microbial genomic data &amp; profiling AMR, Mobilome &amp; Virulome. It includes all required tools &amp; dependencies, enabling reproducible, scalable analysis of NGS data in research &amp; public health settings, particularly for low-resource environments.
+This tool provides a ready-to-use environment for rMAP, a bioinformatics pipeline for analyzing microbial genomic data &amp; profiling AMR, Mobilome &amp; Virulome. It includes all required tools &amp; dependencies, enabling reproducible, scalable analysis of NGS data in research &amp; public health settings, particularly for low-resource environments.
 
 
 **rMAP** is a fully automated pipeline for profiling the resistome & other genomic features of ESKAPEE (*Enterococcus faecium*, *Staphylococcus aureus*, *Klebsiella pneumoniae*, *Acinetobacter baumannii*, *Pseudomonas aeruginosa*, *Enterobacter* species & *Escherichia coli*) pathogens using whole-genome sequencing (WGS) paired-end reads.
@@ -28,9 +28,9 @@ This Docker image provides a ready-to-use environment for rMAP, a bioinformatics
 **Workflow Engine:** Cromwell
 
 ## Overview
-**rMAP-WDL-Cromwell-Docker** is a containerized, modular, and scalable workflow for microbial genomics that integrates trimming, quality control, de novo assembly, annotation, variant calling, MLST typing, AMR profiling, mobile genetic element analysis, pangenome analysis, phylogeny, and reporting.
+**rMAP-WDL-Cromwell-Docker** is a containerized, modular & scalable workflow for microbial genomics that integrates trimming, quality control, *de novo* assembly, annotation, variant calling, MLST typing, AMR profiling, mobile genetic element analysis, pangenome analysis, phylogeny & reporting.
 
-This pipeline is written in **Workflow Description Language (WDL)**, utilizes **Docker containers** for tool standardization, and is designed to run on the **Cromwell execution engine**.
+This pipeline is written in **Workflow Description Language (WDL)**, utilizes **Docker containers** for tool standardization & is designed to run on the **Cromwell execution engine**.
 
 ## Features
 - Adapter trimming with Trimmomatic
@@ -51,7 +51,7 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 ## Requirements
 - [**Cromwell** (v84 or newer)](https://github.com/broadinstitute/cromwell/releases)
-- [**Docker**](https://www.docker.com/) installed and running
+- [**Docker**](https://www.docker.com/) installed & running
 - Input data: Paired-end FASTQ files
 - Reference genome (FASTA)
 - Adapter sequence file (FASTA or TXT)
@@ -60,7 +60,7 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 ![rMAP Logo](logo.jpg)
 
-## How to Download and Run
+## How to Download & Run
 
 ### Step 1: Clone the Repository
 ```bash
@@ -73,32 +73,31 @@ cd rMAP-WDL-Cromwell-Docker
 Edit the input JSON file (e.g., `inputs.json`) with paths to your:
 - Paired-end reads
 - Reference genome (https://www.ncbi.nlm.nih.gov/datasets/genome/)
-- Adapter file
+- Illumina Adapter file
 - Flags for toggling steps (true/false)
 
 ## SnpEff Database References
 
 ```bash
-
-# *Escherichia coli (K-12 substrain* with RefSeq assembly GCA_000974405)
+# _Escherichia coli_ (K-12 substrain, RefSeq GCA_000974405)
 docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Escherichia_coli_k_12_gca_000974405
 
-# *Staphylococcus aureus subsp. aureus* (NCTC 8325)
+# _Staphylococcus aureus subsp. aureus_ (NCTC 8325)
 docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Staphylococcus_aureus_subsp_aureus_nctc_8325
 
-# *Klebsiella pneumoniae subsp. pneumoniae* (HS11286, RefSeq GCA_000240185)
+# _Klebsiella pneumoniae subsp. pneumoniae_ (HS11286, RefSeq GCA_000240185)
 docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Klebsiella_pneumoniae_subsp_pneumoniae_hs11286_gca_000240185
 
-# *Acinetobacter baumannii* (ATCC 19606 CIP 70.34)
+# _Acinetobacter baumannii_ (ATCC 19606 CIP 70.34)
 docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Acinetobacter_baumannii_atcc_19606_cip_70_34
 
-# *Pseudomonas aeruginosa* (PAO1, RefSeq GCA_000006765)
+# _Pseudomonas aeruginosa_ (PAO1, RefSeq GCA_000006765)
 docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Pseudomonas_aeruginosa_pao1_gca_000006765
 
-# *Enterococcus faecium* (S447)
+# _Enterococcus faecium_ (S447)
 docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterococcus_faecium_s447
 
-# *Enterobacter cloacae (GCA_001276405)
+# _Enterobacter cloacae_ (RefSeq GCA_001276405)
 docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterobacter_cloacae_subsp_cloacae_gca_001276405
 
 ```
