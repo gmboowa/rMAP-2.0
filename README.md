@@ -185,5 +185,5 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 
 ## License
 
-This project is licensed under the MIT License. See the LICENSE file for details.
+This project is licensed under the MIT License. 
 
