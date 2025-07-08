@@ -73,9 +73,18 @@ cd rMAP-WDL-Cromwell-Docker
 
 Edit the input JSON file (e.g., `inputs.json`) with paths to your:
 - Paired-end reads
-- Reference genome
+- Reference genome (https://www.ncbi.nlm.nih.gov/datasets/genome/)
 - Adapter file
 - Flags for toggling steps (true/false)
+
+Search SNPEff databases for reference
+- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Escherichia_coli_k_12_gca_000974405
+- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Staphylococcus_aureus_subsp_aureus_nctc_8325
+- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Klebsiella_pneumoniae_subsp_pneumoniae_hs11286_gca_000240185
+- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Acinetobacter_baumannii_atcc_19606_cip_70_34
+- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Pseudomonas_aeruginosa_pao1_gca_000006765
+- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterococcus_faecium_s447
+- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterococcus_faecium_gca_006351845
 
 ### Step 3: Run the Workflow
 
