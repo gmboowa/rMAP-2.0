@@ -33,19 +33,19 @@ This tool provides a ready-to-use environment for rMAP, a bioinformatics pipelin
 This pipeline is written in **Workflow Description Language (WDL)**, utilizes **Docker containers** for tool standardization & is designed to run on the **Cromwell execution engine**.
 
 ## Features
-- Adapter trimming with Trimmomatic
-- FastQC-based quality control
-- Megahit-based genome assembly
-- Prokka for genome annotation
-- Snippy for variant calling
-- SnpEff for variant annotation
-- MLST profiling
-- Roary for pangenome construction
-- FastTree for phylogenetic inference
-- Abricate for AMR profiling
-- mob-suite for MGE detection
-- Remote BLAST support to NCBI
-- Auto-generated final report
+- Adapter trimming with Trimmomatic  
+- FastQC-based quality control  
+- Megahit-based genome assembly  
+- Prokka for genome annotation  
+- Snippy for variant calling  
+- MLST profiling  
+- Roary for pangenome construction  
+- FastTree for phylogenetic inference  
+- Abricate for AMR profiling  
+- mob-suite for MGE detection  
+- Remote BLAST support to NCBI  
+- Auto-generated final report  
+
 
 ---
 
@@ -151,14 +151,13 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 ---
 
 ## Tools used (with Docker images)
-| Step                | Tool          | Docker Image                          |
+| Step                | Tool          | Docker image                          |
 |---------------------|---------------|----------------------------------------|
 | Trimming            | Trimmomatic   | `staphb/trimmomatic:0.39`             |
 | QC                  | FastQC        | `staphb/fastqc:0.11.9`                |
 | Assembly            | Megahit       | `quay.io/biocontainers/megahit:1.2.9` |
 | Annotation          | Prokka        | `staphb/prokka:1.14.6`                |
 | Variant Calling     | Snippy        | `staphb/snippy:4.6.0`                 |
-| Variant Annotation  | SnpEff        | `staphb/snpeff:latest`                |
 | MLST                | MLST          | `staphb/mlst:2.19.0`                  |
 | Pangenome           | Roary         | `staphb/roary:3.13.0`                 |
 | Phylogeny           | FastTree      | `staphb/fasttree:2.1.11`              |
