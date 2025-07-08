@@ -50,8 +50,8 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 ---
 
 ## Requirements
-- **Cromwell** (v84 or newer)
-- **Docker** installed and running
+- [**Cromwell** (v84 or newer)](https://github.com/broadinstitute/cromwell/releases)
+- [**Docker**](https://www.docker.com/) installed and running
 - Input data: Paired-end FASTQ files
 - Reference genome (FASTA)
 - Adapter sequence file (FASTA or TXT)
@@ -113,6 +113,13 @@ java -jar cromwell.jar run rMAP.wdl --inputs inputs.json
 ```
 
 To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accordingly.
+
+---
+### Note on Pangenome & Phylogenetic Tree Construction
+
+- Pangenome Analysis (Roary): Requires at least 3 annotated genome assemblies (in GFF3 format) for meaningful core/accessory genome separation.
+
+- Phylogenetic Tree Construction (FastTree): Minimum of 4 samples is recommended to create a useful and interpretable tree. With fewer genomes, tree resolution and branching may be trivial or misleading.
 
 ---
 
