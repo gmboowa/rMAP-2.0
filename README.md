@@ -77,14 +77,30 @@ Edit the input JSON file (e.g., `inputs.json`) with paths to your:
 - Adapter file
 - Flags for toggling steps (true/false)
 
-Search SNPEff databases for reference
-- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Escherichia_coli_k_12_gca_000974405
-- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Staphylococcus_aureus_subsp_aureus_nctc_8325
-- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Klebsiella_pneumoniae_subsp_pneumoniae_hs11286_gca_000240185
-- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Acinetobacter_baumannii_atcc_19606_cip_70_34
-- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Pseudomonas_aeruginosa_pao1_gca_000006765
-- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterococcus_faecium_s447
-- docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterococcus_faecium_gca_006351845
+## SnpEff Database References
+
+```bash
+
+# *Escherichia coli (K-12 substrain* with RefSeq assembly GCA_000974405)
+docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Escherichia_coli_k_12_gca_000974405
+
+# *Staphylococcus aureus subsp. aureus* (NCTC 8325)
+docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Staphylococcus_aureus_subsp_aureus_nctc_8325
+
+# *Klebsiella pneumoniae subsp. pneumoniae* (HS11286, RefSeq GCA_000240185)
+docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Klebsiella_pneumoniae_subsp_pneumoniae_hs11286_gca_000240185
+
+# *Acinetobacter baumannii* (ATCC 19606 CIP 70.34)
+docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Acinetobacter_baumannii_atcc_19606_cip_70_34
+
+# *Pseudomonas aeruginosa* (PAO1, RefSeq GCA_000006765)
+docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Pseudomonas_aeruginosa_pao1_gca_000006765
+
+# *Enterococcus faecium* (S447)
+docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterococcus_faecium_s447
+
+# *Enterobacter cloacae (GCA_001276405)
+docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterobacter_cloacae_subsp_cloacae_gca_001276405
 
 ### Step 3: Run the Workflow
 
