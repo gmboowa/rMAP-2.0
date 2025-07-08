@@ -58,7 +58,6 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 ---
 
-
 ![rMAP Logo](logo.jpg)
 
 ## How to Download and Run
@@ -102,7 +101,12 @@ docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterococcus
 # *Enterobacter cloacae (GCA_001276405)
 docker run --rm -it staphb/snpeff:latest snpeff databases | grep -i Enterobacter_cloacae_subsp_cloacae_gca_001276405
 
+```
+---
 ### Step 3: Run the Workflow
+
+
+## Run the command
 
 ```bash
 java -jar cromwell.jar run rMAP.wdl --inputs inputs.json
