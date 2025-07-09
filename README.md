@@ -41,8 +41,7 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 - MLST profiling  
 - Roary for pangenome construction  
 - FastTree for phylogenetic inference  
-- Abricate for AMR profiling  
-- mob-suite for MGE detection  
+- Abricate for AMR & Virulence profiling & MGE detection  
 - Remote BLAST support to NCBI  
 - Auto-generated final report  
 
