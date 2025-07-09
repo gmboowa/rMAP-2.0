@@ -58,7 +58,7 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 ---
 
-<img src="Logo.png" alt="Logo" width="200" height="200"/>
+<img src="Logo.png" alt="Logo" width="200"/>
 
 ## How to download & run
 
