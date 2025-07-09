@@ -58,7 +58,7 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 ---
 
-![rMAP Logo](logo.jpg)
+![Logo](Logo.png)
 
 ## How to download & run
 
