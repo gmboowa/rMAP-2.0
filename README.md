@@ -58,7 +58,7 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 ---
 
-<img src="Logo.png" alt="Logo" width="200"/>
+![rMAP-WDL-Cromwell-Docker-Workflow](rMAP-WDL-Cromwell-Docker-Workflow.png)
 
 ## How to download & run
 
