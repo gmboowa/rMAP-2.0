@@ -6,21 +6,6 @@ This tool provides a ready-to-use environment for rMAP, a bioinformatics pipelin
 
 ---
 
-## Features
-
-- Quality control of raw sequencing reads
-- Trimming of adapters & low-quality bases
-- *De novo* assembly of genomes
-- Genome annotation (Prokka)
-- Detection of antimicrobial resistance genes (AMR)
-- Variant calling & SNP analysis
-- Phylogenetic tree construction (IQ-TREE)
-- Pangenome analysis (Roary)
-- Mobile Genetic Element (MGE) profiling
-- SRA data download support
-
----
-
 # rMAP-WDL-Cromwell-Docker
 
 **Version:** 1.0  
