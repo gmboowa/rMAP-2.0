@@ -162,7 +162,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 | Pangenome           | Roary         | `staphb/roary:3.13.0`                 |
 | Phylogeny           | FastTree      | `staphb/fasttree:2.1.11`              |
 | AMR Profiling       | Abricate      | `staphb/abricate:1.0.0`               |
-| MGE Analysis        | mob-suite     | `continuumio/miniconda3:latest`       |
+| MGE Analysis        | Abricate      | `staphb/abricate:latest`              |
 | Remote BLAST        | BLAST+        | `ncbi/blast:2.14.0`                   |
 
 
