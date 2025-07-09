@@ -5,14 +5,11 @@ This tool provides a ready-to-use environment for rMAP, a bioinformatics pipelin
 **rMAP** is a fully automated pipeline for profiling the resistome & other genomic features of ESKAPEE (*Enterococcus faecium*, *Staphylococcus aureus*, *Klebsiella pneumoniae*, *Acinetobacter baumannii*, *Pseudomonas aeruginosa*, *Enterobacter* species & *Escherichia coli*) pathogens using whole-genome sequencing (WGS) paired-end reads.
 
 ---
-
-# rMAP-WDL-Cromwell-Docker
-
+## Overview
 **Version:** 1.0  
 **Pipeline Type:** WDL-based, Docker-enabled  
 **Workflow Engine:** Cromwell
 
-## Overview
 **rMAP-WDL-Cromwell-Docker** is a containerized, modular & scalable workflow for microbial genomics that integrates trimming, quality control, *de novo* assembly, annotation, variant calling, snpeff-based variant annotation, MLST typing, AMR profiling, mobile genetic element analysis, pangenome analysis, phylogeny & reporting.
 
 This pipeline is written in **Workflow Description Language (WDL)**, utilizes **Docker containers** for tool standardization & is designed to run on the **Cromwell execution engine**.
@@ -147,7 +144,9 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 | Phylogeny           | FastTree      | `staphb/fasttree:2.1.11`              |
 | AMR Profiling       | Abricate      | `staphb/abricate:1.0.0`               |
 | MGE Analysis        | Abricate      | `staphb/abricate:latest`              |
+| Virulence Analysis  | Abricate      | `staphb/abricate:latest`              |
 | Remote BLAST        | BLAST+        | `ncbi/blast:2.14.0`                   |
+
 
 
 ---
