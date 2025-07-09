@@ -116,7 +116,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
   "rMAP.do_annotation": true,
   "rMAP.do_mlst": true,
   "rMAP.do_variant_calling": true,
-  "rMAP.do_pangenome": false,
+  "rMAP.do_pangenome": true,
   "rMAP.do_phylogeny": true,
   "rMAP.do_amr_profiling": true,
   "rMAP.do_mge_analysis": true,
