@@ -140,7 +140,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 | Annotation          | Prokka        | `staphb/prokka:1.14.6`                |
 | Variant Calling     | Snippy        | `staphb/snippy:4.6.0`                 |
 | MLST                | MLST          | `staphb/mlst:2.19.0`                  |
-| Pangenome           | Roary         | `staphb/roary:3.13.0`                 |
+| Pangenome           | Roary         | `quay.io/biocontainers/roary:3.13.0--pl526h516909a_0`                 |
 | Phylogeny           | FastTree      | `staphb/fasttree:2.1.11`              |
 | AMR Profiling       | Abricate      | `staphb/abricate:1.0.0`               |
 | MGE Analysis        | Abricate      | `staphb/abricate:latest`              |
