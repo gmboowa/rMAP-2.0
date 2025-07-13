@@ -170,3 +170,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 
 This project is licensed under the MIT License. 
 
+## To report bugs, ask questions or seek help
+
+The software developing team works round the clock to ensure the bugs within the tool are captured and fixed. For support or any inquiry: You can submit your query using the [Issue Tracker](https://github.com/gmboowa/rMAP-WDL-Cromwell-Docker/issues)
+
