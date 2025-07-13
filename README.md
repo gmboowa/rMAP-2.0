@@ -163,7 +163,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 - GitHub: [https://github.com/GunzIvan28/rMAP](https://github.com/GunzIvan28/rMAP)
 - Publication: rMAP: the Rapid Microbial Analysis Pipeline for ESKAPE bacterial group whole-genome sequence data  
 *Published in [Microbial Genomics](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000583)*
-
+- The philosophy of **rMAP-WDL-Cromwell-Docker** is built on the foundation of already pre-existing tools. As a token of gratitude to the authors of those numerous tools.
 ---
 
 ## License
