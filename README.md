@@ -103,29 +103,44 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 ```json
 {
   "rMAP.input_reads": [
-    "~/test_data/A55870_1.fastq.gz",
-    "~/test_data/A55870_2.fastq.gz",
-    "~/test_data/A55888_1.fastq.gz",
-    "~/test_data/A55888_2.fastq.gz"
+    "~/A55738_1.fastq.gz",
+    "~/A55738_2.fastq.gz",
+    "~/A55870_1.fastq.gz",
+    "~/A55870_2.fastq.gz",
+    "~/A55888_1.fastq.gz",
+    "~/A55888_2.fastq.gz",
+    "~/A55944_1.fastq.gz",
+    "~/A55944_2.fastq.gz",
+    "~/A55727_1.fastq.gz",
+    "~/A55727_2.fastq.gz"
   ],
   "rMAP.adapters": "~/adapters.fa",
-  "rMAP.reference_genome": "~/GCF_000016305.1_ASM1630v1_genomic.fa",
+  "rMAP.reference_genome": "~/GCA_000016305.1.gbk", ## or fasta
   "rMAP.do_trimming": true,
   "rMAP.do_quality_control": true,
   "rMAP.do_assembly": true,
-  "rMAP.do_annotation": true,
-  "rMAP.do_mlst": true,
   "rMAP.do_variant_calling": true,
+  "rMAP.do_annotation": true,
+  "rMAP.do_amr_profiling": true,
+  "rMAP.do_mlst": true,
   "rMAP.do_pangenome": true,
   "rMAP.do_phylogeny": true,
-  "rMAP.do_amr_profiling": true,
   "rMAP.do_mge_analysis": true,
   "rMAP.do_reporting": true,
-  "rMAP.assembler": "megahit",
   "rMAP.do_blast": true,
+  "rMAP.use_local_blast": false,
+  "rMAP.local_blast_db": "./",
   "rMAP.blast_db": "nt",
   "rMAP.blast_max_target_seqs": 250,
-  "rMAP.blast_evalue": 0.000001
+  "rMAP.blast_evalue": 0.000001,
+  "rMAP.blast_min_contig_length": 300,
+  "rMAP.virulence_db": "vfdb",
+  "rMAP.virulence_min_cov": 60,
+  "rMAP.virulence_min_id": 80.0,
+  "rMAP.phylogeny_model": "-nt -gtr",
+  "rMAP.reference_type": "genbank",
+  "rMAP.max_cpus": 8,
+  "rMAP.max_memory_gb": 16
 }
 ```
 
