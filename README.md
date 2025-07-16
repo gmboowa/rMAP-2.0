@@ -115,7 +115,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
     "~/A55727_2.fastq.gz"
   ],
   "rMAP.adapters": "~/adapters.fa",
-  "rMAP.reference_genome": "~/GCA_000016305.1.gbk", ## or fasta
+  "rMAP.reference_genome": "~/GCA_000016305.1.gbk", //fasta
   "rMAP.do_trimming": true,
   "rMAP.do_quality_control": true,
   "rMAP.do_assembly": true,
