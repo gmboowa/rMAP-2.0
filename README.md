@@ -197,21 +197,21 @@ Each `call-*` directory contains:
 
 ## Example Outputs by Module
 
-| Module                   | Key Output Files                                                |
+| Module                   | Key Output Files                                                 |
 |--------------------------|------------------------------------------------------------------|
-| `TRIMMING`               | Trimmed FASTQ files                                              |
-| `QUALITY_CONTROL`        | MultiQC reports, FastQC files                                    |
-| `ASSEMBLY`               | Assembled contigs (`*.fasta`)                                   |
+| `TRIMMING`               | Trimmed FASTQ files  (`*.fastq.gz`)                              |
+| `QUALITY_CONTROL`        | MultiQC reports, FastQC files (`*.zip`, `*.html`)                |
+| `ASSEMBLY`               | Assembled contigs (`*.fasta`)                                    |
 | `VARIANT_CALLING`        | VCF files (`*.vcf`)                                              |
 | `AMR_PROFILING`          | Resistance profiles (`*.txt`, `*.tsv`)                           |
-| `MLST`                   | MLST profiles                                                    |
-| `MGE_ANALYSIS`           | Mobile genetic element annotations                               |
-| `VIRULENCE_ANALYSIS`     | Virulence gene predictions                                       |
+| `MLST`                   | MLST profiles  (`*.txt`, `*.tsv`)                                |
+| `MGE_ANALYSIS`           | Mobile genetic element annotations  (`*.txt`, `*.tsv`)           |
+| `VIRULENCE_ANALYSIS`     | Virulence gene predictions  (`*.txt`, `*.tsv`)                   |
 | `ANNOTATION`             | Genomic feature annotations (`*.gff`, `*.gbk`)                   |
 | `BLAST_ANALYSIS`         | Top BLAST hits (`*.tsv`, `*.xml`)                                |
 | `PANGENOME`              | Roary outputs: `gene_presence_absence.csv`, `core_gene_alignment.aln` |
 | `ACCESSORY_PHYLOGENY`    | Phylogenetic tree for accessory genes (`*.nwk`, `*.pdf`)         |
-| `CORE_PHYLOGENY`         | Core genome tree and alignment files                             |
+| `CORE_PHYLOGENY`         | Core genome tree and alignment files (`*.nwk`, `*.pdf`)          |
 
 ## Authors & contributors
 
