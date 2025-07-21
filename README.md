@@ -45,8 +45,8 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 ### Step 1: Clone the repository
 ```bash
-git clone https://github.com/gmboowa/rMAP-WDL-Cromwell-Docker.git
-cd rMAP-WDL-Cromwell-Docker
+git clone https://github.com/gmboowa/rMAP-2.0.git
+cd rMAP-2.0
 ```
 
 ### Step 2: Prepare inputs
