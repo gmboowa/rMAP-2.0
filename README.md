@@ -217,6 +217,9 @@ Each `call-*` directory contains:
 If you are analyzing many samples, we recommend setting up a local BLAST nucleotide database specifically for ESKAPEE pathogens. This setup requires approximately 70 GB of disk space.
 Please note that NCBI imposes usage limits on BLAST queries from a single IP address, which may affect performance or availability during high-throughput runs. A local database ensures speed, reproducibility & compliance with query limits.
 
+## Note on MLST Schemas
+If you are performing MLST typing across many samples, we recommend downloading and setting up the publicly available PubMLST schemes locally. This setup requires approximately 2 GB of disk space. A local installation ensures faster typing, avoids dependency on internet connectivity & supports reproducible & scalable analysis across multiple species.
+
 
 ## Authors & contributors
 
