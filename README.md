@@ -113,9 +113,9 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
     "~/A55944_2.fastq.gz",
     "~/A55727_1.fastq.gz",
     "~/A55727_2.fastq.gz"
-  ],
-  "rMAP.adapters": "~/adapters.fa",
-  "rMAP.reference_genome": "~/GCA_000016305.1.gbk or fasta", 
+ ],
+  "rMAP.adapters": "/Volumes/MBOOWA/test_data/adapters.fa",
+  "rMAP.reference_genome": "/Volumes/MBOOWA/test_data/GCA_000016305.1.gbk",
   "rMAP.do_trimming": true,
   "rMAP.do_quality_control": true,
   "rMAP.do_assembly": true,
@@ -128,8 +128,11 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
   "rMAP.do_mge_analysis": true,
   "rMAP.do_reporting": true,
   "rMAP.do_blast": true,
-  "rMAP.use_local_blast": false,
-  "rMAP.local_blast_db": "./",
+  "rMAP.use_local_blast": true,
+  "rMAP.local_blast_db": "~/refseq/bacteria/eskapee_combined.fasta",
+  "rMAP.local_amr_db": "~/abricate/db/resfinder_db/resfinder.fa",
+  "rMAP.local_mge_db": "~/abricate/db/plasmidfinder/plasmidfinder.fa",
+  "rMAP.local_virulence_db": "~/abricate/db/vfdb/vfdb.fa",
   "rMAP.blast_db": "nt",
   "rMAP.blast_max_target_seqs": 250,
   "rMAP.blast_evalue": 0.000001,
@@ -142,6 +145,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
   "rMAP.max_cpus": 8,
   "rMAP.max_memory_gb": 16
 }
+
 ```
 
 ---
@@ -218,8 +222,18 @@ If you are analyzing many samples, we recommend setting up a local BLAST nucleot
 Please note that NCBI imposes usage limits on BLAST queries from a single IP address, which may affect performance or availability during high-throughput runs. A local database ensures speed, reproducibility & compliance with query limits.
 
 ## Note on MLST Schemas
-If you are performing MLST typing across many samples, we recommend downloading and setting up the publicly available PubMLST schemes locally. This setup requires approximately 2 GB of disk space. A local installation ensures faster typing, avoids dependency on internet connectivity & supports reproducible & scalable analysis across multiple species.
+If you are performing MLST typing across many samples, we recommend downloading & setting up the publicly available PubMLST schemes locally. This setup requires approximately 2 GB of disk space. A local installation ensures faster typing, avoids dependency on internet connectivity & supports reproducible & scalable analysis across multiple species.
 
+## Indexing custom BLAST databases
+
+Before running rMAP v2.0, if you intend to use local databases, make sure to index the custom nucleotide FASTA files used for resistance, plasmid & virulence factor detection using `makeblastdb`. This step is necessary to enable local BLAST searches during the workflow. For each database file, run the following command to generate the required BLAST index files:
+
+
+```bash
+makeblastdb -in resfinder.fa -dbtype nucl
+makeblastdb -in plasmidfinder.fa -dbtype nucl
+makeblastdb -in vfdb.fa -dbtype nucl
+```
 
 ## Authors & contributors
 
