@@ -39,7 +39,7 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 ---
 
-![rMAP-WDL-Cromwell-Docker-Workflow](rMAP-WDL-Cromwell-Docker-Workflow.png)
+![rMAP-2.0](rMAP-2.0.png)
 
 ## How to download & run
 
