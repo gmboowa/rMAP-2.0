@@ -1617,12 +1617,16 @@ task BLAST_ANALYSIS {
     Array[String] sample_ids = read_lines("sample_ids.txt")
   }
 }
+
 task TREE_VISUALIZATION {
   input {
     File input_tree
-    Int width
-    String image_format
-    Int font_size
+    Int width = 1200
+    String image_format = "png"
+    Int font_size = 8
+    Boolean show_scale = true
+    Boolean show_leaf_name = true
+    Boolean show_support_values = true
     Int? continueOnReturnCode = 1
   }
 
@@ -1645,39 +1649,60 @@ task TREE_VISUALIZATION {
 import os
 import sys
 import traceback
-from ete3 import Tree, TreeStyle, TextFace
+from ete3 import Tree, TreeStyle, TextFace, NodeStyle
 
 def main():
     try:
         print("[DEBUG] Starting tree rendering")
         input_path = "/tmp/inputs/input.nwk"
-        output_path = f"/tmp/outputs/tree.png"  # Simplified output path
+        output_path = f"/tmp/outputs/tree.~{image_format}"
 
         if not os.path.exists(input_path):
             raise FileNotFoundError(f"Input file missing: {input_path}")
 
-        t = Tree(input_path)
+        t = Tree(input_path, format=1)
         print(f"[SUCCESS] Loaded tree with {len(t)} leaves")
 
         ts = TreeStyle()
-        ts.show_scale = False
-        ts.mode = "r"  # Rectangular mode
-        ts.rotation = 0  # Standard left-to-right orientation
-        ts.branch_vertical_margin = 15  # Space between branches
-        ts.show_leaf_name = False  # We'll add them manually to control font size
+        ts.show_scale = ~{true="True" false="False" show_scale}
+        ts.scale_length = 0.1
+        ts.mode = "r"
+        ts.rotation = 0
+        ts.branch_vertical_margin = 15
+        ts.show_leaf_name = ~{true="True" false="False" show_leaf_name}
         ts.min_leaf_separation = 5
-        ts.allow_face_overlap = False
+        ts.allow_face_overlap = True
         ts.complete_branch_lines_when_necessary = True
-        ts.root_opening_factor = 0.5  # Controls root spread
-        ts.margin_left = 50  # Left margin
-        ts.margin_right = 50  # Right margin
-        ts.margin_top = 50  # Top margin
-        ts.margin_bottom = 50  # Bottom margin
+        ts.root_opening_factor = 0.5
+        ts.margin_left = 50
+        ts.margin_right = 50
+        ts.margin_top = 50
+        ts.margin_bottom = 50
 
-        # Add leaf names with controlled font size
-        for leaf in t.iter_leaves():
-            face = TextFace(leaf.name, fsize=~{font_size})
-            leaf.add_face(face, column=0, position="branch-right")
+        # Add leaf names with controlled font size if not showing by default
+        if not ~{true="True" false="False" show_leaf_name}:
+            for leaf in t.iter_leaves():
+                face = TextFace(leaf.name, fsize=~{font_size})
+                leaf.add_face(face, column=0, position="branch-right")
+
+        # Add support values if enabled
+        if ~{true="True" false="False" show_support_values}:
+            for node in t.traverse():
+                if not node.is_leaf():
+                    ns = NodeStyle()
+                    ns["size"] = 0
+                    if hasattr(node, 'support'):
+                        support_value = node.support
+                        if support_value is not None:
+                            support_text = f"{support_value:.0%}"
+                            support_face = TextFace(support_text,
+                                                 fsize=~{font_size},
+                                                 fgcolor="black",
+                                                 bold=True)
+                            support_face.margin_right = 10
+                            support_face.margin_left = 10
+                            node.add_face(support_face, column=0, position="branch-top")
+                    node.set_style(ns)
 
         print(f"[DEBUG] Rendering to {output_path}")
         t.render(output_path, w=~{width}, units="px", tree_style=ts)
@@ -1697,14 +1722,14 @@ if __name__ == "__main__":
 PYTHON_SCRIPT
 
     # Handle outputs with new directory structure
-    if [[ -f "/tmp/outputs/tree.png" ]]; then
+    if [[ -f "/tmp/outputs/tree.~{image_format}" ]]; then
       mkdir -p final_phylogenetic_tree_image
-      cp "/tmp/outputs/tree.png" "final_phylogenetic_tree_image/phylogenetic_tree_${INPUT_BASENAME}.png"
+      cp "/tmp/outputs/tree.~{image_format}" "final_phylogenetic_tree_image/phylogenetic_tree_${INPUT_BASENAME}.~{image_format}"
       cp "/tmp/outputs/render.log" "./render_${INPUT_BASENAME}.log"
       exit 0
     else
       mkdir -p final_phylogenetic_tree_image
-      echo "Rendering failed" > error_${INPUT_BASENAME}.log
+      echo "Rendering failed" > "error_${INPUT_BASENAME}.log"
       cp "/tmp/outputs/render.log" "./render_${INPUT_BASENAME}.log"
       exit 1
     fi
@@ -1714,11 +1739,12 @@ PYTHON_SCRIPT
     docker: "gmboowa/ete3-render:1.14"
     memory: "4 GB"
     cpu: 2
+    continueOnReturnCode: true
   }
 
   output {
-    File? final_image = "final_phylogenetic_tree_image/phylogenetic_tree_${basename(input_tree)}.~{image_format}"
-    File render_log = "render_${basename(input_tree)}.log"
+    File? final_image = "final_phylogenetic_tree_image/phylogenetic_tree_~{basename(input_tree)}.~{image_format}"
+    File render_log = "render_~{basename(input_tree)}.log"
   }
 }
 task REPORTING {
