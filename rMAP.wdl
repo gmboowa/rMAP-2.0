@@ -17,7 +17,7 @@ workflow rMAP {
     Boolean do_mge_analysis = true
     Boolean do_reporting = true
     Boolean do_blast = true
-    Boolean use_local_blast = false
+    Boolean use_local_blast = true
     File? local_blast_db
     File? local_amr_db
     File? local_mge_db
@@ -36,6 +36,9 @@ workflow rMAP {
     Int min_assembly_quality = 50
     Int min_read_length = 50
     Int min_mapping_quality = 20
+    Int tree_image_width = 1200
+    String tree_image_format = "png"
+    Int tree_font_size = 8
 
     # Derived values
     Int cpu_4 = if (max_cpus < 4) then max_cpus else 4
@@ -172,11 +175,38 @@ workflow rMAP {
       bootstrap_replicates = 100
   }
 
+  call ACCESSORY_PHYLOGENY {
+    input:
+      alignment = PANGENOME.accessory_binary,
+      do_phylogeny = do_phylogeny,
+      model = phylogeny_model,
+      cpu = cpu_4,
+      tree_prefix = "accessory_genes",
+      bootstrap_replicates = 100
+  }
+
+  # Tree visualization section - fixed implementation
+  Array[File] phylogeny_trees = [
+    CORE_PHYLOGENY.phylogeny_tree,
+    ACCESSORY_PHYLOGENY.phylogeny_tree
+  ]
+
+  scatter (tree in phylogeny_trees) {
+    call TREE_VISUALIZATION as TREE_VISUALIZATION {
+      input:
+        input_tree = tree,
+        width = tree_image_width,
+        image_format = tree_image_format,
+        font_size = tree_font_size
+    }
+  }
+
   call REPORTING {
     input:
       mlst_output = MLST.combined_mlst,
       amr_output = AMR_PROFILING.combined_amr,
       core_phylogeny_output = select_first([CORE_PHYLOGENY.phylogeny_tree, "default_core_tree.nwk"]),
+      accessory_phylogeny_output = select_first([ACCESSORY_PHYLOGENY.phylogeny_tree, "default_accessory_tree.nwk"]),
       variant_output = VARIANT_CALLING.vcf_files,
       blast_output = BLAST_ANALYSIS.blast_top5,
       plasmid_report = MGE_ANALYSIS.plasmid_report,
@@ -199,6 +229,7 @@ workflow rMAP {
     File core_alignment = PANGENOME.core_alignment
     File accessory_alignment = PANGENOME.accessory_binary
     File core_phylogeny_output = select_first([CORE_PHYLOGENY.phylogeny_tree, "default_core_tree.nwk"])
+    File accessory_phylogeny_output = select_first([ACCESSORY_PHYLOGENY.phylogeny_tree, "default_accessory_tree.nwk"])
     Array[File] amr_output = AMR_PROFILING.amr_outputs
     File combined_amr = AMR_PROFILING.combined_amr
     File plasmid_report = MGE_ANALYSIS.plasmid_report
@@ -209,6 +240,8 @@ workflow rMAP {
     File? report_output = REPORTING.report_output
     Array[File] virulence_reports = VIRULENCE_ANALYSIS.virulence_reports
     File combined_virulence_report = VIRULENCE_ANALYSIS.combined_report
+    Array[File?] tree_images = TREE_VISUALIZATION.final_image
+    Array[File] tree_render_logs = TREE_VISUALIZATION.render_log
   }
 }
 
@@ -561,6 +594,7 @@ task ANNOTATION {
     Array[String] annotation_dirs = if do_annotation then glob("annotation_results/*") else []
   }
 }
+
 task PANGENOME {
   input {
     Array[File] annotation_input
@@ -624,6 +658,8 @@ task CORE_PHYLOGENY {
     String model = "-nt -gtr"
     Int cpu = 4
     Int bootstrap_replicates = 100
+    Int memory_gb = 16  # Increased from default
+    Int disk_gb = 100   # Added explicit disk space
   }
 
   command <<<
@@ -638,10 +674,15 @@ task CORE_PHYLOGENY {
     fi
     echo "- ~{alignment} ($(wc -c < "~{alignment}") bytes)" >> phylogeny.log
 
+    # Check available memory
+    echo "System memory information:" >> phylogeny.log
+    free -h >> phylogeny.log
+
     if [ "~{do_phylogeny}" == "true" ]; then
       echo "Phylogeny parameters:" >> phylogeny.log
       echo "- Model: ~{model}" >> phylogeny.log
       echo "- CPU: ~{cpu}" >> phylogeny.log
+      echo "- Memory allocated: ~{memory_gb} GB" >> phylogeny.log
       echo "- Bootstrap replicates: ~{bootstrap_replicates}" >> phylogeny.log
 
       mkdir -p phylogeny_results
@@ -658,16 +699,44 @@ task CORE_PHYLOGENY {
         exit 1
       fi
 
-      # Run FastTree
+      # Calculate expected memory needs based on alignment size
+      alignment_size=$(wc -c < "~{alignment}")
+      echo "Alignment size: $alignment_size bytes" >> phylogeny.log
+
+      # Run FastTree with memory monitoring
       echo "Running FastTree for core genome..." >> phylogeny.log
       set +e
+      ulimit -v $((~{memory_gb} * 1024 * 1024))  # Set memory limit
+
       FastTree ~{model} \
         -gamma \
         -quiet \
         -boot ~{bootstrap_replicates} \
         -log "phylogeny_results/core_~{tree_prefix}.log" \
         < "~{alignment}" > "phylogeny_results/core_~{tree_prefix}.nwk" 2>> phylogeny.log
+      exit_code=$?
       set -e
+
+      if [ $exit_code -ne 0 ]; then
+        echo "WARNING: FastTree exited with code $exit_code" >> phylogeny.log
+
+        # Attempt fallback with fewer bootstrap replicates if memory was the issue
+        if grep -qi "oom" phylogeny.log || grep -qi "killed" phylogeny.log; then
+          echo "Memory issue detected, retrying with 50 bootstrap replicates" >> phylogeny.log
+          FastTree ~{model} \
+            -gamma \
+            -quiet \
+            -boot 50 \
+            -log "phylogeny_results/core_~{tree_prefix}_reduced.log" \
+            < "~{alignment}" > "phylogeny_results/core_~{tree_prefix}.nwk" 2>> phylogeny.log || {
+              echo "Fallback also failed, generating minimal tree" >> phylogeny.log
+              echo "(A,B);" > "phylogeny_results/core_~{tree_prefix}.nwk"
+            }
+        else
+          echo "Non-memory error, generating minimal tree" >> phylogeny.log
+          echo "(A,B);" > "phylogeny_results/core_~{tree_prefix}.nwk"
+        fi
+      fi
 
       if [ ! -s "phylogeny_results/core_~{tree_prefix}.nwk" ]; then
         echo "ERROR: Core tree generation failed - empty output file" >> phylogeny.log
@@ -686,6 +755,90 @@ task CORE_PHYLOGENY {
 
   runtime {
     docker: "staphb/fasttree:2.1.11"
+    memory: "~{memory_gb} GB"
+    cpu: cpu
+    disks: "local-disk ~{disk_gb} HDD"
+    preemptible: 2  # Allow preemptible instances
+    continueOnReturnCode: true
+    timeout: "24 hours"  # Extended timeout
+  }
+
+  output {
+    File phylogeny_tree = if do_phylogeny then "phylogeny_results/core_~{tree_prefix}.nwk" else "phylogeny_results/core_~{tree_prefix}.nwk"
+    File? phylogeny_log = if do_phylogeny then "phylogeny_results/core_~{tree_prefix}.log" else "skipped.txt"
+    File? execution_log = if do_phylogeny then "phylogeny.log" else "skipped.txt"
+  }
+}
+task ACCESSORY_PHYLOGENY {
+  input {
+    File alignment
+    Boolean do_phylogeny = true
+    String tree_prefix = "phylogeny"
+    String model = "-nt -gtr"
+    Int cpu = 4
+    Int bootstrap_replicates = 100
+  }
+
+  command <<<
+    set -euo pipefail
+
+    # Debugging: Verify input file
+    echo "Starting accessory genome phylogenetic analysis at $(date)" > phylogeny.log
+    echo "Input file verification:" >> phylogeny.log
+    if [ ! -f "~{alignment}" ]; then
+      echo "ERROR: Alignment file not found" >> phylogeny.log
+      exit 1
+    fi
+    echo "- ~{alignment} ($(wc -c < "~{alignment}") bytes)" >> phylogeny.log
+
+    if [ "~{do_phylogeny}" == "true" ]; then
+      echo "Phylogeny parameters:" >> phylogeny.log
+      echo "- Model: ~{model}" >> phylogeny.log
+      echo "- CPU: ~{cpu}" >> phylogeny.log
+      echo "- Bootstrap replicates: ~{bootstrap_replicates}" >> phylogeny.log
+
+      mkdir -p phylogeny_results
+
+      # Validate input alignment
+      if [ ! -s "~{alignment}" ]; then
+        echo "ERROR: Accessory alignment file is empty or missing" >> phylogeny.log
+        exit 1
+      fi
+
+      seq_count=$(grep -c '^>' "~{alignment}" || echo 0)
+      if [ "$seq_count" -lt 4 ]; then
+        echo "ERROR: Insufficient sequences ($seq_count) in alignment. Need at least 4." >> phylogeny.log
+        exit 1
+      fi
+
+      # Run FastTree
+      echo "Running FastTree for accessory genome..." >> phylogeny.log
+      set +e
+      FastTree ~{model} \
+        -gamma \
+        -quiet \
+        -boot ~{bootstrap_replicates} \
+        -log "phylogeny_results/accessory_~{tree_prefix}.log" \
+        < "~{alignment}" > "phylogeny_results/accessory_~{tree_prefix}.nwk" 2>> phylogeny.log
+      set -e
+
+      if [ ! -s "phylogeny_results/accessory_~{tree_prefix}.nwk" ]; then
+        echo "ERROR: Accessory tree generation failed - empty output file" >> phylogeny.log
+        echo "(A,B);" > "phylogeny_results/accessory_~{tree_prefix}.nwk"
+      fi
+
+      echo "Accessory genome phylogenetic analysis completed at $(date)" >> phylogeny.log
+      echo "Output files created:" >> phylogeny.log
+      ls -lh phylogeny_results/* >> phylogeny.log
+    else
+      echo "Accessory phylogeny skipped by user request" > skipped.txt
+      mkdir -p phylogeny_results
+      echo "(A,B);" > "phylogeny_results/accessory_~{tree_prefix}.nwk"
+    fi
+  >>>
+
+  runtime {
+    docker: "staphb/fasttree:2.1.11"
     memory: "8 GB"
     cpu: cpu
     disks: "local-disk 100 HDD"
@@ -694,9 +847,9 @@ task CORE_PHYLOGENY {
   }
 
   output {
-    File phylogeny_tree = if do_phylogeny then "phylogeny_results/core_~{tree_prefix}.nwk" else "phylogeny_results/core_~{tree_prefix}.nwk"
-    File? phylogeny_log = if do_phylogeny then "phylogeny_results/core_~{tree_prefix}.log" else "skipped.txt"
-    File? error_log = if do_phylogeny then "phylogeny_results/core_error.log" else "skipped.txt"
+    File phylogeny_tree = if do_phylogeny then "phylogeny_results/accessory_~{tree_prefix}.nwk" else "phylogeny_results/accessory_~{tree_prefix}.nwk"
+    File? phylogeny_log = if do_phylogeny then "phylogeny_results/accessory_~{tree_prefix}.log" else "skipped.txt"
+    File? error_log = if do_phylogeny then "phylogeny_results/accessory_error.log" else "skipped.txt"
     File? execution_log = if do_phylogeny then "phylogeny.log" else "skipped.txt"
   }
 }
@@ -902,7 +1055,6 @@ task VARIANT_CALLING {
     File? variant_log = if do_variant_calling then "variant.log" else "variants/skipped.txt"
   }
 }
-
 
 task AMR_PROFILING {
   input {
@@ -1130,6 +1282,7 @@ task MGE_ANALYSIS {
     File? plasmid_log = if do_mge_analysis then "plasmid.log" else "plasmid_results/skipped.txt"
   }
 }
+
 task VIRULENCE_ANALYSIS {
   input {
     Array[File]+ assembly_output
@@ -1288,9 +1441,17 @@ task BLAST_ANALYSIS {
 
       echo "Attempting local BLAST..." >> "$log_file"
 
+      # Check if we need to format the database
       if [ ! -f "~{local_blast_db}.nhr" ]; then
-        echo "Local BLAST database not found, will try remote BLAST" >> "$log_file"
-        return 1
+        echo "Formatting local BLAST database..." >> "$log_file"
+        makeblastdb \
+          -in "~{local_blast_db}" \
+          -dbtype nucl \
+          -out "~{local_blast_db}" \
+          2>> "$log_file" || {
+            echo "Failed to format local BLAST database" >> "$log_file"
+            return 1
+          }
       fi
 
       blastn \
@@ -1456,12 +1617,116 @@ task BLAST_ANALYSIS {
     Array[String] sample_ids = read_lines("sample_ids.txt")
   }
 }
+task TREE_VISUALIZATION {
+  input {
+    File input_tree
+    Int width
+    String image_format
+    Int font_size
+    Int? continueOnReturnCode = 1
+  }
 
+  command <<<
+    # Create all directories first
+    mkdir -p /tmp/inputs /tmp/outputs final_phylogenetic_tree_image
+
+    # Get the basename of the input file
+    INPUT_BASENAME=$(basename "~{input_tree}")
+
+    # Copy input file
+    if [[ ! -f "~{input_tree}" ]]; then
+      echo "Input file ~{input_tree} not found!" >&2
+      exit 1
+    fi
+    cp "~{input_tree}" /tmp/inputs/input.nwk
+
+    # Execute Python script
+    python3 <<'PYTHON_SCRIPT' > /tmp/outputs/render.log 2>&1
+import os
+import sys
+import traceback
+from ete3 import Tree, TreeStyle, TextFace
+
+def main():
+    try:
+        print("[DEBUG] Starting tree rendering")
+        input_path = "/tmp/inputs/input.nwk"
+        output_path = f"/tmp/outputs/tree.png"  # Simplified output path
+
+        if not os.path.exists(input_path):
+            raise FileNotFoundError(f"Input file missing: {input_path}")
+
+        t = Tree(input_path)
+        print(f"[SUCCESS] Loaded tree with {len(t)} leaves")
+
+        ts = TreeStyle()
+        ts.show_scale = False
+        ts.mode = "r"  # Rectangular mode
+        ts.rotation = 0  # Standard left-to-right orientation
+        ts.branch_vertical_margin = 15  # Space between branches
+        ts.show_leaf_name = False  # We'll add them manually to control font size
+        ts.min_leaf_separation = 5
+        ts.allow_face_overlap = False
+        ts.complete_branch_lines_when_necessary = True
+        ts.root_opening_factor = 0.5  # Controls root spread
+        ts.margin_left = 50  # Left margin
+        ts.margin_right = 50  # Right margin
+        ts.margin_top = 50  # Top margin
+        ts.margin_bottom = 50  # Bottom margin
+
+        # Add leaf names with controlled font size
+        for leaf in t.iter_leaves():
+            face = TextFace(leaf.name, fsize=~{font_size})
+            leaf.add_face(face, column=0, position="branch-right")
+
+        print(f"[DEBUG] Rendering to {output_path}")
+        t.render(output_path, w=~{width}, units="px", tree_style=ts)
+
+        if not os.path.exists(output_path):
+            raise RuntimeError("Rendering completed but no output file created")
+
+        print("[SUCCESS] Render completed")
+        return 0
+
+    except Exception as e:
+        print(f"[ERROR] {traceback.format_exc()}", file=sys.stderr)
+        return 1
+
+if __name__ == "__main__":
+    sys.exit(main())
+PYTHON_SCRIPT
+
+    # Handle outputs with new directory structure
+    if [[ -f "/tmp/outputs/tree.png" ]]; then
+      mkdir -p final_phylogenetic_tree_image
+      cp "/tmp/outputs/tree.png" "final_phylogenetic_tree_image/phylogenetic_tree_${INPUT_BASENAME}.png"
+      cp "/tmp/outputs/render.log" "./render_${INPUT_BASENAME}.log"
+      exit 0
+    else
+      mkdir -p final_phylogenetic_tree_image
+      echo "Rendering failed" > error_${INPUT_BASENAME}.log
+      cp "/tmp/outputs/render.log" "./render_${INPUT_BASENAME}.log"
+      exit 1
+    fi
+  >>>
+
+  runtime {
+    docker: "gmboowa/ete3-render:1.14"
+    memory: "4 GB"
+    cpu: 2
+  }
+
+  output {
+    File? final_image = "final_phylogenetic_tree_image/phylogenetic_tree_${basename(input_tree)}.~{image_format}"
+    File render_log = "render_${basename(input_tree)}.log"
+  }
+}
 task REPORTING {
   input {
     File mlst_output
     File amr_output
     File core_phylogeny_output
+    File accessory_phylogeny_output
     Array[File]? variant_output
     Array[File]? blast_output
     File plasmid_report
@@ -1502,6 +1767,7 @@ task REPORTING {
     echo "- MLST: ~{mlst_output} ($(wc -c < "~{mlst_output}") bytes)" >> report.log
     echo "- AMR: ~{amr_output} ($(wc -c < "~{amr_output}") bytes)" >> report.log
     echo "- Core phylogeny: ~{core_phylogeny_output} ($(wc -c < "~{core_phylogeny_output}") bytes)" >> report.log
+    echo "- Accessory phylogeny: ~{accessory_phylogeny_output} ($(wc -c < "~{accessory_phylogeny_output}") bytes)" >> report.log
     echo "- Plasmid report: ~{plasmid_report} ($(wc -c < "~{plasmid_report}") bytes)" >> report.log
     echo "- Virulence report: ~{virulence_report} ($(wc -c < "~{virulence_report}") bytes)" >> report.log
 
@@ -1538,6 +1804,12 @@ task REPORTING {
     echo -e "Number of sequences: $(count_sequences ~{core_phylogeny_output})" >> report.txt
     echo -e "\nNewick Tree:" >> report.txt
     cat ~{core_phylogeny_output} >> report.txt
+
+    echo -e "\n=== Accessory Genome Phylogeny ===" >> report.txt
+    echo -e "\nAccessory Genome Alignment Statistics:" >> report.txt
+    echo -e "Number of sequences: $(count_sequences ~{accessory_phylogeny_output})" >> report.txt
+    echo -e "\nNewick Tree:" >> report.txt
+    cat ~{accessory_phylogeny_output} >> report.txt
 
     if [ -n "$(ls -A ~{blast_output} 2>/dev/null)" ]; then
       echo -e "\n=== Top BLAST Hits ===" >> report.txt
