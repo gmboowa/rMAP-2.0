@@ -25,7 +25,7 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 - FastTree for phylogenetic inference  
 - Abricate for AMR & Virulence profiling & MGE detection  
 - Remote BLAST support to NCBI  
-- Auto-generated final report  
+- Visualize phylogenetic trees 
 
 
 ---
@@ -175,7 +175,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 
 After successful execution of the `rMAP` pipeline using WDL + Cromwell + Docker, your output directory will contain subdirectories corresponding to each major analysis module. Below is the typical hierarchy:
 
-```
+```bash
 rMAP_outputs/
 ├── call-CONFIGURATION/
 ├── call-TRIMMING/
@@ -191,6 +191,7 @@ rMAP_outputs/
 ├── call-PANGENOME/
 ├── call-ACCESSORY_PHYLOGENY/
 ├── call-CORE_PHYLOGENY/
+├── call-TREE_VISUALIZATION/
 ```
 
 Each `call-*` directory contains:
