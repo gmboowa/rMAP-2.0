@@ -201,18 +201,6 @@ workflow rMAP {
     }
   }
 
-  call REPORTING {
-    input:
-      mlst_output = MLST.combined_mlst,
-      amr_output = AMR_PROFILING.combined_amr,
-      core_phylogeny_output = select_first([CORE_PHYLOGENY.phylogeny_tree, "default_core_tree.nwk"]),
-      accessory_phylogeny_output = select_first([ACCESSORY_PHYLOGENY.phylogeny_tree, "default_accessory_tree.nwk"]),
-      variant_output = VARIANT_CALLING.vcf_files,
-      blast_output = BLAST_ANALYSIS.blast_top5,
-      plasmid_report = MGE_ANALYSIS.plasmid_report,
-      virulence_report = VIRULENCE_ANALYSIS.combined_report
-  }
-
   output {
     Array[File] quality_reports = QUALITY_CONTROL.quality_reports
     Array[File] trimmed_reads = TRIMMING.trimmed_reads
@@ -237,7 +225,6 @@ workflow rMAP {
     Array[File] blast_results = BLAST_ANALYSIS.blast_results
     Array[File] blast_top5 = BLAST_ANALYSIS.blast_top5
     Array[File] blast_logs = BLAST_ANALYSIS.blast_logs
-    File? report_output = REPORTING.report_output
     Array[File] virulence_reports = VIRULENCE_ANALYSIS.virulence_reports
     File combined_virulence_report = VIRULENCE_ANALYSIS.combined_report
     Array[File?] tree_images = TREE_VISUALIZATION.final_image
@@ -769,6 +756,7 @@ task CORE_PHYLOGENY {
     File? execution_log = if do_phylogeny then "phylogeny.log" else "skipped.txt"
   }
 }
+
 task ACCESSORY_PHYLOGENY {
   input {
     File alignment
@@ -1745,133 +1733,5 @@ PYTHON_SCRIPT
   output {
     File? final_image = "final_phylogenetic_tree_image/phylogenetic_tree_~{basename(input_tree)}.~{image_format}"
     File render_log = "render_~{basename(input_tree)}.log"
-  }
-}
-task REPORTING {
-  input {
-    File mlst_output
-    File amr_output
-    File core_phylogeny_output
-    File accessory_phylogeny_output
-    Array[File]? variant_output
-    Array[File]? blast_output
-    File plasmid_report
-    File virulence_report
-  }
-
-  command <<<
-    set -euo pipefail
-
-    function format_table {
-      awk -F '\t' '
-        BEGIN {
-          OFS="\t"
-          max_width=50
-        }
-        {
-          for (i=1; i<=NF; i++) {
-            if (length($i) > max_width) {
-              $i=substr($i,1,max_width-3) "..."
-            }
-          }
-          print
-        }
-      '
-    }
-
-    function count_features {
-      awk -F '\t' 'NR>1 {print $1}' "$1" | sort -u | wc -l
-    }
-
-    function count_sequences {
-      grep -c '^>' "$1" 2>/dev/null || echo 0
-    }
-
-    # Debugging: Verify input files
-    echo "Generating comprehensive report at $(date)" > report.log
-    echo "Input files verification:" >> report.log
-    echo "- MLST: ~{mlst_output} ($(wc -c < "~{mlst_output}") bytes)" >> report.log
-    echo "- AMR: ~{amr_output} ($(wc -c < "~{amr_output}") bytes)" >> report.log
-    echo "- Core phylogeny: ~{core_phylogeny_output} ($(wc -c < "~{core_phylogeny_output}") bytes)" >> report.log
-    echo "- Accessory phylogeny: ~{accessory_phylogeny_output} ($(wc -c < "~{accessory_phylogeny_output}") bytes)" >> report.log
-    echo "- Plasmid report: ~{plasmid_report} ($(wc -c < "~{plasmid_report}") bytes)" >> report.log
-    echo "- Virulence report: ~{virulence_report} ($(wc -c < "~{virulence_report}") bytes)" >> report.log
-
-    echo "Microbial Genomic Analysis Report" > report.txt
-    echo "==========================================" >> report.txt
-    echo "Generated: $(date)" >> report.txt
-    echo "Analysis Version: 2.1" >> report.txt
-    echo "==========================================" >> report.txt
-
-    echo -e "\n=== SUMMARY ===" >> report.txt
-    echo -e "MLST profiles: $(count_features ~{mlst_output})" >> report.txt
-    echo -e "AMR genes: $(count_features ~{amr_output})" >> report.txt
-    echo -e "Virulence factors: $(count_features ~{virulence_report})" >> report.txt
-    echo -e "Plasmids detected: $(count_features ~{plasmid_report})" >> report.txt
-
-    echo -e "\n=== MLST Results ===" >> report.txt
-    head -n 20 ~{mlst_output} | format_table >> report.txt
-    [ $(wc -l < ~{mlst_output}) -gt 20 ] && echo "... (showing first 20 profiles)" >> report.txt
-
-    echo -e "\n=== AMR Profile ===" >> report.txt
-    head -n 20 ~{amr_output} | format_table >> report.txt
-    [ $(wc -l < ~{amr_output}) -gt 20 ] && echo "... (showing first 20 genes)" >> report.txt
-
-    echo -e "\n=== Virulence Factors ===" >> report.txt
-    head -n 20 ~{virulence_report} | format_table >> report.txt
-    [ $(wc -l < ~{virulence_report}) -gt 20 ] && echo "... (showing first 20 factors)" >> report.txt
-
-    echo -e "\n=== Plasmid Detection ===" >> report.txt
-    head -n 20 ~{plasmid_report} | format_table >> report.txt
-    [ $(wc -l < ~{plasmid_report}) -gt 20 ] && echo "... (showing first 20 plasmids)" >> report.txt
-
-    echo -e "\n=== Core Genome Phylogeny ===" >> report.txt
-    echo -e "\nCore Genome Alignment Statistics:" >> report.txt
-    echo -e "Number of sequences: $(count_sequences ~{core_phylogeny_output})" >> report.txt
-    echo -e "\nNewick Tree:" >> report.txt
-    cat ~{core_phylogeny_output} >> report.txt
-
-    echo -e "\n=== Accessory Genome Phylogeny ===" >> report.txt
-    echo -e "\nAccessory Genome Alignment Statistics:" >> report.txt
-    echo -e "Number of sequences: $(count_sequences ~{accessory_phylogeny_output})" >> report.txt
-    echo -e "\nNewick Tree:" >> report.txt
-    cat ~{accessory_phylogeny_output} >> report.txt
-
-    if [ -n "$(ls -A ~{blast_output} 2>/dev/null)" ]; then
-      echo -e "\n=== Top BLAST Hits ===" >> report.txt
-      for blast_file in ~{sep=' ' blast_output}; do
-        sample_name=$(basename "$blast_file" | sed 's/_top5.tsv//')
-        echo -e "\nSample: $sample_name" >> report.txt
-        head -n 5 "$blast_file" | format_table >> report.txt
-      done
-    fi
-
-    if [ -n "$(ls -A ~{variant_output} 2>/dev/null)" ]; then
-      echo -e "\n=== Variant Calling Results ===" >> report.txt
-      for vcf_file in ~{sep=' ' variant_output}; do
-        sample_name=$(basename "$vcf_file" | sed 's/.snps.vcf//')
-        echo -e "\nSample: $sample_name" >> report.txt
-        grep -v '^#' "$vcf_file" | head -n 20 | format_table >> report.txt
-        echo "(showing first 20 variants)" >> report.txt
-      done
-    fi
-
-    echo -e "\n=== Analysis Summary ===" >> report.txt
-    echo "Analysis completed successfully at $(date)" >> report.txt
-    echo "Report generation completed at $(date)" >> report.log
-  >>>
-
-  runtime {
-    docker: "ubuntu:20.04"
-    memory: "4 GB"
-    cpu: 2
-    disks: "local-disk 20 HDD"
-    continueOnReturnCode: true
-    timeout: "2 hours"
-  }
-
-  output {
-    File report_output = "report.txt"
-    File? report_log = "report.log"
   }
 }
