@@ -114,8 +114,8 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
     "~/A55727_1.fastq.gz",
     "~/A55727_2.fastq.gz"
  ],
-  "rMAP.adapters": "~/test_data/adapters.fa",
-  "rMAP.reference_genome": "~/test_data/GCA_000016305.1.gbk",
+  "rMAP.adapters": "~/adapters.fa",
+  "rMAP.reference_genome": "~/GCA_000016305.1.gbk",
   "rMAP.do_trimming": true,
   "rMAP.do_quality_control": true,
   "rMAP.do_assembly": true,
@@ -151,6 +151,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 ---
 
 ## Tools used (with Docker images)
+
 | Step                | Tool          | Docker image                          |
 |---------------------|---------------|----------------------------------------|
 | Trimming            | Trimmomatic   | `staphb/trimmomatic:0.39`             |
@@ -161,12 +162,11 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 | MLST                | MLST          | `staphb/mlst:2.19.0`                  |
 | Pangenome           | Roary         | `staphb/roary:3.13.0`                 |
 | Phylogeny           | FastTree      | `staphb/fasttree:2.1.11`              |
+| Tree Visualization  | ETE3          | `gmboowa/ete3-render:1.14`            |
 | AMR Profiling       | Abricate      | `staphb/abricate:1.0.0`               |
 | MGE Analysis        | Abricate      | `staphb/abricate:latest`              |
 | Virulence Analysis  | Abricate      | `staphb/abricate:latest`              |
 | Remote BLAST        | BLAST+        | `ncbi/blast:2.14.0`                   |
-
-
 
 ---
 
