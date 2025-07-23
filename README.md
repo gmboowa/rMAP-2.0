@@ -10,7 +10,7 @@ This tool provides a ready-to-use environment for rMAP, a bioinformatics pipelin
 **Pipeline Type:** WDL-based, Docker-enabled  
 **Workflow Engine:** Cromwell
 
-**rMAP-WDL-Cromwell-Docker** is a containerized, modular & scalable workflow for microbial genomics that integrates trimming, quality control, *de novo* assembly, annotation, variant calling, snpeff-based variant annotation, MLST typing, AMR profiling, mobile genetic element analysis, pangenome analysis, phylogeny & reporting.
+**rMAP-WDL-Cromwell-Docker** is a containerized, modular & scalable workflow for microbial genomics that integrates trimming, quality control, *de novo* assembly, annotation, variant calling, snpeff-based variant annotation, MLST typing, AMR profiling, mobile genetic element analysis, pangenome analysis, phylogeny & tree visualization.
 
 This pipeline is written in **Workflow Description Language (WDL)**, utilizes **Docker containers** for tool standardization & is designed to run on the **Cromwell execution engine**.
 
@@ -216,11 +216,69 @@ Each `call-*` directory contains:
 | `BLAST_ANALYSIS`         | Top BLAST hits (`*.tsv`, `*.xml`)                                |
 | `PANGENOME`              | Roary outputs: `gene_presence_absence.csv`, `core_gene_alignment.aln` |
 | `ACCESSORY_PHYLOGENY`    | Phylogenetic tree for accessory genes (`*.nwk`, `*.pdf`)         |
-| `CORE_PHYLOGENY`         | Core genome tree and alignment files (`*.nwk`, `*.pdf`)          |
+| `CORE_PHYLOGENY`         | Core genome tree & alignment files (`*.nwk`, `*.pdf`)            |
+| `TREE_VISUALIZATION`     | Tree visualization using ETE3 and Python3 (`*.png`)              |
 
 ## Note on BLAST usage
 If you are analyzing many samples, we recommend setting up a local BLAST nucleotide database specifically for ESKAPEE pathogens. This setup requires approximately 70 GB of disk space.
 Please note that NCBI imposes usage limits on BLAST queries from a single IP address, which may affect performance or availability during high-throughput runs. A local database ensures speed, reproducibility & compliance with query limits.
+
+If you're interested in using a local ESKAPEE database, first download and prepare your combined FASTA file, and then index it using the command below:
+
+
+### Building a Local ESKAPEE BLAST database from RefSeq
+
+Follow these steps to download and build a local BLAST database for the ESKAPEE pathogens from RefSeq.
+
+---
+
+### Step 1: Create a working directory
+
+```bash
+mkdir -p ~/refseq/bacteria/eskapee
+cd ~/refseq/bacteria/eskapee
+```
+
+---
+
+### Step 2: Use `ncbi-genome-download` (Recommended)
+
+Install the tool if not already installed:
+
+```bash
+pip install ncbi-genome-download
+```
+
+Then run the following command to download complete RefSeq genomes for the 7 ESKAPEE species:
+
+```bash
+ncbi-genome-download bacteria \
+  --genus "Escherichia" --genus "Klebsiella" --genus "Enterobacter" \
+  --genus "Acinetobacter" --genus "Pseudomonas" --genus "Staphylococcus" --genus "Enterococcus" \
+  --formats fasta --assembly-level complete --section refseq \
+  --output-folder ./ --flat-output
+```
+
+> You can modify `--assembly-level complete` to `--assembly-level complete,chromosome` to include more assemblies.
+
+---
+
+### Step 3: Combine all Fasta files into one file
+
+```bash
+cat *.fna > eskapee_combined.fasta
+```
+
+---
+
+### Step 4: Create the BLAST database
+
+
+```bash
+
+makeblastdb -in ~/refseq/bacteria/eskapee_combined.fasta -dbtype nucl -parse_seqids -title "ESKAPEE_DB"
+
+```
 
 ## Note on MLST Schemas
 If you are performing MLST typing across many samples, we recommend downloading & setting up the publicly available PubMLST schemes locally. This setup requires approximately 2 GB of disk space. A local installation ensures faster typing, avoids dependency on internet connectivity & supports reproducible & scalable analysis across multiple species.
@@ -234,6 +292,7 @@ Before running rMAP v2.0, if you intend to use local databases, make sure to ind
 makeblastdb -in resfinder.fa -dbtype nucl
 makeblastdb -in plasmidfinder.fa -dbtype nucl
 makeblastdb -in vfdb.fa -dbtype nucl
+
 ```
 
 ## Authors & contributors
@@ -257,5 +316,5 @@ This project is licensed under the MIT License.
 
 ## To report bugs, ask questions or seek help
 
-The software developing team works round the clock to ensure the bugs within the tool are captured and fixed. For support or any inquiry: You can submit your query using the [Issue Tracker](https://github.com/gmboowa/rMAP-WDL-Cromwell-Docker/issues)
+The software developing team works round the clock to ensure the bugs within the tool are captured & fixed. For support or any inquiry: You can submit your query using the [Issue Tracker](https://github.com/gmboowa/rMAP-WDL-Cromwell-Docker/issues)
 
