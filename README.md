@@ -94,7 +94,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 - `pangenome_results/` – Roary files  
 - `phylogeny_results/` – Newick trees  
 - `remote_blast_results/` – BLAST XML files  
-- `report.txt` – consolidated plain-text report  
+- `tree.png` – Image of the phylogenetic trees  
 
 
 ---
