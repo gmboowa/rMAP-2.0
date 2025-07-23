@@ -252,11 +252,7 @@ pip install ncbi-genome-download
 Then run the following command to download complete RefSeq genomes for the 7 ESKAPEE species:
 
 ```bash
-ncbi-genome-download bacteria \
-  --genus "Escherichia" --genus "Klebsiella" --genus "Enterobacter" \
-  --genus "Acinetobacter" --genus "Pseudomonas" --genus "Staphylococcus" --genus "Enterococcus" \
-  --formats fasta --assembly-level complete --section refseq \
-  --output-folder ./ --flat-output
+ncbi-genome-download --genera "Enterococcus faecium,Staphylococcus aureus,Klebsiella pneumoniae,Acinetobacter baumannii,Pseudomonas aeruginosa,Enterobacter,Escherichia coli" --assembly-level complete --format fasta --verbose bacteria
 ```
 
 > You can modify `--assembly-level complete` to `--assembly-level complete,chromosome` to include more assemblies.
