@@ -259,21 +259,17 @@ ncbi-genome-download bacteria \
 >     --section refseq \
 >     --output-folder eskapee_genomes
 
-find refseq/bacteria/ -name "*.fna.gz" | xargs cat > eskapee_combined.fasta.gz or
+```
+### Step 3: Combine all Fasta files into one file
+
+```bash
+
+find refseq/bacteria/ -name "*.fna.gz" | xargs cat > eskapee_combined.fasta.gz      OR 
 
 for f in refseq/bacteria/GCF*/*.fna.gz; do cat "$f" >> eskapee_combined.fasta.gz; done 
 
 gunzip eskapee_combined.fasta.gz
-```
 
-> You can modify `--assembly-level complete` to `--assembly-level complete,chromosome` to include more assemblies.
-
----
-
-### Step 3: Combine all Fasta files into one file
-
-```bash
-cat *.fna > eskapee_combined.fasta
 ```
 
 ---
