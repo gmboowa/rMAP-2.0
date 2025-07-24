@@ -259,7 +259,9 @@ ncbi-genome-download bacteria \
 >     --section refseq \
 >     --output-folder eskapee_genomes
 
-cat eskapee_genomes/refseq/bacteria/*/*.fna.gz > eskapee_combined.fasta.gz
+find refseq/bacteria/ -name "*.fna.gz" | xargs cat > eskapee_combined.fasta.gz or
+
+for f in refseq/bacteria/GCF*/*.fna.gz; do cat "$f" >> eskapee_combined.fasta.gz; done 
 
 gunzip eskapee_combined.fasta.gz
 ```
