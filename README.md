@@ -228,7 +228,9 @@ If you're interested in using a local ESKAPEE database, first download and prepa
 
 ### Building a Local ESKAPEE BLAST database from RefSeq
 
-Follow these steps to download and build a local BLAST database for the ESKAPEE pathogens from RefSeq.
+This repository includes a pre-built `eskapee_db.tar.gz` archive available for direct download, which can be extracted & indexed for immediate use.
+
+Alternatively, you can follow the steps below to download and build a local BLAST database for the ESKAPEE pathogens using RefSeq data.
 
 ---
 
