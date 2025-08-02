@@ -24,7 +24,7 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 - Roary for pangenome construction  
 - FastTree for phylogenetic inference  
 - Abricate for AMR & Virulence profiling & MGE detection  
-- Remote BLAST support to NCBI  
+- BLAST analysis  
 - Visualize phylogenetic trees 
 
 
@@ -166,7 +166,7 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 | AMR Profiling       | Abricate      | `staphb/abricate:1.0.0`               |
 | MGE Analysis        | Abricate      | `staphb/abricate:latest`              |
 | Virulence Analysis  | Abricate      | `staphb/abricate:latest`              |
-| Remote BLAST        | BLAST+        | `ncbi/blast:2.14.0`                   |
+| BLAST               | BLAST+        | `gmboowa/blast-analysis:1.9.3`        |
 
 ---
 
