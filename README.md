@@ -100,6 +100,9 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 ---
 
 ## Sample input JSON
+
+Validate your JSON at: 'https://jsonlint.com/'
+
 ```json
 {
   "rMAP.input_reads": [
