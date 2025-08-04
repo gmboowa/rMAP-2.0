@@ -229,6 +229,35 @@ Please note that NCBI imposes usage limits on BLAST queries from a single IP add
 If you're interested in using a local ESKAPEE database, first download and prepare your combined FASTA file, and then index it using the command below:
 
 
+## Minimum sample requirements
+
+### Important analysis prerequisites
+
+Certain analysis modules require minimum sample numbers to function properly:
+
+| Analysis module         | Minimum samples | Required For                     | JSON Parameter to disable          |
+|-------------------------|-----------------|----------------------------------|------------------------------------|
+| **Phylogenetic analysis** (Core/Accessory) | 4 | Meaningful tree topology & bootstrap support | `"rMAP.do_phylogeny": false` |
+| **Pangenome analysis**  | 2               | Genome comparisons               | `"rMAP.do_pangenome": false`       |
+
+### Configuration guidance
+
+```json
+// For datasets with <4 samples:
+{
+  "rMAP.do_phylogeny": false,
+  // Other parameters...
+}
+
+// For single-sample analyses:
+{
+  "rMAP.do_pangenome": false,
+  "rMAP.do_phylogeny": false,
+  // Other parameters...
+}
+
+```
+
 ### Building a Local ESKAPEE BLAST database from RefSeq
 
 This repository includes a pre-built `eskapee_db.tar.gz` archive available for direct download, which can be extracted & indexed for immediate use.
