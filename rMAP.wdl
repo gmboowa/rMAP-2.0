@@ -57,7 +57,7 @@ workflow rMAP {
     maxRetries: 3
     continueOnReturnCode: [0, 1]
     author: "Gerald Mboowa, Ivan Sserwadda & Stephen Kanyerezi"
-    email: "gmboowa@gmail.com"
+    email: "gmboowa@gmail.com | ivangunz23@gmail.com | kanyerezi30@gmail.com"
   }
 
   call CONFIGURATION {
@@ -211,7 +211,7 @@ workflow rMAP {
 
   # --- locals ---
   Array[File] blast_reports_local = BLAST_ANALYSIS.blast_reports
-  Array[File] tree_images_local   = select_all([CORE_TREE.final_image, ACCESSORY_TREE.final_image])
+  Array[File] tree_images_local = if do_phylogeny then select_all([CORE_TREE.final_image, ACCESSORY_TREE.final_image]) else []
   File?       pangenome_report_html_local = PANGENOME.pangenome_report
   File?       gene_heatmap_png_local      = PANGENOME.gene_heatmap
 
@@ -252,7 +252,7 @@ workflow rMAP {
     File        combined_mlst = MLST.combined_mlst
 
     Array[File]   variant_output = VARIANT_CALLING.variant_output
-    Array[String] variant_dirs   = VARIANT_CALLING.variant_dirs
+    Array[File]   variant_dirs   = VARIANT_CALLING.variant_dirs
     String        variants_dir   = VARIANT_CALLING.variants_dir
 
     File gene_presence_absence = PANGENOME.gene_presence_absence
@@ -1827,8 +1827,8 @@ NF > 0 {
 }
 task VARIANT_CALLING {
   input {
-    Array[File]? input_reads
-    File? reference_genome
+    Array[File]+ input_reads
+    File reference_genome
     Boolean do_variant_calling = true
     String reference_type = "genbank"
     Int cpu = 8
@@ -1837,11 +1837,12 @@ task VARIANT_CALLING {
   }
 
   command <<<
+    #!/bin/bash
     set -euo pipefail
     set -x
 
-    # Initialize directories and logging
-    mkdir -p variants
+    # Initialize directories and logs
+    mkdir -p variants || { echo "ERROR: Failed to create variants directory" >&2; exit 1; }
     echo "Variant Calling Analysis Log - $(date)" > variant.log
     echo "=====================================" >> variant.log
     echo "Runtime Parameters:" >> variant.log
@@ -1851,89 +1852,104 @@ task VARIANT_CALLING {
     echo "- min_quality: ~{min_quality}" >> variant.log
     echo "=====================================" >> variant.log
 
-    # Skip condition 1: User explicitly disabled variant calling
+    # Function to ensure HTML output exists
+    ensure_output() {
+      local status=$1
+      mkdir -p variants
+
+      if [ "$status" == "success" ]; then
+        # Create minimal HTML if final version wasn't generated
+        if [ ! -f variants/variant_summary.html ]; then
+          cat > variants/variant_summary.html <<EOF
+<!DOCTYPE html>
+<html>
+<head><title>Variant Calling Summary</title></head>
+<body>
+  <h1>Variant Calling Summary</h1>
+  <p>Analysis completed but final report not generated</p>
+  <p>See variant.log for details</p>
+</body>
+</html>
+EOF
+        fi
+      else
+        # Create error HTML
+        cat > variants/variant_summary.html <<EOF
+<!DOCTYPE html>
+<html>
+<head><title>Variant Calling Summary</title></head>
+<body>
+  <h1>Variant Calling Summary</h1>
+  <p>Analysis failed - see variant.log for details</p>
+</body>
+</html>
+EOF
+      fi
+      chmod 644 variants/variant_summary.html
+    }
+
+    # Handle skip conditions
     if [ "~{do_variant_calling}" != "true" ]; then
       echo "Variant calling disabled by user parameter" >> variant.log
+      ensure_output "skipped"
       echo "Variant calling skipped by user request" > variants/skipped.txt
-      echo "<h1>Variant calling skipped by user request</h1>" > variants/skipped.html
       exit 0
     fi
 
-    # Skip condition 2: No input reads provided
-    if [ -z "~{sep=' ' input_reads}" ]; then
-      echo "ERROR: No input read files provided" >> variant.log
-      echo "NO_INPUT_READS" > variants/skipped.txt
-      echo "<h1>Variant calling skipped - no input reads provided</h1>" > variants/skipped.html
-      exit 0
-    fi
-
-    # Skip condition 3: Reference genome missing
-    if [ ! -f "~{reference_genome}" ]; then
-      echo "ERROR: Reference genome file not found" >> variant.log
-      echo "MISSING_REFERENCE" > variants/skipped.txt
-      echo "<h1>Variant calling skipped - reference genome missing</h1>" > variants/skipped.html
-      exit 0
-    fi
-
-    # Verify input files
-    echo "Input files verification:" >> variant.log
+    # Validate inputs
+    echo "Validating input files..." >> variant.log
     valid_files=0
     files=()
     for f in ~{sep=' ' input_reads}; do
       if [ ! -f "$f" ]; then
-        echo "WARNING: Input file not found: $f" >> variant.log
+        echo "ERROR: Input file not found: $f" >> variant.log
+        exit 1
+      fi
+      size=$(wc -c < "$f")
+      if [ $size -gt 0 ]; then
+        files+=("$f")
+        valid_files=$((valid_files + 1))
+        echo "Valid input: $f ($size bytes)" >> variant.log
       else
-        size=$(wc -c < "$f")
-        if [ $size -gt 0 ]; then
-          echo "- Valid input file: $f ($size bytes)" >> variant.log
-          files+=("$f")
-          valid_files=$((valid_files + 1))
-        else
-          echo "WARNING: Empty input file: $f" >> variant.log
-        fi
+        echo "ERROR: Empty input file: $f" >> variant.log
+        exit 1
       fi
     done
 
-    # Skip condition 4: No valid input files
     if [ $valid_files -eq 0 ]; then
-      echo "ERROR: No valid input files available" >> variant.log
-      echo "NO_VALID_INPUTS" > variants/skipped.txt
-      echo "<h1>Variant calling skipped - no valid input files</h1>" > variants/skipped.html
-      exit 0
+      echo "ERROR: No valid input files" >> variant.log
+      ensure_output "failed"
+      exit 1
     fi
 
-    # Skip condition 5: Odd number of input files
     if [ $((valid_files % 2)) -ne 0 ]; then
-      echo "ERROR: Odd number of valid input files ($valid_files) - need pairs" >> variant.log
-      echo "ODD_INPUT_COUNT" > variants/skipped.txt
-      echo "<h1>Variant calling skipped - odd number of input files</h1>" > variants/skipped.html
-      exit 0
+      echo "ERROR: Odd number of input files (needs pairs)" >> variant.log
+      ensure_output "failed"
+      exit 1
     fi
 
-    # Verify reference genome
-    ref_size=$(wc -c < "~{reference_genome}")
-    echo "- Reference genome: ~{reference_genome} ($ref_size bytes)" >> variant.log
-    if [ $ref_size -eq 0 ]; then
-      echo "ERROR: Reference genome file is empty" >> variant.log
-      echo "EMPTY_REFERENCE" > variants/skipped.txt
-      echo "<h1>Variant calling skipped - empty reference genome</h1>" > variants/skipped.html
-      exit 0
+    if [ ! -f "~{reference_genome}" ]; then
+      echo "ERROR: Reference genome not found" >> variant.log
+      ensure_output "failed"
+      exit 1
     fi
 
-    # Prepare for variant calling
-    RESULTS_TEMP=$(mktemp) || { echo "ERROR: Failed to create temporary file" >> variant.log; exit 1; }
+    # Create initial empty HTML as placeholder
+    ensure_output "running"
+
+    # Process samples
+    RESULTS_TEMP=$(mktemp) || { echo "ERROR: Failed to create temp file" >> variant.log; exit 1; }
     echo -e "Sample\tStatus\tSNPs\tINDELs\tTotal" > "$RESULTS_TEMP"
     processed_samples=0
 
-    # Process each sample pair
-    for ((i=0; i<"${#files[@]}"; i+=2)); do
+    for ((i=0; i<${#files[@]}; i+=2)); do
       R1="${files[i]}"
       R2="${files[i+1]}"
-      SAMPLE_NAME=$(basename "$R1" | sed 's/_1.fastq.gz//; s/_1.trim.fastq.gz//; s/_R1.*//; s/_1.*//')
+      SAMPLE_NAME=$(basename "$R1" | sed 's/[._][Rr]1.*//; s/[._]1.*//; s/[._][12].*//')
       SAMPLE_DIR="variants/$SAMPLE_NAME"
 
       mkdir -p "$SAMPLE_DIR" || {
-        echo "ERROR: Failed to create directory for sample $SAMPLE_NAME" >> variant.log
+        echo "ERROR: Failed to create directory for $SAMPLE_NAME" >> variant.log
         echo -e "$SAMPLE_NAME\tfailed\t0\t0\t0" >> "$RESULTS_TEMP"
         continue
       }
@@ -1952,18 +1968,18 @@ task VARIANT_CALLING {
       fi
 
       if ! cp "~{reference_genome}" "$ref_path"; then
-        echo "ERROR: Failed to copy reference genome for $SAMPLE_NAME" >> variant.log
+        echo "ERROR: Failed to copy reference for $SAMPLE_NAME" >> variant.log
         STATUS="failed"
       else
         # Run variant calling
         set +e
         snippy --cpus ~{cpu} --minqual ~{min_quality} \
-          --ref "$ref_path" --R1 "$R1" --R2 "$R2" \
-          --outdir "$SAMPLE_DIR" --prefix "$SAMPLE_NAME" --force 2>> variant.log
+               --ref "$ref_path" --R1 "$R1" --R2 "$R2" \
+               --outdir "$SAMPLE_DIR" --prefix "$SAMPLE_NAME" --force 2>> variant.log
         snippy_exit=$?
         set -e
 
-        if [ $snippy_exit -ne 0 ]; then
+        if [ $snippy_exit -ne 0 ] || [ ! -s "$SAMPLE_DIR/$SAMPLE_NAME.vcf" ]; then
           STATUS="failed"
           echo "WARNING: snippy failed for $SAMPLE_NAME (exit $snippy_exit)" >> variant.log
         fi
@@ -1971,108 +1987,78 @@ task VARIANT_CALLING {
 
       # Count variants if successful
       if [ "$STATUS" == "success" ]; then
-        if [ -s "$SAMPLE_DIR/$SAMPLE_NAME.vcf" ]; then
-          SNP_COUNT=$(( $(grep -c 'TYPE=snp' "$SAMPLE_DIR/$SAMPLE_NAME.vcf" || echo 0) ))
-          INDEL_COUNT=$(( $(grep -c 'TYPE=indel' "$SAMPLE_DIR/$SAMPLE_NAME.vcf" || echo 0) ))
-          TOTAL=$(( SNP_COUNT + INDEL_COUNT ))
-
-          if [ $TOTAL -eq 0 ]; then
-            TOTAL_VARIANTS=$(( $(grep -vc '^#' "$SAMPLE_DIR/$SAMPLE_NAME.vcf" || echo 0) ))
-            if [ ${TOTAL_VARIANTS:-0} -gt 0 ]; then
-              echo "NOTE: Found $TOTAL_VARIANTS unclassified variants for $SAMPLE_NAME" >> variant.log
-              SNP_COUNT=$TOTAL_VARIANTS
-              TOTAL=$TOTAL_VARIANTS
-            fi
-          fi
-          processed_samples=$((processed_samples + 1))
-        else
-          STATUS="failed"
-          echo "WARNING: No VCF output for $SAMPLE_NAME" >> variant.log
-        fi
+        SNP_COUNT=$(grep -c 'TYPE=snp' "$SAMPLE_DIR/$SAMPLE_NAME.vcf" 2>/dev/null || echo 0)
+        INDEL_COUNT=$(awk '/TYPE=indel/ {count++} END {print count+0}' "$SAMPLE_DIR/$SAMPLE_NAME.vcf" 2>/dev/null)
+        TOTAL=$((SNP_COUNT + INDEL_COUNT))
+        processed_samples=$((processed_samples + 1))
       fi
 
       echo -e "$SAMPLE_NAME\t$STATUS\t$SNP_COUNT\t$INDEL_COUNT\t$TOTAL" >> "$RESULTS_TEMP"
-      echo "Sample $SAMPLE_NAME: Status=$STATUS, SNPs=$SNP_COUNT, INDELs=$INDEL_COUNT, Total=$TOTAL" >> variant.log
+      echo "Processed $SAMPLE_NAME: Status=$STATUS, SNPs=$SNP_COUNT, INDELs=$INDEL_COUNT, Total=$TOTAL" >> variant.log
     done
 
-    # Generate summary report
+    # Generate final HTML report
     cat > variants/variant_summary.html <<EOF
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Variant Calling Summary</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background-color: #3498db; color: white; }
-        tr:nth-child(even) { background-color: #f2f2f2; }
-        .summary { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-        .success { background-color: #d5f5e3; }
-        .failed { background-color: #fadbd8; }
-        .good { color: #27ae60; }
-        .warning { color: #f39c12; }
-        .bad { color: #e74c3c; }
-    </style>
+  <title>Variant Calling Summary</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+    th { background-color: #3498db; color: white; }
+    tr:nth-child(even) { background-color: #f2f2f2; }
+    .success { color: #27ae60; }
+    .warning { color: #f39c12; }
+    .error { color: #e74c3c; }
+  </style>
 </head>
 <body>
-    <h1>Variant Calling Summary</h1>
-    <div class="summary">
-        <p><strong>Date:</strong> $(date)</p>
-        <p><strong>Reference:</strong> $(basename ~{reference_genome})</p>
-        <p><strong>Samples processed:</strong> $processed_samples of $(( ${#files[@]} / 2 ))</p>
-        <p><strong>Parameters:</strong></p>
-        <ul>
-            <li>Reference type: ~{reference_type}</li>
-            <li>Minimum quality: ~{min_quality}</li>
-            <li>Threads: ~{cpu}</li>
-        </ul>
-    </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Sample</th>
-                <th>Status</th>
-                <th>SNPs</th>
-                <th>INDELs</th>
-                <th>Total Variants</th>
-            </tr>
-        </thead>
-        <tbody>
+  <h1>Variant Calling Summary</h1>
+  <p>Generated: $(date)</p>
+  <p>Samples processed: $processed_samples</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Sample</th>
+        <th>Status</th>
+        <th>SNPs</th>
+        <th>INDELs</th>
+        <th>Total Variants</th>
+      </tr>
+    </thead>
+    <tbody>
 EOF
 
-    while IFS=$'\t' read -r SAMPLE_NAME STATUS SNP_COUNT INDEL_COUNT TOTAL; do
-      if [ "$SAMPLE_NAME" == "Sample" ]; then continue; fi
-
-      if [ "$STATUS" == "failed" ]; then
-        echo "<tr class=\"failed\">" >> variants/variant_summary.html
-        echo "<td>$SAMPLE_NAME</td><td>Failed</td><td>-</td><td>-</td><td>-</td>" >> variants/variant_summary.html
+    while IFS=$'\t' read -r sample status snps indels total; do
+      if [ "$sample" == "Sample" ]; then continue; fi
+      if [ "$status" == "failed" ]; then
+        echo "<tr class=\"error\"><td>$sample</td><td>Failed</td><td>-</td><td>-</td><td>-</td></tr>" >> variants/variant_summary.html
       else
-        if [ $TOTAL -eq 0 ]; then
-          var_class="good"
-        elif [ $TOTAL -lt 100 ]; then
-          var_class="warning"
+        if [ $total -eq 0 ]; then
+          row_class="success"
+        elif [ $total -lt 100 ]; then
+          row_class="warning"
         else
-          var_class="bad"
+          row_class="error"
         fi
-        echo "<tr class=\"success\">" >> variants/variant_summary.html
-        echo "<td>$SAMPLE_NAME</td><td>Success</td><td>$SNP_COUNT</td><td>$INDEL_COUNT</td><td class=\"$var_class\">$TOTAL</td>" >> variants/variant_summary.html
+        echo "<tr><td>$sample</td><td>Success</td><td>$snps</td><td>$indels</td><td class=\"$row_class\">$total</td></tr>" >> variants/variant_summary.html
       fi
-      echo "</tr>" >> variants/variant_summary.html
     done < "$RESULTS_TEMP"
 
     cat >> variants/variant_summary.html <<EOF
-        </tbody>
-    </table>
-    <p>Report generated at $(date)</p>
+    </tbody>
+  </table>
 </body>
 </html>
 EOF
 
-    rm "$RESULTS_TEMP"
+    # Final cleanup
+    rm -f "$RESULTS_TEMP"
     echo "Variant calling completed at $(date)" >> variant.log
-    echo "Processed $processed_samples samples successfully" >> variant.log
+    echo "Output files:" >> variant.log
     find variants -type f -exec ls -lh {} \; >> variant.log 2>/dev/null || true
   >>>
 
@@ -2087,15 +2073,14 @@ EOF
   }
 
   output {
-    Array[File] vcf_files = if do_variant_calling then glob("variants/*/*.vcf") else []
-    Array[File] variant_output = if do_variant_calling then glob("variants/*/*") else []
-    Array[File] variant_dirs = if do_variant_calling then glob("variants/*") else []
-    String variants_dir = "variants"
-    File variant_log = "variant.log"
-    File variant_summary = if do_variant_calling then "variants/variant_summary.html" else "variants/skipped.html"
+    Array[File] vcf_files        = glob("variants/*/*.vcf")
+    Array[File] variant_output   = glob("variants/*/*")
+    Array[File] variant_dirs     = glob("variants/*")
+    File        variant_log      = "variant.log"
+    File        variant_summary  = "variants/variant_summary.html"
+    String      variants_dir     = "variants"
   }
 }
-
 task AMR_PROFILING {
   input {
     Array[File]? assembly_output
@@ -2111,7 +2096,6 @@ task AMR_PROFILING {
     set -euo pipefail
     set -x
 
-    # Initialize directories
     mkdir -p amr_results html_results
     echo "AMR Profiling Analysis Log - $(date)" > amr.log
     echo "===================================" >> amr.log
@@ -2123,7 +2107,6 @@ task AMR_PROFILING {
     echo "- cpu: ~{cpu}" >> amr.log
     echo "===================================" >> amr.log
 
-    # Skip condition 1: User explicitly disabled AMR profiling
     if [ "~{do_amr_profiling}" != "true" ]; then
       echo "AMR profiling disabled by user parameter" >> amr.log
       echo "AMR profiling skipped by user request" > amr_results/skipped.txt
@@ -2131,7 +2114,6 @@ task AMR_PROFILING {
       exit 0
     fi
 
-    # Skip condition 2: No input files provided
     if [ -z "~{sep=' ' assembly_output}" ]; then
       echo "ERROR: No assembly files provided for AMR profiling" >> amr.log
       echo "NO_INPUT_FILES" > amr_results/skipped.txt
@@ -2139,7 +2121,6 @@ task AMR_PROFILING {
       exit 0
     fi
 
-    # Verify input files
     echo "Input files verification:" >> amr.log
     valid_files=0
     for f in ~{sep=' ' assembly_output}; do
@@ -2156,7 +2137,6 @@ task AMR_PROFILING {
       fi
     done
 
-    # Skip condition 3: No valid input files
     if [ $valid_files -eq 0 ]; then
       echo "ERROR: No valid input files available" >> amr.log
       echo "NO_VALID_INPUTS" > amr_results/skipped.txt
@@ -2164,78 +2144,6 @@ task AMR_PROFILING {
       exit 0
     fi
 
-    # HTML template components
-    HTML_HEADER='<!DOCTYPE html>
-<html>
-<head>
-    <title>AMR Profiling Results</title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-        th { background-color: #3498db; color: white; position: sticky; top: 0; }
-        tr:nth-child(even) { background-color: #f2f2f2; }
-        .gene { font-weight: bold; color: #e74c3c; }
-        .antibiotic { font-style: italic; color: #27ae60; }
-        .coverage-high { background-color: #e6ffe6; }
-        .coverage-medium { background-color: #fff9e6; }
-        .coverage-low { background-color: #ffe6e6; }
-        .summary-card {
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 5px;
-            margin: 20px 0;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .error-row { background-color: #f8d7da; }
-    </style>
-</head>
-<body>
-    <h1>Antimicrobial Resistance Profiling Results</h1>
-    <div class="summary-card">
-        <p><strong>Analysis Date:</strong> <span id="analysis-date"></span></p>
-        <p><strong>Database Used:</strong> <span id="database-used"></span></p>
-        <p><strong>Parameters:</strong></p>
-        <ul>
-            <li>Minimum Identity: ~{minid}%</li>
-            <li>Minimum Coverage: ~{mincov}%</li>
-            <li>Threads: ~{cpu}</li>
-        </ul>
-        <p><strong>Samples Processed:</strong> <span id="samples-processed"></span></p>
-    </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Sample</th>
-                <th>Contig</th>
-                <th>Gene</th>
-                <th>%Coverage</th>
-                <th>%Identity</th>
-                <th>Product</th>
-                <th>Antibiotics</th>
-            </tr>
-        </thead>
-        <tbody>'
-
-    HTML_FOOTER='        </tbody>
-    </table>
-    <script>
-        document.getElementById("analysis-date").textContent = new Date().toLocaleString();
-        document.getElementById("database-used").textContent = "~{if use_local_db then "Custom Local Database" else "Standard ResFinder Database"}";
-        document.getElementById("samples-processed").textContent = "'$valid_files'";
-
-        // Add coverage highlighting
-        document.querySelectorAll("td:nth-child(4)").forEach(cell => {
-            const coverage = parseFloat(cell.textContent);
-            if (coverage >= 90) cell.classList.add("coverage-high");
-            else if (coverage >= 70) cell.classList.add("coverage-medium");
-            else cell.classList.add("coverage-low");
-        });
-    </script>
-</body>
-</html>'
-
-    # Database setup
     db_to_use="resfinder"
     if [ "~{use_local_db}" == "true" ]; then
       if [ ! -f "~{local_db}" ]; then
@@ -2245,33 +2153,29 @@ task AMR_PROFILING {
         exit 0
       fi
 
-      echo "Setting up local AMR database" >> amr.log
       mkdir -p /root/abricate/db/resfinder_db
-      if ! cp "~{local_db}" /root/abricate/db/resfinder_db/resfinder.fa; then
+      cp "~{local_db}" /root/abricate/db/resfinder_db/resfinder.fa || {
         echo "ERROR: Failed to copy local database" >> amr.log
         echo "DB_COPY_FAILED" > amr_results/skipped.txt
         echo "<h1>AMR profiling skipped - database setup failed</h1>" > html_results/skipped.html
         exit 0
-      fi
+      }
 
-      if ! abricate --setupdb --db resfinder --debug >> amr.log 2>&1; then
+      abricate --setupdb --db resfinder --debug >> amr.log 2>&1 || {
         echo "ERROR: Failed to setup local AMR database" >> amr.log
         echo "DB_SETUP_FAILED" > amr_results/skipped.txt
         echo "<h1>AMR profiling skipped - database setup failed</h1>" > html_results/skipped.html
         exit 0
-      fi
+      }
     else
-      if ! abricate --list | grep -q "resfinder"; then
-        if ! abricate --setupdb --db resfinder >> amr.log 2>&1; then
-          echo "ERROR: Failed to setup resfinder database" >> amr.log
-          echo "DB_SETUP_FAILED" > amr_results/skipped.txt
-          echo "<h1>AMR profiling skipped - database setup failed</h1>" > html_results/skipped.html
-          exit 0
-        fi
-      fi
+      abricate --list | grep -q "resfinder" || abricate --setupdb --db resfinder >> amr.log 2>&1 || {
+        echo "ERROR: Failed to setup resfinder database" >> amr.log
+        echo "DB_SETUP_FAILED" > amr_results/skipped.txt
+        echo "<h1>AMR profiling skipped - database setup failed</h1>" > html_results/skipped.html
+        exit 0
+      }
     fi
 
-    # Process each assembly file
     processed_samples=0
     for asm_file in ~{sep=' ' assembly_output}; do
       [ ! -f "$asm_file" ] && continue
@@ -2279,114 +2183,51 @@ task AMR_PROFILING {
 
       sample_name=$(basename "$asm_file" | sed 's/\.[^.]*$//' | sed 's/_contigs//')
       output_file="amr_results/${sample_name}_amr.tsv"
-      html_file="html_results/${sample_name}_amr.html"
 
-      echo "Processing $sample_name" >> amr.log
-
-      # Run AMR profiling with error handling
-      set +e
       abricate \
         --db $db_to_use \
         --minid ~{minid} \
         --mincov ~{mincov} \
         --threads ~{cpu} \
         --csv \
-        "$asm_file" > "${output_file}.tmp" 2>> amr.log
-      status=$?
-      set -e
-
-      if [ $status -ne 0 ] || [ ! -s "${output_file}.tmp" ]; then
-        echo "WARNING: AMR profiling failed for $sample_name" >> amr.log
-        echo -e "SAMPLE\tCONTIG\tSTART\tEND\tSTRAND\tGENE\tCOVERAGE\t%COVERAGE\t%IDENTITY\tACCESSION\tPRODUCT\tRESISTANCE" > "$output_file"
-        echo -e "$sample_name\tERROR\tERROR\tERROR\tERROR\tERROR\tERROR\tERROR\tERROR\tERROR\tERROR\tERROR" >> "$output_file"
-      else
-        # Process successful output
-        awk -v sample="$sample_name" '
-        BEGIN {
-          FS=",";
-          OFS="\t";
-          print "SAMPLE\tCONTIG\tSTART\tEND\tSTRAND\tGENE\tCOVERAGE\t%COVERAGE\t%IDENTITY\tACCESSION\tPRODUCT\tRESISTANCE";
+        "$asm_file" > "${output_file}.tmp" 2>> amr.log || {
+          echo "WARNING: AMR profiling failed for $sample_name" >> amr.log
+          echo -e "SAMPLE\tCONTIG\tGENE\t%COVERAGE\t%IDENTITY\tPRODUCT\tRESISTANCE" > "$output_file"
+          echo -e "$sample_name\tERROR\tERROR\tERROR\tERROR\tERROR\tERROR" >> "$output_file"
+          continue
         }
-        NR==1 { next }
-        {
-          resistance = $16;
-          gsub(/"/, "", resistance);
-          if (resistance == "") resistance = "N/A";
-          print sample, $3, $4, $5, $6, $7, $9, $11, $12, $14, $15, resistance;
-        }' "${output_file}.tmp" > "$output_file"
-        processed_samples=$((processed_samples + 1))
-      fi
+
+      awk -F',' -v sample="$sample_name" '
+      NR==1 {
+        for (i=1; i<=NF; i++) {
+          h = $i; gsub(/^#*/,"",h); gsub(/"/,"",h); gsub(/^[[:space:]]+|[[:space:]]+$/, "", h); H[h]=i
+        }
+        OFS="\t"
+        print "SAMPLE","CONTIG","GENE","%COVERAGE","%IDENTITY","PRODUCT","RESISTANCE"
+        next
+      }
+      {
+        contig = (H["SEQUENCE"] ? $(H["SEQUENCE"]) : "NA")
+        gene   = (H["GENE"] ? $(H["GENE"]) : "NA")
+        pcov   = (H["%COVERAGE"] ? $(H["%COVERAGE"]) : (H["COVERAGE"] ? $(H["COVERAGE"]) : "NA"))
+        pid    = (H["%IDENTITY"] ? $(H["%IDENTITY"]) : "NA")
+        prod   = (H["PRODUCT"] ? $(H["PRODUCT"]) : "NA")
+        res    = (H["RESISTANCE"] ? $(H["RESISTANCE"]) : "N/A")
+
+        gsub(/"/,"",contig); gsub(/"/,"",gene); gsub(/"/,"",pcov); gsub(/"/,"",pid); gsub(/"/,"",prod); gsub(/"/,"",res)
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", contig)
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", gene)
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", pcov)
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", pid)
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", prod)
+        gsub(/^[[:space:]]+|[[:space:]]+$/, "", res)
+
+        print sample, contig, gene, pcov, pid, prod, res
+      }' "${output_file}.tmp" > "$output_file"
+
+      processed_samples=$((processed_samples + 1))
       rm -f "${output_file}.tmp"
-
-      # Generate HTML report for this sample
-      {
-        echo "$HTML_HEADER"
-
-        if grep -q "ERROR" "$output_file"; then
-          echo "<tr class=\"error-row\">"
-          echo "<td colspan=\"7\">AMR profiling failed for $sample_name</td>"
-          echo "</tr>"
-        else
-          tail -n +2 "$output_file" | while IFS=$'\t' read -r _ contig start end strand gene coverage pct_cov pct_id accession product resistance; do
-            echo "<tr>"
-            echo "<td>$sample_name</td>"
-            echo "<td>$contig</td>"
-            echo "<td class=\"gene\">$gene</td>"
-            echo "<td>$pct_cov</td>"
-            echo "<td>$pct_id</td>"
-            echo "<td>$product</td>"
-            echo "<td class=\"antibiotic\">$resistance</td>"
-            echo "</tr>"
-          done
-        fi
-
-        echo "$HTML_FOOTER"
-      } > "$html_file"
     done
-
-    # Generate combined reports if we processed any samples
-    if [ $processed_samples -gt 0 ]; then
-      echo -e "SAMPLE\tCONTIG\tSTART\tEND\tSTRAND\tGENE\tCOVERAGE\t%COVERAGE\t%IDENTITY\tACCESSION\tPRODUCT\tRESISTANCE" > amr_results/combined_amr.tsv
-      for tsv_file in amr_results/*_amr.tsv; do
-        tail -n +2 "$tsv_file" >> amr_results/combined_amr.tsv
-      done
-
-      {
-        echo "$HTML_HEADER"
-
-        while IFS=$'\t' read -r sample contig start end strand gene coverage pct_cov pct_id accession product resistance; do
-          if [ "$sample" == "SAMPLE" ]; then continue; fi
-
-          if [[ "$gene" == *"ERROR"* ]]; then
-            echo "<tr class=\"error-row\">"
-            echo "<td>$sample</td>"
-            echo "<td colspan=\"6\">AMR profiling failed</td>"
-            echo "</tr>"
-          else
-            echo "<tr>"
-            echo "<td>$sample</td>"
-            echo "<td>$contig</td>"
-            echo "<td class=\"gene\">$gene</td>"
-            echo "<td>$pct_cov</td>"
-            echo "<td>$pct_id</td>"
-            echo "<td>$product</td>"
-            echo "<td class=\"antibiotic\">$resistance</td>"
-            echo "</tr>"
-          fi
-        done < amr_results/combined_amr.tsv
-
-        echo "$HTML_FOOTER"
-      } > html_results/combined_amr.html
-    else
-      echo "ERROR: No samples processed successfully" >> amr.log
-      echo "NO_SUCCESSFUL_SAMPLES" > amr_results/combined_amr.tsv
-      echo "<h1>No samples processed successfully</h1>" > html_results/combined_amr.html
-    fi
-
-    echo "AMR profiling completed at $(date)" >> amr.log
-    echo "Processed $processed_samples samples successfully" >> amr.log
-    echo "Output files:" >> amr.log
-    ls -lh amr_results/* html_results/* >> amr.log 2>&1 || true
   >>>
 
   runtime {
@@ -2405,6 +2246,7 @@ task AMR_PROFILING {
     File amr_log = "amr.log"
   }
 }
+
 task MGE_ANALYSIS {
   input {
     Array[File]? assembly_output
@@ -3289,6 +3131,9 @@ task TREE_VISUALIZATION {
       fi
     fi
 
+    export TITLE
+    export color_scheme_val
+
     python3 <<EOF
   import os
   from ete3 import Tree, TreeStyle, NodeStyle, TextFace
@@ -3383,7 +3228,7 @@ task TREE_VISUALIZATION {
 
 
   runtime {
-    docker: "quay.io/biocontainers/ete3:3.1.3--pyh3252c3a_0"
+    docker: "gmboowa/ete3-render:1.14"
     memory: "8 GB"
     cpu: 2
     disks: "local-disk 20 HDD"
