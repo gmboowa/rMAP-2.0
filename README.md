@@ -15,17 +15,20 @@ This tool provides a ready-to-use environment for rMAP, a bioinformatics pipelin
 This pipeline is written in **Workflow Description Language (WDL)**, utilizes **Docker containers** for tool standardization & is designed to run on the **Cromwell execution engine**.
 
 ## Features
-- Adapter trimming with Trimmomatic  
-- FastQC-based quality control  
-- Megahit-based genome assembly  
-- Prokka for genome annotation  
-- Snippy for variant calling  
-- MLST profiling  
-- Roary for pangenome construction  
-- FastTree for phylogenetic inference  
-- Abricate for AMR & Virulence profiling & MGE detection  
-- BLAST analysis  
-- Visualize phylogenetic trees 
+
+- Adapter trimming with **Trimmomatic**  
+- Quality control using **FastQC** & **MultiQC**  
+- Genome assembly using **MEGAHIT**  
+- Genome annotation with **Prokka**  
+- Variant calling using **Snippy**  
+- **MLST** profiling for sequence typing  
+- **Roary** for pangenome construction  
+- Phylogenetic inference using **FastTree**  
+- AMR, virulence, & MGE detection with **Abricate**  
+- Sequence similarity search using **BLAST**  
+- Phylogenetic tree visualization with **ETE3**
+- Generation of a consolidated interactive **HTML report** summarizing all key outputs  
+
 
 
 ---
@@ -83,18 +86,22 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 ---
 
 ## Output structure
-- `trimmed/` – trimmed FASTQ files  
-- `qc_reports/` – FastQC reports  
-- `assembly/` – final contigs from Megahit  
-- `annotation_results/` – Prokka annotations  
-- `mlst_results/` – MLST profiles  
-- `variants/` – VCFs from Snippy  
-- `amr_results/` – AMR gene matches  
-- `mge_results/` – MGE prediction  
-- `pangenome_results/` – Roary files  
-- `phylogeny_results/` – Newick trees  
-- `remote_blast_results/` – BLAST XML files  
-- `tree.png` – Image of the phylogenetic trees  
+
+- `trimmed/` – Trimmed FASTQ files  
+- `qc_reports/` – FastQC and MultiQC reports  
+- `assembly/` – Final contigs from MEGAHIT  
+- `annotation_results/` – Prokka annotation files (`*.gff`, `*.gbk`)  
+- `mlst_results/` – MLST profiles (`*.tsv`, `*.txt`)  
+- `variants/` – Variant calls in VCF format from Snippy  
+- `amr_results/` – Antimicrobial resistance gene matches  
+- `mge_results/` – Mobile genetic element predictions  
+- `virulence_results/` – Virulence gene predictions  
+- `pangenome_results/` – Roary output files including `gene_presence_absence.csv` and `core_gene_alignment.aln`  
+- `phylogeny_results/` – Newick tree files (`*.nwk`) and PDFs of core/accessory trees  
+- `blast_results/` – Top BLAST hits in XML and TSV formats  
+- `tree_visualization/` – Tree image visualizations from ETE3 (`*.png`)  
+- `merged_reports/` – Final summary report (`index.html`), logs, & combined tables  
+
 
 
 ---
@@ -179,6 +186,7 @@ Validate your JSON at: 'https://jsonlint.com/'
 After successful execution of the `rMAP` pipeline using WDL + Cromwell + Docker, your output directory will contain subdirectories corresponding to each major analysis module. Below is the typical hierarchy:
 
 ```bash
+
 rMAP_outputs/
 ├── call-CONFIGURATION/
 ├── call-TRIMMING/
@@ -195,8 +203,8 @@ rMAP_outputs/
 ├── call-ACCESSORY_PHYLOGENY/
 ├── call-CORE_PHYLOGENY/
 ├── call-TREE_VISUALIZATION/
+├── call-MERGE_REPORTS/ 
 ```
-
 Each `call-*` directory contains:
 - `execution/` – Shell scripts & logs for the task.
 - `stdout` / `stderr` – Standard output & error logs.
