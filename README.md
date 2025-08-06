@@ -159,7 +159,7 @@ Validate your JSON at: 'https://jsonlint.com/'
 |---------------------|---------------|----------------------------------------|
 | Trimming            | Trimmomatic   | `staphb/trimmomatic:0.39`             |
 | QC                  | FastQC        | `staphb/fastqc:0.11.9`                |
-| Assembly            | Megahit       | `quay.io/biocontainers/megahit:1.2.9--h2e03b76_1` |
+| Assembly            | Megahit       | `quay.io/biocontainers/megahit:1.2.9--h5ca1c30_6` |
 | Annotation          | Prokka        | `staphb/prokka:1.14.6`                |
 | Variant Calling     | Snippy        | `staphb/snippy:4.6.0`                 |
 | MLST                | MLST          | `staphb/mlst:2.19.0`                  |
