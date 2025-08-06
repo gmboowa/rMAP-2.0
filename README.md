@@ -205,22 +205,23 @@ Each `call-*` directory contains:
 
 ## Example Outputs by Module
 
-| Module                   | Key output files                                                 |
-|--------------------------|------------------------------------------------------------------|
-| `TRIMMING`               | Trimmed FASTQ files  (`*.fastq.gz`)                              |
-| `QUALITY_CONTROL`        | MultiQC reports, FastQC files (`*.zip`, `*.html`)                |
-| `ASSEMBLY`               | Assembled contigs (`*.fasta`)                                    |
-| `VARIANT_CALLING`        | VCF files (`*.vcf`)                                              |
-| `AMR_PROFILING`          | Resistance profiles (`*.txt`, `*.tsv`)                           |
-| `MLST`                   | MLST profiles  (`*.txt`, `*.tsv`)                                |
-| `MGE_ANALYSIS`           | Mobile genetic element annotations  (`*.txt`, `*.tsv`)           |
-| `VIRULENCE_ANALYSIS`     | Virulence gene predictions  (`*.txt`, `*.tsv`)                   |
-| `ANNOTATION`             | Genomic feature annotations (`*.gff`, `*.gbk`)                   |
-| `BLAST_ANALYSIS`         | Top BLAST hits (`*.tsv`, `*.xml`)                                |
-| `PANGENOME`              | Roary outputs: `gene_presence_absence.csv`, `core_gene_alignment.aln` |
-| `ACCESSORY_PHYLOGENY`    | Phylogenetic tree for accessory genes (`*.nwk`, `*.pdf`)         |
-| `CORE_PHYLOGENY`         | Core genome tree & alignment files (`*.nwk`, `*.pdf`)            |
-| `TREE_VISUALIZATION`     | Tree visualization using ETE3 and Python3 (`*.png`)              |
+| Module                | Key output files                                                                                                                                                       |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `TRIMMING`            | Trimmed FASTQ files (`*.fastq.gz`)                                                                                                                                     |
+| `QUALITY_CONTROL`     | MultiQC reports, FastQC files (`*.zip`, `*.html`)                                                                                                                      |
+| `ASSEMBLY`            | Assembled contigs (`*.fasta`)                                                                                                                                          |
+| `VARIANT_CALLING`     | VCF files (`*.vcf`)                                                                                                                                                    |
+| `AMR_PROFILING`       | Resistance profiles (`*.txt`, `*.tsv`)                                                                                                                                 |
+| `MLST`                | MLST profiles (`*.txt`, `*.tsv`)                                                                                                                                       |
+| `MGE_ANALYSIS`        | Mobile genetic element annotations (`*.txt`, `*.tsv`)                                                                                                                  |
+| `VIRULENCE_ANALYSIS`  | Virulence gene predictions (`*.txt`, `*.tsv`)                                                                                                                          |
+| `ANNOTATION`          | Genomic feature annotations (`*.gff`, `*.gbk`)                                                                                                                         |
+| `BLAST_ANALYSIS`      | Top BLAST hits (`*.tsv`, `*.xml`)                                                                                                                                      |
+| `PANGENOME`           | Roary outputs: `gene_presence_absence.csv`, `core_gene_alignment.aln`                                                                                                  |
+| `ACCESSORY_PHYLOGENY` | Phylogenetic tree for accessory genes (`*.nwk`, `*.pdf`)                                                                                                               |
+| `CORE_PHYLOGENY`      | Core genome tree & alignment files (`*.nwk`, `*.pdf`)                                                                                                                  |
+| `TREE_VISUALIZATION`  | Tree visualization using ETE3 and Python3 (`*.png`)                                                                                                                    |
+| `MERGE_REPORTS`       | Consolidated report (`final_report.html`), assets (`assets/*`), combined summaries (`*.tsv`, `*.csv`), pipeline summary (`pipeline_summary.json`)|
 
 ## Note on BLAST usage
 If you are analyzing many samples, we recommend setting up a local BLAST nucleotide database specifically for ESKAPEE pathogens. This setup requires approximately 70 GB of disk space.
