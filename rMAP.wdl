@@ -2096,6 +2096,7 @@ task AMR_PROFILING {
     set -euo pipefail
     set -x
 
+    # Initialize directories
     mkdir -p amr_results html_results
     echo "AMR Profiling Analysis Log - $(date)" > amr.log
     echo "===================================" >> amr.log
@@ -2107,6 +2108,64 @@ task AMR_PROFILING {
     echo "- cpu: ~{cpu}" >> amr.log
     echo "===================================" >> amr.log
 
+    # HTML template components
+    HTML_HEADER='<!DOCTYPE html>
+<html>
+<head>
+    <title>AMR Profiling Results</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #3498db; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .gene { font-weight: bold; color: #e74c3c; }
+        .antibiotic { font-style: italic; color: #27ae60; }
+        .coverage-high { background-color: #e6ffe6; }
+        .coverage-medium { background-color: #fff9e6; }
+        .coverage-low { background-color: #ffe6e6; }
+        .summary-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error-row { background-color: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>Antimicrobial Resistance Profiling Results</h1>
+    <div class="summary-card">
+        <p><strong>Analysis Date:</strong> $(date)</p>
+        <p><strong>Database Used:</strong> ~{if use_local_db then "Custom" else "ResFinder"}</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li>Minimum Identity: ~{minid}%</li>
+            <li>Minimum Coverage: ~{mincov}%</li>
+            <li>Threads: ~{cpu}</li>
+        </ul>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Contig</th>
+                <th>Gene</th>
+                <th>%Coverage</th>
+                <th>%Identity</th>
+                <th>Product</th>
+                <th>Resistance</th>
+            </tr>
+        </thead>
+        <tbody>'
+
+    HTML_FOOTER='        </tbody>
+    </table>
+</body>
+</html>'
+
+    # Skip condition 1: User explicitly disabled AMR profiling
     if [ "~{do_amr_profiling}" != "true" ]; then
       echo "AMR profiling disabled by user parameter" >> amr.log
       echo "AMR profiling skipped by user request" > amr_results/skipped.txt
@@ -2114,6 +2173,7 @@ task AMR_PROFILING {
       exit 0
     fi
 
+    # Skip condition 2: No input files provided
     if [ -z "~{sep=' ' assembly_output}" ]; then
       echo "ERROR: No assembly files provided for AMR profiling" >> amr.log
       echo "NO_INPUT_FILES" > amr_results/skipped.txt
@@ -2121,6 +2181,7 @@ task AMR_PROFILING {
       exit 0
     fi
 
+    # Verify input files
     echo "Input files verification:" >> amr.log
     valid_files=0
     for f in ~{sep=' ' assembly_output}; do
@@ -2137,6 +2198,7 @@ task AMR_PROFILING {
       fi
     done
 
+    # Skip condition 3: No valid input files
     if [ $valid_files -eq 0 ]; then
       echo "ERROR: No valid input files available" >> amr.log
       echo "NO_VALID_INPUTS" > amr_results/skipped.txt
@@ -2183,6 +2245,9 @@ task AMR_PROFILING {
 
       sample_name=$(basename "$asm_file" | sed 's/\.[^.]*$//' | sed 's/_contigs//')
       output_file="amr_results/${sample_name}_amr.tsv"
+      html_file="html_results/${sample_name}_amr.html"
+
+      echo "Processing $sample_name" >> amr.log
 
       abricate \
         --db $db_to_use \
@@ -2194,6 +2259,14 @@ task AMR_PROFILING {
           echo "WARNING: AMR profiling failed for $sample_name" >> amr.log
           echo -e "SAMPLE\tCONTIG\tGENE\t%COVERAGE\t%IDENTITY\tPRODUCT\tRESISTANCE" > "$output_file"
           echo -e "$sample_name\tERROR\tERROR\tERROR\tERROR\tERROR\tERROR" >> "$output_file"
+
+          # Create error HTML
+          {
+            echo "$HTML_HEADER"
+            echo "<tr class=\"error-row\"><td colspan=\"7\">AMR profiling failed for $sample_name</td></tr>"
+            echo "$HTML_FOOTER"
+          } > "$html_file"
+
           continue
         }
 
@@ -2225,9 +2298,78 @@ task AMR_PROFILING {
         print sample, contig, gene, pcov, pid, prod, res
       }' "${output_file}.tmp" > "$output_file"
 
+      # Generate HTML report for this sample
+      {
+        echo "$HTML_HEADER"
+
+        # Skip header line in TSV
+        tail -n +2 "$output_file" | while IFS=$'\t' read -r sample contig gene coverage identity product resistance; do
+          if [[ "$gene" == *"ERROR"* ]]; then
+            echo "<tr class=\"error-row\">"
+            echo "<td>$sample</td>"
+            echo "<td colspan=\"6\">AMR profiling failed</td>"
+            echo "</tr>"
+          else
+            echo "<tr>"
+            echo "<td>$sample</td>"
+            echo "<td>$contig</td>"
+            echo "<td class=\"gene\">$gene</td>"
+            echo "<td>$coverage</td>"
+            echo "<td>$identity</td>"
+            echo "<td>$product</td>"
+            echo "<td class=\"antibiotic\">$resistance</td>"
+            echo "</tr>"
+          fi
+        done
+
+        echo "$HTML_FOOTER"
+      } > "$html_file"
+
       processed_samples=$((processed_samples + 1))
       rm -f "${output_file}.tmp"
     done
+
+    # Generate combined reports
+    if [ $processed_samples -gt 0 ]; then
+      echo -e "SAMPLE\tCONTIG\tGENE\t%COVERAGE\t%IDENTITY\tPRODUCT\tRESISTANCE" > amr_results/combined_amr.tsv
+      for tsv_file in amr_results/*_amr.tsv; do
+        tail -n +2 "$tsv_file" >> amr_results/combined_amr.tsv
+      done
+
+      {
+        echo "$HTML_HEADER"
+
+        while IFS=$'\t' read -r sample contig gene coverage identity product resistance; do
+          if [ "$sample" == "SAMPLE" ]; then continue; fi
+
+          if [[ "$gene" == *"ERROR"* ]]; then
+            echo "<tr class=\"error-row\">"
+            echo "<td>$sample</td>"
+            echo "<td colspan=\"6\">AMR profiling failed</td>"
+            echo "</tr>"
+          else
+            echo "<tr>"
+            echo "<td>$sample</td>"
+            echo "<td>$contig</td>"
+            echo "<td class=\"gene\">$gene</td>"
+            echo "<td>$coverage</td>"
+            echo "<td>$identity</td>"
+            echo "<td>$product</td>"
+            echo "<td class=\"antibiotic\">$resistance</td>"
+            echo "</tr>"
+          fi
+        done < amr_results/combined_amr.tsv
+
+        echo "$HTML_FOOTER"
+      } > html_results/combined_amr.html
+    else
+      echo "ERROR: No samples processed successfully" >> amr.log
+      echo "NO_SUCCESSFUL_SAMPLES" > amr_results/combined_amr.tsv
+      echo "<h1>No samples processed successfully</h1>" > html_results/combined_amr.html
+    fi
+
+    echo "AMR profiling completed at $(date)" >> amr.log
+    echo "Processed $processed_samples samples successfully" >> amr.log
   >>>
 
   runtime {
