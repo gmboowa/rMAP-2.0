@@ -29,8 +29,6 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 - Phylogenetic tree visualization with **ETE3**
 - Generation of a consolidated interactive **HTML report** summarizing all key outputs  
 
-
-
 ---
 
 ## Requirements
@@ -73,9 +71,14 @@ java -jar cromwell.jar run rMAP.wdl --inputs inputs.json
 To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accordingly.
 
 ---
-### Note on pangenome & phylogenetic tree construction
+### Configuration guidance
 
-- Pangenome analysis (Roary): Requires at least 3 annotated genome assemblies (in GFF3 format) for meaningful core/accessory genome separation.
+- For the pipeline to execute successfully, the following tasks must be enabled at a minimum: Trimming, Assembly & Reporting.
+
+
+### Note on pangenome & phylogenetic tree construction 
+
+- Pangenome analysis (Roary): Requires at least 2 annotated genome assemblies (in GFF3 format) for meaningful core/accessory genome separation.
 
 - Phylogenetic tree construction (FastTree): Minimum of 4 samples is recommended to create a useful & interpretable tree. With fewer genomes, tree resolution & branching may be trivial or misleading.
   
@@ -250,15 +253,6 @@ Certain analysis modules require minimum sample numbers to function properly:
 | **Phylogenetic analysis** (Core/Accessory) | 4 | Meaningful tree topology & bootstrap support | `"rMAP.do_phylogeny": false` |
 | **Pangenome analysis**  | 2               | Genome comparisons               | `"rMAP.do_pangenome": false`       |
 
-### Configuration guidance
-
-```json
-
-
-- **Pangenome analysis** requires at least **2 samples**.
-- **Phylogeny analysis** requires at least **4 samples**.
-
-```
 
 ### Building a Local ESKAPEE BLAST database from RefSeq
 
