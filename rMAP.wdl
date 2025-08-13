@@ -17,7 +17,7 @@ workflow rMAP {
     Boolean do_mge_analysis = true
     Boolean do_reporting = true
     Boolean do_blast = true
-    Boolean use_local_blast = true
+    Boolean use_local_blast = false
     File? local_blast_db
     File? local_amr_db
     File? local_mge_db
@@ -32,21 +32,23 @@ workflow rMAP {
     String phylogeny_model = "-nt -gtr"
     String reference_type = "genbank"
     Int max_cpus = 8
-    Int max_memory_gb = 12
+    Int max_memory_gb = 16
     Int min_assembly_quality = 50
     Int min_read_length = 50
     Int min_mapping_quality = 20
     Int tree_image_width = 1200
     String tree_image_format = "png"
     Int tree_font_size = 8
-
+    File? logo_file
+    Boolean do_virulence = true
     # Derived values with adjusted resources
     Int cpu_4 = if (max_cpus < 4) then max_cpus else 4
-    Int cpu_8 = if (max_cpus < 8) then max_cpus else max_cpus
+    Int cpu_8 = if (max_cpus < 8) then max_cpus else 8
     Int cpu_16 = max_cpus
     Int cpu_2 = if (max_cpus < 2) then max_cpus else 2
     Int mem_8 = if (max_memory_gb < 8) then max_memory_gb else 8
-    Int mem_12 = max_memory_gb
+    Int mem_12 = if (max_memory_gb < 12) then max_memory_gb else 12
+    Int mem_16 = max_memory_gb
   }
 
   meta {
@@ -55,7 +57,7 @@ workflow rMAP {
     workflow_heartbeat_ttl: "30 minutes"
     allowNestedInputs: true
     maxRetries: 3
-    continueOnReturnCode: [0, 1]
+    continueOnReturnCode: "0,1"
     author: "Gerald Mboowa, Ivan Sserwadda & Stephen Kanyerezi"
     email: "gmboowa@gmail.com | ivangunz23@gmail.com | kanyerezi30@gmail.com"
   }
@@ -88,7 +90,7 @@ workflow rMAP {
       assembler = "megahit",
       do_assembly = do_assembly,
       cpu = cpu_8,
-      memory_gb = mem_12,
+      memory_gb = mem_16,
       min_quality = min_assembly_quality
   }
 
@@ -96,7 +98,8 @@ workflow rMAP {
     input:
       assembly_output = ASSEMBLY.assembly_output,
       do_annotation = do_annotation,
-      cpu = cpu_8
+      cpu = cpu_8,
+      memory_gb = mem_16
   }
 
   call MLST {
@@ -113,6 +116,7 @@ workflow rMAP {
       do_variant_calling = do_variant_calling,
       reference_type = reference_type,
       cpu = cpu_8,
+      memory_gb = mem_12,
       min_quality = min_mapping_quality
   }
 
@@ -121,7 +125,7 @@ workflow rMAP {
       annotation_input = ANNOTATION.annotation_output,
       do_pangenome = do_pangenome,
       cpu = cpu_8,
-      memory_gb = mem_12,
+      memory_gb = mem_16,
       output_prefix = "rMAP_pangenome"
   }
 
@@ -143,20 +147,22 @@ workflow rMAP {
       cpu = cpu_4
   }
 
-  call VIRULENCE_ANALYSIS {
-    input:
-      assembly_output = ASSEMBLY.assembly_output,
-      db_name = virulence_db,
-      local_db = local_virulence_db,
-      use_local_db = use_local_blast,
-      min_coverage = virulence_min_cov,
-      min_identity = virulence_min_id,
-      cpu = cpu_2
+  if (do_virulence) {
+    call VIRULENCE_ANALYSIS {
+      input:
+        assembly_output = ASSEMBLY.assembly_output,
+        db_name = virulence_db,
+        local_db = local_virulence_db,
+        use_local_db = use_local_blast,
+        min_coverage = virulence_min_cov,
+        min_identity = virulence_min_id,
+        cpu = cpu_2
+    }
   }
 
   call BLAST_ANALYSIS {
     input:
-      contig_fastas = ASSEMBLY.assembly_output,  # Direct array
+      contig_fastas = ASSEMBLY.assembly_output,
       blast_db = blast_db,
       local_blast_db = local_blast_db,
       use_local_blast = use_local_blast,
@@ -175,7 +181,7 @@ workflow rMAP {
         do_phylogeny = true,
         model = phylogeny_model,
         cpu = cpu_8,
-        memory_gb = mem_12,
+        memory_gb = mem_16,
         tree_prefix = "core_genes",
         bootstrap_replicates = 100
     }
@@ -186,56 +192,68 @@ workflow rMAP {
         do_phylogeny = true,
         model = phylogeny_model,
         cpu = cpu_8,
+        memory_gb = mem_16,
         tree_prefix = "accessory_genes",
         bootstrap_replicates = 100
     }
 
-    call TREE_VISUALIZATION as CORE_TREE {
-      input:
-        input_tree  = CORE_PHYLOGENY.phylogeny_tree,
-        width       = tree_image_width,
-        image_format= tree_image_format,
-        font_size   = tree_font_size,
-        tree_title  = "Core Genes Phylogenetic Tree"
+    if (size(CORE_PHYLOGENY.phylogeny_tree, "B") > 10.0) {
+      call TREE_VISUALIZATION as CORE_TREE {
+        input:
+          input_tree   = CORE_PHYLOGENY.phylogeny_tree,
+          width        = tree_image_width,
+          image_format = tree_image_format,
+          font_size    = tree_font_size,
+          tree_title   = "Core Genes Phylogenetic Tree"
+      }
     }
 
-    call TREE_VISUALIZATION as ACCESSORY_TREE {
-      input:
-        input_tree  = ACCESSORY_PHYLOGENY.phylogeny_tree,
-        width       = tree_image_width,
-        image_format= tree_image_format,
-        font_size   = tree_font_size,
-        tree_title  = "Accessory Genes Phylogenetic Tree"
+    if (defined(ACCESSORY_PHYLOGENY.phylogeny_tree) && size(ACCESSORY_PHYLOGENY.phylogeny_tree, "B") > 10.0) {
+      call TREE_VISUALIZATION as ACCESSORY_TREE {
+        input:
+          input_tree   = ACCESSORY_PHYLOGENY.phylogeny_tree,
+          width        = tree_image_width,
+          image_format = tree_image_format,
+          font_size    = tree_font_size,
+          tree_title   = "Accessory Genes Phylogenetic Tree"
+      }
     }
   }
 
-  # --- locals ---
-  Array[File] blast_reports_local = BLAST_ANALYSIS.blast_reports
-  Array[File] tree_images_local = if do_phylogeny then select_all([CORE_TREE.final_image, ACCESSORY_TREE.final_image]) else []
-  File?       pangenome_report_html_local = PANGENOME.pangenome_report
-  File?       gene_heatmap_png_local      = PANGENOME.gene_heatmap
+  Array[File] empty_files = []
 
   if (do_reporting) {
     call MERGE_REPORTS {
       input:
-        trimming_report_html   = TRIMMING.trimming_report,
-        fastqc_summary_html    = QUALITY_CONTROL.fastqc_summary_html,
-        assembly_stats_html    = ASSEMBLY.assembly_stats,
-        annotation_summary_html= ANNOTATION.annotation_summary,
-        pangenome_report_html  = pangenome_report_html_local,
-        gene_heatmap_png       = gene_heatmap_png_local,
-        pangenome_report       = PANGENOME.pangenome_report,
-        gene_heatmap           = PANGENOME.gene_heatmap,
-        mlst_combined_html     = MLST.combined_html,
-        variant_summary_html   = VARIANT_CALLING.variant_summary,
-        amr_combined_html      = AMR_PROFILING.combined_html,
-        mge_combined_html      = MGE_ANALYSIS.html_report,
-        virulence_combined_html= VIRULENCE_ANALYSIS.combined_html,
-        blast_reports          = blast_reports_local,
-        tree_images            = tree_images_local,
-        workflow_name          = "rMAP Analysis Pipeline",
-        version                = "2.0",
-        footer_sentence        = "This report was generated by rMAP 2.0 pipeline"
+        # Core sections
+        quality_reports          = QUALITY_CONTROL.quality_reports,
+        trimming_report_html     = TRIMMING.trimming_report,
+        assembly_stats_html      = ASSEMBLY.assembly_stats,
+        annotation_summary_html  = ANNOTATION.annotation_summary,
+        pangenome_report_html    = PANGENOME.pangenome_report,
+        gene_heatmap_png         = PANGENOME.gene_heatmap,
+        pangenome_report         = PANGENOME.pangenome_report,
+        gene_heatmap             = PANGENOME.gene_heatmap,
+        mlst_combined_html       = MLST.combined_html,
+        variant_summary_html     = VARIANT_CALLING.variant_summary,
+
+        # Per-sample sections
+        amr_reports              = AMR_PROFILING.html_reports,
+        mge_reports              = MGE_ANALYSIS.html_reports,
+        virulence_reports        = if do_virulence then VIRULENCE_ANALYSIS.html_reports else empty_files,
+
+        # BLAST per-sample HTMLs
+        blast_reports            = BLAST_ANALYSIS.blast_reports,
+
+        # Trees (may be empty depending on upstream conditionals)
+        tree_images              = select_all([CORE_TREE.final_image, ACCESSORY_TREE.final_image]),
+
+        # Meta
+        workflow_name            = "rMAP Analysis Pipeline",
+        version                  = "2.0",
+        footer_sentence          = "This report was generated by rMAP 2.0 pipeline",
+        logo_file                = logo_file,
+        skip                     = false
     }
   }
 
@@ -244,48 +262,36 @@ workflow rMAP {
     Array[File] trimmed_reads   = TRIMMING.trimmed_reads
     Array[File] assembly_output = ASSEMBLY.assembly_output
     String      assembly_dir    = ASSEMBLY.assembly_dir_out
-
     Array[File]   annotation_output = ANNOTATION.annotation_output
     Array[String] annotation_dirs   = ANNOTATION.annotation_dirs
-
     Array[File] mlst_output   = MLST.mlst_outputs
     File        combined_mlst = MLST.combined_mlst
-
     Array[File]   variant_output = VARIANT_CALLING.variant_output
     Array[File]   variant_dirs   = VARIANT_CALLING.variant_dirs
     String        variants_dir   = VARIANT_CALLING.variants_dir
-
     File gene_presence_absence = PANGENOME.gene_presence_absence
     File core_alignment        = PANGENOME.core_alignment
     File accessory_alignment   = PANGENOME.accessory_binary
-
-    File core_phylogeny_output      = select_first([CORE_PHYLOGENY.phylogeny_tree, "default_core_tree.nwk"])
-    File accessory_phylogeny_output = select_first([ACCESSORY_PHYLOGENY.phylogeny_tree, "default_accessory_tree.nwk"])
-
-    # New: explicit rendered images + logs (one per tree)
+    File? core_phylogeny_output      = CORE_PHYLOGENY.phylogeny_tree
+    File? accessory_phylogeny_output = ACCESSORY_PHYLOGENY.phylogeny_tree
     File? core_tree_image           = CORE_TREE.final_image
     File? accessory_tree_image      = ACCESSORY_TREE.final_image
     File? core_tree_render_log      = CORE_TREE.render_log
     File? accessory_tree_render_log = ACCESSORY_TREE.render_log
-
     Array[File] amr_output   = AMR_PROFILING.amr_outputs
     File        combined_amr = AMR_PROFILING.combined_amr
-
     File        plasmid_report  = MGE_ANALYSIS.plasmid_report
     Array[File] plasmid_results = MGE_ANALYSIS.sample_reports
-
     Array[File] blast_results = BLAST_ANALYSIS.blast_results
     Array[File] blast_top10   = BLAST_ANALYSIS.blast_top10
     Array[File] blast_logs    = BLAST_ANALYSIS.blast_logs
-
-    Array[File] virulence_reports         = VIRULENCE_ANALYSIS.virulence_reports
-    File        combined_virulence_report = VIRULENCE_ANALYSIS.combined_report
-
-    # Final report
+    Array[File]? virulence_reports         = VIRULENCE_ANALYSIS.virulence_reports
+    File?        combined_virulence_report = VIRULENCE_ANALYSIS.combined_report
     File? final_report_html = MERGE_REPORTS.final_report_html
     File? final_report_tgz  = MERGE_REPORTS.final_report_tgz
   }
 }
+
 
 task CONFIGURATION {
   input {
@@ -316,7 +322,6 @@ task CONFIGURATION {
     String config_output = read_string("config.log")
   }
 }
-
 task TRIMMING {
   input {
     Array[File]+ input_reads
@@ -330,13 +335,37 @@ task TRIMMING {
   command <<<
     set -euo pipefail
 
+    # Function to calculate read statistics
+    calculate_read_stats() {
+      local file=$1
+      local stats_file=$2
+      local read_end=$3
+
+      if [ ! -s "$file" ]; then
+        echo "Metric,${read_end}" >> "$stats_file"
+        echo "Number of reads,0" >> "$stats_file"
+        echo "Average length,0" >> "$stats_file"
+        echo "GC content,0" >> "$stats_file"
+        return
+      fi
+
+      local num_reads=$(zcat "$file" | awk 'END {print NR/4}')
+      local avg_length=$(zcat "$file" | awk 'NR%4==2 {sum+=length($0)} END {print sum/(NR/4)}')
+      local gc_content=$(zcat "$file" | awk 'NR%4==2 {gc+=gsub(/[GC]/, ""); at+=gsub(/[AT]/, "")} END {print (gc/(gc+at))*100}')
+
+      echo "Metric,${read_end}" >> "$stats_file"
+      echo "Number of reads,$num_reads" >> "$stats_file"
+      echo "Average length,$avg_length" >> "$stats_file"
+      echo "GC content,$gc_content" >> "$stats_file"
+    }
+
     if [ "~{skip}" == "true" ]; then
       echo "Skipping trimming process as requested" > trimming_skipped.log
       echo "Creating empty output files for portability" >> trimming_skipped.log
 
       mkdir -p trimmed
+      mkdir -p read_stats
 
-      # Create empty output files for each input pair
       counter=0
       R1=""
       for file in ~{sep=' ' input_reads}; do
@@ -347,19 +376,17 @@ task TRIMMING {
           R1_base=$(basename "$R1")
           sample_name=$(echo "$R1_base" | sed -e 's/[._][Rr]1[._].*//' -e 's/[._]1[._].*//')
 
-          # Create empty output files
           touch "trimmed/${sample_name}_1.trim.fastq.gz"
           touch "trimmed/${sample_name}_2.trim.fastq.gz"
+          touch "read_stats/${sample_name}_stats.csv"
           echo "Created empty output files for sample: $sample_name" >> trimming_skipped.log
         fi
         counter=$((counter + 1))
       done
 
-      # Create empty statistics files
       echo "Sample,Input_Pairs,Both_Surviving,Forward_Only,Reverse_Only,Dropped" > trimming_stats.csv
       echo "0,0,0,0,0" >> trimming_stats.csv
 
-      # Create minimal HTML report
       cat > trimming_report.html <<EOF
 <!DOCTYPE html>
 <html>
@@ -390,7 +417,6 @@ EOF
       exit 0
     fi
 
-    # Debugging: Log input files
     echo "Starting trimming process at $(date)" > trimming.log
     echo "Input files received:" >> trimming.log
     for f in ~{sep=' ' input_reads}; do
@@ -403,11 +429,11 @@ EOF
 
     if [ "~{do_trimming}" == "true" ]; then
       mkdir -p trimmed
+      mkdir -p read_stats
       echo "Trimming parameters:" >> trimming.log
       echo "- CPU: ~{cpu}" >> trimming.log
       echo "- Min length: ~{min_length}" >> trimming.log
 
-      # Initialize statistics file
       echo "Sample,Input_Pairs,Both_Surviving,Forward_Only,Reverse_Only,Dropped" > trimming_stats.csv
 
       counter=0
@@ -422,11 +448,9 @@ EOF
 
           echo "Processing sample: $sample_name (Files: $R1_base and $(basename "$R2"))" >> trimming.log
 
-          # Create temporary log file for this sample
           sample_log="trimmed/${sample_name}.log"
           touch "$sample_log"
 
-          # Run trimmomatic in a subshell to prevent failure from stopping the whole task
           (
             trimmomatic PE -threads ~{cpu} \
               "$R1" "$R2" \
@@ -438,15 +462,12 @@ EOF
               SLIDINGWINDOW:4:20 \
               MINLEN:~{min_length} > "$sample_log" 2>&1 || {
                 echo "WARNING: Trimmomatic failed for sample $sample_name" >> trimming.log
-                # Create empty output files to allow pipeline to continue
                 touch "trimmed/${sample_name}_1.trim.fastq.gz" "trimmed/${sample_name}_2.trim.fastq.gz"
               }
           )
 
-          # Extract statistics from the sample log
           stats_line=$(grep "Input Read Pairs" "$sample_log" || true)
           if [[ -n "${stats_line:-}" ]]; then
-            # Extract numbers using awk
             input_pairs=$(awk '{print $4}' <<< "$stats_line")
             both=$(awk '{print $7}' <<< "$stats_line")
             forward=$(awk '{print $12}' <<< "$stats_line")
@@ -459,11 +480,21 @@ EOF
             echo "WARNING: Could not extract statistics for sample $sample_name" >> trimming.log
           fi
 
-          # Append sample log to main log
+          > "read_stats/${sample_name}_stats.csv"
+
+          if [ -s "trimmed/${sample_name}_1.trim.fastq.gz" ]; then
+            calculate_read_stats "trimmed/${sample_name}_1.trim.fastq.gz" \
+              "read_stats/${sample_name}_stats.csv" "R1"
+          fi
+
+          if [ -s "trimmed/${sample_name}_2.trim.fastq.gz" ]; then
+            calculate_read_stats "trimmed/${sample_name}_2.trim.fastq.gz" \
+              "read_stats/${sample_name}_stats.csv" "R2"
+          fi
+
           cat "$sample_log" >> trimming.log
           rm "$sample_log"
 
-          # Validate output files
           for f in "trimmed/${sample_name}_1.trim.fastq.gz" "trimmed/${sample_name}_2.trim.fastq.gz"; do
             if [ ! -f "$f" ]; then
               echo "Creating empty file for failed sample $sample_name" >> trimming.log
@@ -480,7 +511,6 @@ EOF
         exit 1
       fi
 
-      # Generate HTML report
       cat > trimming_report.html <<EOF
 <!DOCTYPE html>
 <html>
@@ -497,6 +527,12 @@ EOF
         .good { color: #27ae60; }
         .warning { color: #f39c12; }
         .bad { color: #e74c3c; }
+        .stats-table { margin-top: 30px; }
+        .tab { overflow: hidden; border: 1px solid #ccc; background-color: #f1f1f1; }
+        .tab button { background-color: inherit; float: left; border: none; outline: none; cursor: pointer; padding: 14px 16px; transition: 0.3s; }
+        .tab button:hover { background-color: #ddd; }
+        .tab button.active { background-color: #3498db; color: white; }
+        .tabcontent { display: none; padding: 6px 12px; border: 1px solid #ccc; border-top: none; }
     </style>
 </head>
 <body>
@@ -509,37 +545,43 @@ EOF
             <li>Threads: ~{cpu}</li>
         </ul>
     </div>
-    <table>
-        <thead>
-            <tr>
-                <th>Sample</th>
-                <th>Input Pairs</th>
-                <th>Both Surviving</th>
-                <th>Forward Only</th>
-                <th>Reverse Only</th>
-                <th>Dropped</th>
-                <th>Survival Rate</th>
-            </tr>
-        </thead>
-        <tbody>
+
+    <div class="tab">
+        <button class="tablinks active" onclick="openTab(event, 'trimming')">Trimming Stats</button>
+        <button class="tablinks" onclick="openTab(event, 'readstats')">Read Statistics</button>
+    </div>
+
+    <div id="trimming" class="tabcontent" style="display: block;">
+        <h2>Trimming Statistics</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sample</th>
+                    <th>Input Pairs</th>
+                    <th>Both Surviving</th>
+                    <th>Forward Only</th>
+                    <th>Reverse Only</th>
+                    <th>Dropped (%)</th>
+                    <th>Survival Rate (%)</th>
+                </tr>
+            </thead>
+            <tbody>
 EOF
 
-      # Add data rows to HTML
       while IFS=',' read -r sample input both forward reverse dropped; do
-        # Skip header line
         if [ "$sample" == "Sample" ]; then
           continue
         fi
 
-        # Calculate survival rate
         if [ "$input" -gt 0 ]; then
           total_surviving=$((both + forward + reverse))
           survival_rate=$(awk -v ts="$total_surviving" -v i="$input" 'BEGIN {printf "%.2f", ts*100/i}')
+          dropped_rate=$(awk -v d="$dropped" -v i="$input" 'BEGIN {printf "%.2f", d*100/i}')
         else
           survival_rate="0.00"
+          dropped_rate="0.00"
         fi
 
-        # Determine CSS class
         if (( $(awk -v sr="$survival_rate" 'BEGIN {print (sr >= 90)}') )); then
           class="good"
         elif (( $(awk -v sr="$survival_rate" 'BEGIN {print (sr >= 70)}') )); then
@@ -554,15 +596,73 @@ EOF
         echo "                <td>$both</td>" >> trimming_report.html
         echo "                <td>$forward</td>" >> trimming_report.html
         echo "                <td>$reverse</td>" >> trimming_report.html
-        echo "                <td>$dropped</td>" >> trimming_report.html
+        echo "                <td>${dropped_rate}%</td>" >> trimming_report.html
         echo "                <td class=\"$class\">${survival_rate}%</td>" >> trimming_report.html
         echo "            </tr>" >> trimming_report.html
       done < trimming_stats.csv
 
-      # Close HTML
       cat >> trimming_report.html <<EOF
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="readstats" class="tabcontent">
+        <h2>Read Statistics</h2>
+EOF
+
+      for stats_file in read_stats/*_stats.csv; do
+        if [ -f "$stats_file" ]; then
+          sample_name=$(basename "$stats_file" _stats.csv)
+          echo "<h3>Sample: $sample_name</h3>" >> trimming_report.html
+          echo "<table>" >> trimming_report.html
+          echo "<tr><th>Metric</th><th>R1</th><th>R2</th></tr>" >> trimming_report.html
+
+          declare -A r1_values
+          declare -A r2_values
+          current_section=""
+
+          while IFS=',' read -r key value; do
+            if [[ "$key" == "Metric" ]]; then
+              current_section="$value"
+              continue
+            fi
+            if [[ "$current_section" == "R1" ]]; then
+              r1_values["$key"]="$value"
+            elif [[ "$current_section" == "R2" ]]; then
+              r2_values["$key"]="$value"
+            fi
+          done < "$stats_file"
+
+          for metric in "Number of reads" "Average length" "GC content"; do
+            echo "<tr>" >> trimming_report.html
+            echo "<td>${metric}_${sample_name}</td>" >> trimming_report.html
+            echo "<td>${r1_values[$metric]:-N/A}</td>" >> trimming_report.html
+            echo "<td>${r2_values[$metric]:-N/A}</td>" >> trimming_report.html
+            echo "</tr>" >> trimming_report.html
+          done
+
+          echo "</table>" >> trimming_report.html
+        fi
+      done
+
+      cat >> trimming_report.html <<EOF
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tabcontent");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].style.display = "none";
+            }
+            tablinks = document.getElementsByClassName("tablinks");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].className = tablinks[i].className.replace(" active", "");
+            }
+            document.getElementById(tabName).style.display = "block";
+            evt.currentTarget.className += " active";
+        }
+    </script>
 </body>
 </html>
 EOF
@@ -570,12 +670,11 @@ EOF
       echo "Trimming completed successfully at $(date)" >> trimming.log
       echo "Output files created:" >> trimming.log
       ls -lh trimmed/* >> trimming.log
+      ls -lh read_stats/* >> trimming.log
 
-      # Ensure skip marker exists even when not skipping, so outputs never break
       echo "Trimming executed (not skipped) on $(date)" > trimming_skipped.log
     else
       echo "Trimming skipped by user request" > trimming_skipped.txt
-      # Also ensure skip marker exists for outputs
       echo "Trimming skipped on $(date)" > trimming_skipped.log
     fi
   >>>
@@ -585,17 +684,18 @@ EOF
     memory: "8 GB"
     cpu: cpu
     disks: "local-disk 100 HDD"
-    continueOnReturnCode: true
+    continueOnReturnCode: [0, -1]
     preemptible: 2
     timeout: "6 hours"
   }
 
   output {
     Array[File] trimmed_reads = if do_trimming then glob("trimmed/*_[12].trim.fastq.gz") else []
+    Array[File]? read_stats = if do_trimming then glob("read_stats/*_stats.csv") else []
     File? trimming_log = if do_trimming then "trimming.log" else "trimming_skipped.txt"
     File? trimming_stats = if do_trimming then "trimming_stats.csv" else "trimming_skipped.txt"
     File? trimming_report = if do_trimming then "trimming_report.html" else "trimming_skipped.txt"
-    File skip_log = "trimming_skipped.log"
+    File? skip_log = "trimming_skipped.log"
   }
 }
 
@@ -675,6 +775,51 @@ EOF
       fastqc -o qc_reports -t ~{cpu} ~{sep=' ' input_reads} 2>> qc.log
       set -e
 
+      # Generate individual report links file
+      cat > qc_reports/individual_reports.html <<EOF
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Individual QC Reports</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #3498db; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <h2>Individual QC Reports</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Report</th>
+                <th>Raw Data</th>
+            </tr>
+        </thead>
+        <tbody>
+EOF
+
+      # Add entries for each FastQC report
+      for f in qc_reports/*_fastqc.html; do
+        sample=$(basename "$f" | sed 's/_fastqc\.html//')
+        echo "            <tr>" >> qc_reports/individual_reports.html
+        echo "                <td>$sample</td>" >> qc_reports/individual_reports.html
+        echo "                <td><a href=\"$(basename "$f")\">View Report</a></td>" >> qc_reports/individual_reports.html
+        zip_file="${f%.html}.zip"
+        echo "                <td><a href=\"$(basename "$zip_file")\">Download Data</a></td>" >> qc_reports/individual_reports.html
+        echo "            </tr>" >> qc_reports/individual_reports.html
+      done
+
+      cat >> qc_reports/individual_reports.html <<EOF
+        </tbody>
+    </table>
+</body>
+</html>
+EOF
+
       if [ "~{run_multiqc}" == "true" ]; then
         echo "Running MultiQC..." >> qc.log
 
@@ -687,7 +832,7 @@ EOF
 <!DOCTYPE html>
 <html>
 <head>
-    <title>FastQC Summary Report</title>
+    <title>QC Summary Report</title>
     <style>
         body { font-family: Arial, sans-serif; margin: 20px; }
         h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
@@ -698,33 +843,31 @@ EOF
     </style>
 </head>
 <body>
-    <h1>FastQC Summary Report</h1>
+    <h1>QC Summary Report</h1>
     <p>Generated at $(date)</p>
-    <table>
-        <thead>
-            <tr>
-                <th>Sample</th>
-                <th>Report</th>
-                <th>Data</th>
-            </tr>
-        </thead>
-        <tbody>
+    <p><a href="individual_reports.html">View Individual Reports</a></p>
 EOF
 
-          # Add entries for each FastQC report
-          for f in qc_reports/*_fastqc.html; do
-            sample=$(basename "$f" | sed 's/_fastqc\.html//')
-            echo "            <tr>" >> qc_reports/fastqc_summary.html
-            echo "                <td>$sample</td>" >> qc_reports/fastqc_summary.html
-            echo "                <td><a href=\"$(basename "$f")\">HTML Report</a></td>" >> qc_reports/fastqc_summary.html
-            zip_file="${f%.html}.zip"
-            echo "                <td><a href=\"$(basename "$zip_file")\">Raw Data</a></td>" >> qc_reports/fastqc_summary.html
-            echo "            </tr>" >> qc_reports/fastqc_summary.html
+          # Try to extract some basic metrics from FastQC data
+          for f in qc_reports/*_fastqc/fastqc_data.txt; do
+            if [ -f "$f" ]; then
+              sample=$(basename "$f" | sed 's/_fastqc\.fastqc_data\.txt//')
+              basic_stats=$(awk '/>>Basic Statistics/,/>>END_MODULE/' "$f" | grep -v '>>')
+
+              echo "<h3>$sample</h3>" >> qc_reports/fastqc_summary.html
+              echo "<table>" >> qc_reports/fastqc_summary.html
+              echo "$basic_stats" | while read -r line; do
+                if [[ "$line" != "" ]]; then
+                  key=$(echo "$line" | cut -f1)
+                  value=$(echo "$line" | cut -f2)
+                  echo "<tr><td>$key</td><td>$value</td></tr>" >> qc_reports/fastqc_summary.html
+                fi
+              done
+              echo "</table>" >> qc_reports/fastqc_summary.html
+            fi
           done
 
           cat >> qc_reports/fastqc_summary.html <<EOF
-        </tbody>
-    </table>
     <p>Note: Full MultiQC report not available. Install MultiQC for more comprehensive analysis.</p>
 </body>
 </html>
@@ -733,6 +876,8 @@ EOF
           # Run MultiQC if available
           multiqc qc_reports -o qc_reports --force 2>> qc.log || {
             echo "ERROR: MultiQC failed" >> qc.log
+            # Create fallback summary
+            cp qc_reports/individual_reports.html qc_reports/fastqc_summary.html
           }
         fi
       fi
@@ -748,6 +893,8 @@ EOF
         cp qc_reports/multiqc_report.html qc_reports/summary.html
       elif [ -f qc_reports/fastqc_summary.html ]; then
         cp qc_reports/fastqc_summary.html qc_reports/summary.html
+      elif [ -f qc_reports/individual_reports.html ]; then
+        cp qc_reports/individual_reports.html qc_reports/summary.html
       elif [ -f qc_reports/empty_report.html ]; then
         cp qc_reports/empty_report.html qc_reports/summary.html
       else
@@ -778,9 +925,10 @@ EOF
   }
 
   output {
-    Array[File] quality_reports = if do_quality_control then glob("qc_reports/*.{html,zip,txt}") else glob("qc_reports/skipped.txt")
+    Array[File] quality_reports = if do_quality_control then glob("qc_reports/*_fastqc.html") else ["qc_reports/skipped.txt"]
+    File individual_reports = if do_quality_control then "qc_reports/individual_reports.html" else "qc_reports/skipped.txt"
     File? qc_log = if do_quality_control then "qc.log" else "qc_reports/skipped.txt"
-    File? fastqc_summary_html = if do_quality_control then "qc_reports/summary.html" else "qc_reports/skipped.txt"
+    File fastqc_summary_html = if do_quality_control then "qc_reports/summary.html" else "qc_reports/skipped.txt"
     File skip_log = "qc_skip.log"
   }
 }
@@ -1122,13 +1270,19 @@ task PANGENOME {
 </html>
 HTML
 
-    # Make a blank heatmap image if we can (optional)
-    if command -v convert >/dev/null 2>&1; then
-      convert -size ~{heatmap_width}x~{heatmap_height} xc:white \
-              -gravity center -pointsize 24 -annotate 0 "No Data" \
-              final_output/gene_presence_heatmap.png || true
+    # Create placeholder heatmap (with Pillow if available)
+    if python3 -c "from PIL import Image" 2>/dev/null; then
+      python3 <<EOF
+from PIL import Image, ImageDraw
+img = Image.new('RGB', (~{heatmap_width}, ~{heatmap_height}), color='white')
+d = ImageDraw.Draw(img)
+d.rectangle([(50, 50), (~{heatmap_width}-50, ~{heatmap_height}-50)], outline='gray')
+d.text((~{heatmap_width}//2, ~{heatmap_height}//2), "No Data Available", fill='black', anchor='mm', align='center')
+img.save('final_output/gene_presence_heatmap.png')
+EOF
     else
-      : > final_output/gene_presence_heatmap.png || true
+      echo "Pillow not available, using fallback heatmap generation." >&2
+      convert -size ~{heatmap_width}x~{heatmap_height} xc:white -fill gray -draw "rectangle 50,50 $((~{heatmap_width}-50)),$((~{heatmap_height}-50))" -fill black -pointsize 24 -gravity center -annotate 0 "No Data Available" final_output/gene_presence_heatmap.png 2>/dev/null || : > final_output/gene_presence_heatmap.png
     fi
 
     # If user disabled pangenome, finish with the minimal report
@@ -1179,25 +1333,68 @@ HTML
         cp -f "$outdir"/number_of_new_genes.Rtab                final_output/ 2>/dev/null || true
         cp -f "$outdir"/number_of_conserved_genes.Rtab          final_output/ 2>/dev/null || true
 
-        # Try to draw a real heatmap if R is available; otherwise keep placeholder
+        # Improved heatmap generation with better error handling
         if command -v Rscript >/dev/null 2>&1; then
           cat > final_output/generate_visualizations.R <<'RS'
-suppressWarnings(suppressMessages({
-  try({
-    library(pheatmap); library(RColorBrewer)
-    df <- read.csv("gene_presence_absence.csv", header=TRUE, check.names=FALSE)
-    # Heuristic for sample columns
-    sample_cols <- setdiff(colnames(df), colnames(df)[1:14])
-    if (length(sample_cols) == 0) sample_cols <- colnames(df)
-    mat <- as.matrix(df[, sample_cols, drop=FALSE])
-    mat[mat != ""] <- 1; mat[mat == ""] <- 0
-    mode(mat) <- "numeric"
+# Enhanced heatmap generation with validation
+tryCatch({
+  # Load required packages
+  if (!requireNamespace("pheatmap", quietly = TRUE)) {
+    stop("pheatmap package not available")
+  }
+  if (!requireNamespace("RColorBrewer", quietly = TRUE)) {
+    stop("RColorBrewer package not available")
+  }
+
+  # Read and validate data
+  if (!file.exists("gene_presence_absence.csv")) {
+    stop("Input file not found")
+  }
+
+  df <- read.csv("gene_presence_absence.csv", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
+
+  # Identify sample columns (heuristic)
+  non_sample_cols <- c("Gene", "Annotation", "No..isolates", "No..sequences",
+                      "Avg.sequences.per.isolate", "Genome.Fragment",
+                      "Order.within.Fragment", "Accessory.Fragment",
+                      "Accessory.Order.with.Fragment", "QC", "Min..sequence.length",
+                      "Max..sequence.length", "Avg..sequence.length")
+
+  sample_cols <- setdiff(colnames(df), non_sample_cols)
+
+  # If heuristic failed, use all columns except first
+  if (length(sample_cols) < 2) {
+    sample_cols <- colnames(df)[-1]
+  }
+
+  # Convert to binary matrix
+  mat <- as.matrix(df[, sample_cols, drop=FALSE])
+  mat[mat != ""] <- 1
+  mat[mat == ""] <- 0
+  mode(mat) <- "numeric"
+
+  # Only plot if we have at least 2 samples and 2 genes
+  if (ncol(mat) >= 2 && nrow(mat) >= 2) {
     png("gene_presence_heatmap.png", width=~{heatmap_width}, height=~{heatmap_height})
-    pheatmap(mat, color = colorRampPalette(brewer.pal(9,"Blues"))(2),
-             cluster_rows=TRUE, cluster_cols=TRUE, show_rownames=FALSE,
-             main="Gene Presence/Absence")
+    pheatmap::pheatmap(
+      mat,
+      color = RColorBrewer::brewer.pal(9, "Blues")[c(1,9)],
+      cluster_rows=TRUE,
+      cluster_cols=TRUE,
+      show_rownames=FALSE,
+      main="Gene Presence/Absence",
+      fontsize_col = max(6, min(12, 300/ncol(mat))) # Dynamic font sizing
+    )
     dev.off()
-  }, silent=TRUE)
+  } else {
+    stop("Insufficient data for heatmap (need ≥2 samples and ≥2 genes)")
+  }
+}, error = function(e) {
+  # Create error image if heatmap fails
+  png("gene_presence_heatmap.png", width=~{heatmap_width}, height=~{heatmap_height})
+  plot.new()
+  text(0.5, 0.5, paste("Heatmap Error:", e$message), adj=c(0.5,0.5))
+  dev.off()
 })
 RS
           ( cd final_output && Rscript generate_visualizations.R ) || true
@@ -1214,7 +1411,7 @@ RS
   >>>
 
   runtime {
-    docker: "staphb/roary:3.13.0"
+    docker: "gmboowa/roary-pillow:0.4"
     memory: "~{memory_gb}G"
     cpu: cpu
     disks: "local-disk 100 HDD"
@@ -1372,14 +1569,15 @@ task CORE_PHYLOGENY {
   }
 
   output {
-    File phylogeny_tree = "phylogeny_results/core_~{tree_prefix}.nwk"
-    # expose both logs as optional; one or both may exist
+    File phylogeny_tree = if (defined("phylogeny_results/core_~{tree_prefix}.nwk") &&
+                           size("phylogeny_results/core_~{tree_prefix}.nwk") > 0)
+                         then "phylogeny_results/core_~{tree_prefix}.nwk"
+                         else write_lines(["();"])
     File? phylogeny_log_reduced = "phylogeny_results/core_~{tree_prefix}_reduced.log"
     File? phylogeny_log = "phylogeny_results/core_~{tree_prefix}.log"
     File execution_log = "phylogeny.log"
   }
 }
-
 task ACCESSORY_PHYLOGENY {
   input {
     File? alignment
@@ -1392,136 +1590,93 @@ task ACCESSORY_PHYLOGENY {
   }
 
   command <<<
+    #!/bin/bash
     set -euo pipefail
 
-    # Initialize directories and logging
+    # Initialize directories with proper permissions
     mkdir -p phylogeny_results
-    echo "Accessory Phylogeny Analysis Log - $(date)" > phylogeny.log
-    echo "=========================================" >> phylogeny.log
-    echo "Runtime Parameters:" >> phylogeny.log
-    echo "- do_phylogeny: ~{do_phylogeny}" >> phylogeny.log
-    echo "- tree_prefix: ~{tree_prefix}" >> phylogeny.log
-    echo "- model: ~{model}" >> phylogeny.log
-    echo "- cpu: ~{cpu}" >> phylogeny.log
-    echo "- bootstrap_replicates: ~{bootstrap_replicates}" >> phylogeny.log
-    echo "- memory_gb: ~{memory_gb}" >> phylogeny.log
-    echo "=========================================" >> phylogeny.log
+    chmod 777 phylogeny_results  # Ensure Docker can write
 
-    # Create skipped.txt file for cases where analysis is skipped
-    echo "Analysis skipped" > skipped.txt
+    # Start logging
+    {
+      echo "Accessory Phylogeny Analysis Log - $(date)"
+      echo "========================================="
+      echo "Runtime Parameters:"
+      echo "- do_phylogeny: ~{do_phylogeny}"
+      echo "- tree_prefix: ~{tree_prefix}"
+      echo "- model: ~{model}"
+      echo "- cpu: ~{cpu}"
+      echo "- bootstrap_replicates: ~{bootstrap_replicates}"
+      echo "- memory_gb: ~{memory_gb}"
+      echo "========================================="
+      echo "System Info:"
+      free -h
+      echo "-----------------------------------------"
+    } > phylogeny.log
 
-    # Ensure error log file exists early so outputs can bind cleanly
-    : > "phylogeny_results/accessory_error.log"
-
-    # Skip condition 1: User explicitly disabled phylogeny
-    if [ "~{do_phylogeny}" != "true" ]; then
+    # Skip conditions
+    if [ "~{do_phylogeny}" = "false" ]; then
       echo "Accessory phylogeny disabled by user parameter" >> phylogeny.log
       echo "(ACCESSORY_PHYLOGENY_DISABLED);" > "phylogeny_results/accessory_~{tree_prefix}.nwk"
       echo "Analysis skipped by user request" > "phylogeny_results/accessory_~{tree_prefix}.log"
-      echo "System Info:" >> phylogeny.log
-      free -h >> phylogeny.log
-      # Create a canonical log name even in skip path
-      cp "phylogeny_results/accessory_~{tree_prefix}.log" "phylogeny_results/accessory_~{tree_prefix}.log"
       exit 0
     fi
 
-    # Skip condition 2: Alignment file not provided
-    if [ ! -f "~{alignment}" ]; then
-      echo "ERROR: Accessory alignment file not found at path: ~{alignment}" >> phylogeny.log
+    if [ -z "~{alignment}" ] || [ ! -f "~{alignment}" ]; then
+      echo "ERROR: Accessory alignment file not found" >> phylogeny.log
       echo "(MISSING_ACCESSORY_ALIGNMENT);" > "phylogeny_results/accessory_~{tree_prefix}.nwk"
       echo "Accessory alignment file missing" > "phylogeny_results/accessory_~{tree_prefix}.log"
-      echo "System Info:" >> phylogeny.log
-      free -h >> phylogeny.log
       exit 0
     fi
 
-    # Skip condition 3: Alignment file exists but is empty
     if [ ! -s "~{alignment}" ]; then
-      echo "ERROR: Accessory alignment file is empty: ~{alignment}" >> phylogeny.log
+      echo "ERROR: Accessory alignment file is empty" >> phylogeny.log
       echo "(EMPTY_ACCESSORY_ALIGNMENT);" > "phylogeny_results/accessory_~{tree_prefix}.nwk"
       echo "Accessory alignment file empty" > "phylogeny_results/accessory_~{tree_prefix}.log"
-      echo "System Info:" >> phylogeny.log
-      free -h >> phylogeny.log
       exit 0
     fi
 
-    # Validate alignment content
-    echo "Validating accessory alignment file..." >> phylogeny.log
+    # Validate alignment
     seq_count=$(grep -c '^>' "~{alignment}" || echo 0)
     echo "Found $seq_count sequences in accessory alignment" >> phylogeny.log
 
-    # Skip condition 4: Insufficient sequences
     if [ "$seq_count" -lt 4 ]; then
-      echo "ERROR: Insufficient sequences ($seq_count) for accessory phylogeny (minimum 4 required)" >> phylogeny.log
+      echo "ERROR: Insufficient sequences ($seq_count)" >> phylogeny.log
       echo "(INSUFFICIENT_ACCESSORY_SEQUENCES_$seq_count);" > "phylogeny_results/accessory_~{tree_prefix}.nwk"
       echo "Only $seq_count accessory sequences found" > "phylogeny_results/accessory_~{tree_prefix}.log"
-      echo "System Info:" >> phylogeny.log
-      free -h >> phylogeny.log
       exit 0
     fi
 
-    # Run phylogenetic analysis
-    echo "Starting accessory phylogenetic analysis with FastTree..." >> phylogeny.log
-    echo "System memory information:" >> phylogeny.log
-    free -h >> phylogeny.log
-
-    set +e
+    # Main analysis
+    echo "Starting FastTree with ~{bootstrap_replicates} replicates..." >> phylogeny.log
     ulimit -v $((~{memory_gb} * 1024 * 1024))
-
-    echo "Command: FastTree ~{model} -gamma -quiet -boot ~{bootstrap_replicates} \\" >> phylogeny.log
-    echo "  -log phylogeny_results/accessory_~{tree_prefix}.log \\" >> phylogeny.log
-    echo "  < ~{alignment} > phylogeny_results/accessory_~{tree_prefix}.nwk" >> phylogeny.log
 
     FastTree ~{model} \
       -gamma \
       -quiet \
       -boot ~{bootstrap_replicates} \
       -log "phylogeny_results/accessory_~{tree_prefix}.log" \
-      < "~{alignment}" > "phylogeny_results/accessory_~{tree_prefix}.nwk" 2> "phylogeny_results/accessory_error.log"
-    exit_code=$?
-    set -e
+      < "~{alignment}" > "phylogeny_results/accessory_~{tree_prefix}.nwk" 2> "phylogeny_results/accessory_error.log" || {
 
-    # Handle FastTree failure
-    if [ $exit_code -ne 0 ]; then
-      echo "WARNING: FastTree exited with code $exit_code" >> phylogeny.log
-      cat "phylogeny_results/accessory_error.log" >> phylogeny.log
+      # Fallback for memory issues
+      echo "FastTree failed, attempting with reduced replicates..." >> phylogeny.log
+      FastTree ~{model} \
+        -gamma \
+        -quiet \
+        -boot 50 \
+        < "~{alignment}" > "phylogeny_results/accessory_~{tree_prefix}.nwk" 2>> "phylogeny.log" || {
+          echo "Fallback failed, generating minimal tree" >> phylogeny.log
+          echo "(ACCESSORY_TREE_FAILED);" > "phylogeny_results/accessory_~{tree_prefix}.nwk"
+        }
+    }
 
-      # Attempt reduced bootstrap replicates if memory issue
-      if grep -qi "oom" phylogeny.log || grep -qi "killed" phylogeny.log; then
-        echo "Attempting with reduced bootstrap replicates (50)..." >> phylogeny.log
-        FastTree ~{model} \
-          -gamma \
-          -quiet \
-          -boot 50 \
-          -log "phylogeny_results/accessory_~{tree_prefix}_reduced.log" \
-          < "~{alignment}" > "phylogeny_results/accessory_~{tree_prefix}.nwk" 2>> phylogeny.log || {
-            echo "Fallback failed, generating minimal tree" >> phylogeny.log
-            echo "(ACCESSORY_TREE_FAILED);" > "phylogeny_results/accessory_~{tree_prefix}.nwk"
-          }
-        # Normalize log name if reduced run created a different log file
-        if [ -f "phylogeny_results/accessory_~{tree_prefix}_reduced.log" ]; then
-          cp "phylogeny_results/accessory_~{tree_prefix}_reduced.log" "phylogeny_results/accessory_~{tree_prefix}.log"
-        fi
-      else
-        echo "Generating minimal tree after failure" >> phylogeny.log
-        echo "(ACCESSORY_TREE_FAILED);" > "phylogeny_results/accessory_~{tree_prefix}.nwk"
-      fi
-    fi
-
-    # Final validation of output
+    # Final validation
     if [ ! -s "phylogeny_results/accessory_~{tree_prefix}.nwk" ]; then
-      echo "ERROR: Accessory tree file is empty, generating minimal tree" >> phylogeny.log
+      echo "ERROR: Output tree is empty" >> phylogeny.log
       echo "(EMPTY_ACCESSORY_OUTPUT);" > "phylogeny_results/accessory_~{tree_prefix}.nwk"
     fi
 
-    # Guarantee canonical log file exists (even if none were produced earlier)
-    if [ ! -s "phylogeny_results/accessory_~{tree_prefix}.log" ]; then
-      : > "phylogeny_results/accessory_~{tree_prefix}.log"
-    fi
-
-    echo "Accessory phylogenetic analysis completed at $(date)" >> phylogeny.log
-    echo "Final output files:" >> phylogeny.log
-    ls -lh phylogeny_results/* >> phylogeny.log
+    echo "Analysis completed at $(date)" >> phylogeny.log
   >>>
 
   runtime {
@@ -1529,14 +1684,15 @@ task ACCESSORY_PHYLOGENY {
     memory: "~{memory_gb} GB"
     cpu: cpu
     disks: "local-disk 100 HDD"
-    continueOnReturnCode: true
-    timeout: "12 hours"
+    preemptible: 2  # Allow for preemption
+    maxRetries: 1   # Retry once on failure
   }
 
   output {
     File phylogeny_tree = "phylogeny_results/accessory_~{tree_prefix}.nwk"
-    File? phylogeny_log_reduced = "phylogeny_results/accessory_~{tree_prefix}_reduced.log"
-    File? phylogeny_log = "phylogeny_results/accessory_~{tree_prefix}.log"
+    File phylogeny_log = if defined(glob("phylogeny_results/accessory_~{tree_prefix}.log"))
+                         then "phylogeny_results/accessory_~{tree_prefix}.log"
+                         else "phylogeny.log"
     File error_log = "phylogeny_results/accessory_error.log"
     File execution_log = "phylogeny.log"
   }
@@ -2382,9 +2538,16 @@ task AMR_PROFILING {
   }
 
   output {
-    Array[File] amr_outputs = if do_amr_profiling then glob("amr_results/*_amr.tsv") else ["amr_results/skipped.txt"]
-    File combined_amr = if do_amr_profiling then "amr_results/combined_amr.tsv" else "amr_results/skipped.txt"
-    File combined_html = if do_amr_profiling then "html_results/combined_amr.html" else "html_results/skipped.html"
+    # NEW: per-sample AMR HTML reports for MERGE_REPORTS
+    Array[File] html_reports = if do_amr_profiling then glob("html_results/*_amr.html")
+                               else ["html_results/skipped.html"]
+
+    Array[File] amr_outputs = if do_amr_profiling then glob("amr_results/*_amr.tsv")
+                              else ["amr_results/skipped.txt"]
+    File combined_amr = if do_amr_profiling then "amr_results/combined_amr.tsv"
+                        else "amr_results/skipped.txt"
+    File combined_html = if do_amr_profiling then "html_results/combined_amr.html"
+                         else "html_results/skipped.html"
     File amr_log = "amr.log"
   }
 }
@@ -2683,10 +2846,11 @@ task MGE_ANALYSIS {
   }
 
   output {
-    Array[File] sample_reports = if do_mge_analysis then glob("mge_results/*_mge.tsv") else ["mge_results/skipped.txt"]
-    File plasmid_report = if do_mge_analysis then "mge_results/combined_mge.tsv" else "mge_results/skipped.txt"
-    File html_report = if do_mge_analysis then "html_results/combined_mge.html" else "html_results/skipped.html"
-    File mge_log = "mge.log"
+  Array[File] html_reports   = if do_mge_analysis then glob("html_results/*_mge.html") else ["html_results/skipped.html"]
+  Array[File] sample_reports = if do_mge_analysis then glob("mge_results/*_mge.tsv")  else ["mge_results/skipped.txt"]
+  File        plasmid_report = if do_mge_analysis then "mge_results/combined_mge.tsv" else "mge_results/skipped.txt"
+  File        combined_html  = if do_mge_analysis then "html_results/combined_mge.html" else "html_results/skipped.html"
+  File        mge_log        = "mge.log"
   }
 }
 task VIRULENCE_ANALYSIS {
@@ -2969,24 +3133,25 @@ task VIRULENCE_ANALYSIS {
   }
 
   output {
-    Array[File] virulence_reports = glob("virulence_results/*_virulence.tsv")
-    Array[File] html_reports = glob("html_results/*_virulence.html")
-    File combined_report = "virulence_results/combined_virulence.tsv"
-    File combined_html = "html_results/combined_virulence.html"
-    File virulence_log = "virulence.log"
+  Array[File] virulence_reports = glob("virulence_results/*_virulence.tsv")
+  Array[File] html_reports      = glob("html_results/*_virulence.html")
+  File        combined_report   = "virulence_results/combined_virulence.tsv"
+  File        combined_html     = "html_results/combined_virulence.html"
+  File        virulence_log     = "virulence.log"
   }
 }
 
 
 task BLAST_ANALYSIS {
   input {
-    Array[File]+ contig_fastas
+    Array[File] contig_fastas
     String blast_db
     Boolean use_local_blast = false
     File? local_blast_db
     Int max_target_seqs = 10
     Float evalue = 0.000001
     Int min_contig_length = 200
+    Int? max_contig_length
     Boolean do_blast = true
     Int cpu = 8
     Int memory_gb = 12
@@ -3003,6 +3168,41 @@ task BLAST_ANALYSIS {
     echo "BLAST_ANALYSIS started on $(date)" >> skip_blast.log
 
     set -euo pipefail
+    set -x  # Enable debugging
+    export LC_ALL=C  # For faster sorting
+    declare -A SPECIES_CACHE  # Cache for species lookups
+
+    # Create standalone get_species script
+    cat > get_species.sh <<'EOF'
+#!/bin/bash
+acc="$1"
+clean_acc=$(echo "$acc" | sed -E 's/^[^|]*\|([^|]+)\|.*/\1/' | sed 's/\..*//')
+
+# Check cache first
+if [[ -n "${SPECIES_CACHE[$clean_acc]}" ]]; then
+  echo "${SPECIES_CACHE[$clean_acc]}"
+  exit 0
+fi
+
+species="Unknown"
+header_text=""
+
+if [ "~{use_local_blast}" = "true" ]; then
+  header_text=$(blastdbcmd -db "$BLAST_DB" -entry "$clean_acc" -outfmt "%t" 2>/dev/null || echo "")
+  species=$(echo "$header_text" | grep -oP '(\[organism=\K[^]]+|^[^[]+? \K[^[ ]+)' | head -1)
+  [ -z "$species" ] && species="Unknown"
+  species=$(echo "$species" | sed 's/[]\[,;].*//' | xargs)
+fi
+
+if [ "$species" = "Unknown" ] && command -v efetch >/dev/null && command -v xtract >/dev/null; then
+  species=$(efetch -db nuccore -id "$clean_acc" -format docsum 2>/dev/null | \
+           xtract -pattern DocumentSummary -element Organism 2>/dev/null | head -1 | tr -d '\n')
+fi
+
+SPECIES_CACHE["$clean_acc"]="${species:-Unknown}"
+echo "${species:-Unknown}"
+EOF
+    chmod +x get_species.sh
 
     if [ "~{skip}" == "true" ]; then
       echo "Skipping BLAST analysis as requested" >> skip_blast.log
@@ -3018,8 +3218,7 @@ task BLAST_ANALYSIS {
         echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqlen\tslen\tstitle" > "${sample_dir}/top_hits.tsv"
         echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqlen\tslen\tstitle\tspecies" > "${sample_dir}/top_hits_with_species.tsv"
 
-        # Minimal HTML (no big headers) so MERGE_REPORTS won't show duplicate headings
-        cat > "${sample_dir}/report.html" <<EOF
+        cat > "${sample_dir}/${sample_id}_blast_report.html" <<EOF
 <!DOCTYPE html><html><head><meta charset="utf-8">
 <style>body{font-family:Arial;margin:0}.note{padding:10px}</style></head>
 <body><div class="note">BLAST analysis was skipped for sample ${sample_id}.</div></body></html>
@@ -3027,8 +3226,6 @@ EOF
 
         echo "$sample_id" >> sample_ids.txt
       done
-
-      echo "Skipping completed at $(date)" >> skip_blast.log
       exit 0
     fi
 
@@ -3042,366 +3239,404 @@ EOF
     cleanup() { rm -rf "$TMPDIR"; }
     trap cleanup EXIT
 
-    check_ncbi_tools() {
-      local tools=("efetch" "esearch" "elink" "xtract")
-      local missing=0
-      for tool in "${tools[@]}"; do
-        command -v "$tool" >/dev/null || { log "WARNING: $tool not found in PATH"; missing=1; }
-      done
-      [ $missing -eq 0 ]
-    }
-
     if [ "~{use_local_blast}" = "true" ] && [ -n "~{local_blast_db}" ]; then
       log "Using local BLAST database"
-      if [ ! -s "~{local_blast_db}" ]; then
-        log "Error: Input FASTA for local DB is empty or missing"; exit 1
-      fi
-
-      for attempt in {1..3}; do
-        makeblastdb -in "~{local_blast_db}" -dbtype nucl -parse_seqids \
-                    -title "~{blast_db}" -out "~{blast_db}" \
-                    -logfile "makeblastdb.log" 2>&1 && break || {
-          log "Attempt $attempt failed to build BLAST DB"
-          [ $attempt -lt 3 ] && { sleep 10; rm -f "~{blast_db}".n* "makeblastdb.log"; } || { log "Failed to build local DB"; exit 1; }
-        }
-      done
+      makeblastdb -in "~{local_blast_db}" -dbtype nucl -parse_seqids \
+                  -title "~{blast_db}" -out "~{blast_db}" \
+                  -logfile "makeblastdb.log" || {
+        log "Failed to build local DB"; exit 1
+      }
       BLAST_DB="~{blast_db}"
     else
       log "Using remote or prebuilt DB: ~{blast_db}"
       BLAST_DB="~{blast_db}"
     fi
 
-    NCBI_TOOLS_AVAILABLE=false
-    if [ "~{use_local_blast}" = "true" ] && [ -n "~{local_blast_db}" ]; then
-      if check_ncbi_tools; then NCBI_TOOLS_AVAILABLE=true; fi
-    fi
+    process_sample() {
+      local contig_file="$1"
+      local sample_id=$(basename "$contig_file" | cut -d'.' -f1)
+      local sample_dir="blast_results/${sample_id}"
+      mkdir -p "$sample_dir"
 
-    clean_accession() { echo "$1" | sed -E 's/^[^|]*\|([^|]+)\|.*/\1/' | sed 's/\..*//'; }
+      # Filter contigs
+      awk -v min_len="~{min_contig_length}" -v max_len="~{max_contig_length}" '
+      BEGIN {RS=">"; FS="\n"}
+      NR>1 {
+        seq="";
+        for(i=2;i<=NF;i++) seq=seq $i;
+        if(length(seq)>=min_len && (max_len == "" || length(seq)<=max_len)) {
+          print ">"$1;
+          for(i=2;i<=NF;i++) print $i
+        }
+      }' "$contig_file" > "${sample_dir}/filtered_contigs.fa" || \
+      echo ">empty_sequence" > "${sample_dir}/filtered_contigs.fa"
 
-    get_species() {
-      local acc="$1"
-      local clean_acc=$(clean_accession "$acc")
-      local species="Unknown"
-      local header_text=""
+      # Run BLAST
+      blastn -query "${sample_dir}/filtered_contigs.fa" -db "$BLAST_DB" -task blastn \
+             -word_size 28 -reward 1 -penalty -2 -gapopen 2 -gapextend 1 \
+             -outfmt "6 std qlen slen stitle" -out "${sample_dir}/blast_results.tsv" \
+             -evalue ~{evalue} -max_target_seqs ~{max_target_seqs} \
+             -perc_identity 90 -max_hsps 1 -dust no \
+             -num_threads 1 > "${sample_dir}/blast.log" 2>&1 || true
 
-      if [ "~{use_local_blast}" = "true" ] && [ -n "~{local_blast_db}" ]; then
-        for attempt in {1..3}; do
-          header_text=$(blastdbcmd -db "$BLAST_DB" -entry "$clean_acc" -outfmt "%t" 2>&1) && break || sleep 2
-        done
-        species=$(echo "$header_text" | grep -oP '(\[organism=\K[^]]+|^[^[]+? \K[^[ ]+)' | head -1)
-        [ -z "$species" ] && species="Unknown"
-        species=$(echo "$species" | sed 's/[]\[,;].*//' | xargs | tr -d '\n')
-      fi
+      # Process results
+      { echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqlen\tslen\tstitle"
+        sort -t$'\t' -k12,12gr "${sample_dir}/blast_results.tsv" | head -10; } > "${sample_dir}/top_hits.tsv"
 
-      if [ "$species" = "Unknown" ] && [ "$NCBI_TOOLS_AVAILABLE" = true ]; then
-        for ((i=1; i<=3; i++)); do
-          species=$(efetch -db nuccore -id "$clean_acc" -format docsum 2>/dev/null | \
-                   xtract -pattern DocumentSummary -element Organism 2>/dev/null | head -1 | tr -d '\n') && [ -n "$species" ] && break
-          sleep 2
-        done
-      fi
-      echo "${species:-Unknown}"
-    }
-
-    annotate_blast_results() {
-      local input="$1"; local output="$2"
-      echo -e "$(head -n1 "$input")\tspecies" > "$output"
-      tail -n +2 "$input" | while IFS=$'\t' read -r -a fields; do
-        local acc="${fields[1]}"; local species=$(get_species "$acc")
-        printf "%s\t%s\n" "$(IFS=$'\t'; echo "${fields[*]}")" "$species" >> "$output"
+      # Annotate with species
+      echo -e "$(head -n1 "${sample_dir}/top_hits.tsv")\tspecies" > "${sample_dir}/top_hits_with_species.tsv"
+      tail -n +2 "${sample_dir}/top_hits.tsv" | while IFS=$'\t' read -r -a fields; do
+        species=$(./get_species.sh "${fields[1]}")
+        printf "%s\t%s\n" "$(IFS=$'\t'; echo "${fields[*]}")" "$species" >> "${sample_dir}/top_hits_with_species.tsv"
       done
-    }
 
-    generate_html_report() {
-      local dir="$1"; local name="$2"
-      local report="$dir/report.html"; local input_tsv="$dir/top_hits_with_species.tsv"
+      # Generate HTML report
+      python3 - "${sample_dir}/top_hits_with_species.tsv" > "${sample_dir}/${sample_id}_blast_report.html" <<'PYTHON'
+import sys
+from csv import reader
 
-      # If no table, emit a tiny message (no headers) so MERGE_REPORTS doesn't duplicate headings
-      if [ ! -s "$input_tsv" ]; then
-        cat > "$report" <<'EOF'
-<!DOCTYPE html><html><head><meta charset="utf-8">
+input_tsv = sys.argv[1]
+if not open(input_tsv).read(1):
+    print('''<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>body{font-family:Arial;margin:0}.note{padding:10px}</style></head>
-<body><div class="note">No significant BLAST hits.</div></body></html>
-EOF
-        return 0
-      fi
+<body><div class="note">No significant BLAST hits.</div></body></html>''')
+    sys.exit(0)
 
-      # Emit only the table; MERGE_REPORTS wraps it with its own section heading
-      cat > "$report" <<'EOF'
-<!DOCTYPE html><html><head><meta charset="utf-8">
+print('''<!DOCTYPE html><html><head><meta charset="utf-8">
 <style>
   body{font-family:Arial;margin:0}
   table{border-collapse:collapse;width:100%}
   th,td{border:1px solid #ddd;padding:8px;text-align:left}
   th{background:#f2f2f2;position:sticky;top:0}
   .species{font-weight:bold}
-</style></head><body>
-<table><thead><tr>
-EOF
-      head -n 1 "$input_tsv" | awk -F'\t' '{for(i=1;i<=NF;i++) printf "<th>%s</th>\n",$i}' >> "$report"
-      cat >> "$report" <<'EOF'
-</tr></thead><tbody>
-EOF
-      tail -n +2 "$input_tsv" | awk -F'\t' '{
-        printf "<tr>";
-        for(i=1;i<=NF;i++){
-          if(i==NF) printf "<td class=\"species\">%s</td>",$i; else printf "<td>%s</td>",$i
-        }
-        printf "</tr>\n"
-      }' >> "$report"
-      echo "</tbody></table></body></html>" >> "$report"
-      log "Generated HTML report for $name at $report"
+</style></head><body><table><thead><tr>''')
+
+with open(input_tsv) as f:
+    csv_reader = reader(f, delimiter='\t')
+    headers = next(csv_reader)
+    print('\n'.join(f'<th>{h}</th>' for h in headers) + '</tr></thead><tbody>')
+
+    for row in csv_reader:
+        print('<tr>' + '\n'.join(
+            f'<td class="species">' + cell + '</td>' if i == len(row)-1
+            else f'<td>' + cell + '</td>'
+            for i, cell in enumerate(row)
+        ) + '</tr>')
+
+print('</tbody></table></body></html>')
+PYTHON
+
+      echo "$sample_id"
     }
 
-    process_sample() {
-      local contig_file="$1"
-      local sample_id=$(basename "$contig_file" | cut -d'.' -f1)
-      local sample_dir="blast_results/${sample_id}"
-      mkdir -p "$sample_dir"
-      log "Processing sample: $sample_id"
+    export -f process_sample
+    export BLAST_DB DEBUG
+    export -f log debug_log
 
-      local filtered_contig="${sample_dir}/filtered_contigs.fa"
-      if [ ! -s "$contig_file" ]; then
-        echo ">empty_sequence" > "$filtered_contig"
-      else
-        awk -v min_len="~{min_contig_length}" 'BEGIN{RS=">";FS="\n"} NR>1{seq=""; for(i=2;i<=NF;i++) seq=seq $i; if(length(seq)>=min_len){print ">"$1; for(i=2;i<=NF;i++) print $i}}' "$contig_file" > "$filtered_contig" || echo ">empty_sequence" > "$filtered_contig"
-      fi
-
-      local blast_out="${sample_dir}/blast_results.tsv"
-      local blast_log="${sample_dir}/blast.log"
-      for attempt in {1..~{max_retries_per_sample}}; do
-        blastn -query "$filtered_contig" -db "$BLAST_DB" -task blastn \
-               -word_size 28 -reward 1 -penalty -2 -gapopen 2 -gapextend 1 \
-               -outfmt "6 std qlen slen stitle" -out "$blast_out" \
-               -evalue ~{evalue} -max_target_seqs ~{max_target_seqs} \
-               -num_threads ~{cpu} > "$blast_log" 2>&1 && break || {
-          log "BLAST attempt $attempt failed for $sample_id"
-          [ $attempt -eq ~{max_retries_per_sample} ] && echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqlen\tslen\tstitle" > "$blast_out" || sleep ~{retry_delay_seconds}
-        }
-      done
-
-      local top_hits="${sample_dir}/top_hits.tsv"
-      { echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqlen\tslen\tstitle"
-        sort -t$'\t' -k12,12g "$blast_out" | head -10; } > "$top_hits" || true
-
-      local annotated_hits="${sample_dir}/top_hits_with_species.tsv"
-      annotate_blast_results "$top_hits" "$annotated_hits" || cp "$top_hits" "$annotated_hits"
-
-      generate_html_report "$sample_dir" "$sample_id"
-      echo "$sample_id" >> sample_ids.txt
-    }
-
+    # Process samples in parallel
     mkdir -p blast_results
-    : > sample_ids.txt
-    for contig_file in ~{sep=' ' contig_fastas}; do
-      process_sample "$contig_file" || { log "Error on $contig_file; continuing"; continue; }
-    done
+    printf "%s\n" ~{sep=' ' contig_fastas} | \
+      /usr/bin/parallel -j ~{cpu} --halt soon,fail=1 --joblog parallel.log \
+      --tagstring "{}" "process_sample {}" > sample_ids.txt
   >>>
 
   runtime {
-    docker: "gmboowa/blast-analysis:1.9.3"
-    memory: "~{memory_gb} GB"
+    docker: "gmboowa/blast-analysis:1.9.4"
     cpu: cpu
-    disks: "local-disk 200 HDD"
-    maxRetries: 3
+    memory: "16 GB"
+    disks: "local-disk 100 HDD"
+    continueOnReturnCode: true
     preemptible: 2
-    internet: true
-    timeout: "24 hours"
+    dockerOptions: "--entrypoint ''"
   }
 
   output {
     Array[File] blast_results = glob("blast_results/*/blast_results.tsv")
     Array[File] blast_top10 = glob("blast_results/*/top_hits.tsv")
     Array[File] blast_annotated = glob("blast_results/*/top_hits_with_species.tsv")
-    Array[File] blast_reports = glob("blast_results/*/report.html")
+    Array[File] blast_reports = glob("blast_results/*/*_blast_report.html")
     Array[File] blast_logs = glob("blast_results/*/blast.log")
     Array[File] system_logs = glob("blast_results/*/makeblastdb.log")
     Array[String] sample_ids = read_lines("sample_ids.txt")
     File skip_log = "skip_blast.log"
   }
 }
-
 task TREE_VISUALIZATION {
   input {
     File input_tree
-    Int width = 1200
-    Int height = 1000
+    Int width = 1600
+    Int height = 1200
     String image_format = "png"
-    Int font_size = 10
-    Int title_font_size = 12
-    String layout = "circular"  # Options: circular, rectangular, or fan
-    Float branch_thickness = 1.5
+    Boolean force_offscreen = true
+    String? tree_title
+    Int title_font_size = 18
+    String layout = "rectangular"
     Boolean show_branch_lengths = false
     Boolean show_scale = true
-    String color_scheme = "standard"  # Options: standard, gradient, or categorical
-    String? tree_title
+    Float branch_thickness = 3.0
+    String color_scheme = "standard"
+    Int label_font_size = 14
+    Int? font_size
+    Boolean label_bold = true
+    String label_color = "#111111"
+    Boolean label_heavy = false
+    Int tip_size = 9
+    String tip_fill_color = "#00008B"
+    String tip_border_color = "#00008B"
+    String background_color = "#FFFFFF"
+    Int margins_px = 48
+    String line_cap = "round"
+    Boolean autoscale_with_thickness = true
+    Boolean bootstrap_tools = false
   }
 
   command <<<
     set -euo pipefail
-
-    # Create output directory
+    : > debug.log
+    echo "[INFO] TREE_VISUALIZATION starting $(date)" | tee -a debug.log
+    if [ "~{force_offscreen}" = "true" ]; then
+      export QT_QPA_PLATFORM=offscreen
+      export MPLBACKEND=Agg
+      echo "[INFO] Offscreen rendering enabled" | tee -a debug.log
+    fi
     mkdir -p output
-
-    # Get tree type from filename
-    tree_basename=$(basename "~{input_tree}" .nwk)
-    tree_type=""
-    color_scheme_val="~{color_scheme}"
-
-    if [[ "$tree_basename" == *"accessory"* ]]; then
-      tree_type="accessory"
-      # If no explicit color scheme was passed, default to categorical for accessory
-      if [[ -z "${color_scheme_val}" || "${color_scheme_val}" == "standard" ]]; then
-        color_scheme_val="categorical"
+    TREE_BASE="$(basename "~{input_tree}" .nwk)"
+    OUT_IMG="output/${TREE_BASE}.~{image_format}"
+    OUT_LOG="output/${TREE_BASE}.log"
+    ERR_LOG="output/${TREE_BASE}_error.log"
+    echo "[INFO] Input tree: ~{input_tree} ($(wc -c < "~{input_tree}") bytes)" | tee -a debug.log
+    if [ "~{bootstrap_tools}" = "true" ]; then
+      echo "[BOOTSTRAP] starting…" | tee -a debug.log
+      mkdir -p .mamba
+      export MAMBA_ROOT_PREFIX="$PWD/.mamba"
+      export MAMBA_EXE="$PWD/.mamba/micromamba"
+      if [ ! -x "$MAMBA_EXE" ]; then
+        echo "[BOOTSTRAP] fetching micromamba…" | tee -a debug.log
+        (curl -Ls https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj -C .mamba --strip-components=1 bin/micromamba) \
+        || (wget -qO- https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj -C .mamba --strip-components=1 bin/micromamba) \
+        || echo "[BOOTSTRAP] micromamba download failed" | tee -a debug.log
       fi
-    elif [[ "$tree_basename" == *"core"* ]]; then
-      tree_type="core"
-      # If no explicit color scheme was passed, default to gradient for core
-      if [[ -z "${color_scheme_val}" || "${color_scheme_val}" == "standard" ]]; then
-        color_scheme_val="gradient"
+      if [ -x "$MAMBA_EXE" ]; then
+        set +e
+        "$MAMBA_EXE" create -y -n viz -c conda-forge \
+          python=3.11 ete3 pyqt pillow matplotlib biopython \
+          cairo pango pixman freetype fontconfig harfbuzz cairocffi \
+          > .mamba/create.log 2>&1
+        rc=$?
+        set -e
+        if [ $rc -eq 0 ]; then
+          export PATH="$PWD/.mamba/envs/viz/bin:$PATH"
+          echo "[BOOTSTRAP] env ready" | tee -a debug.log
+        else
+          echo "[BOOTSTRAP] env create failed (rc=$rc); continuing with base image" | tee -a debug.log
+        fi
       fi
     fi
-
-    # Title: prefer user-provided tree_title, otherwise build a sensible default in bash
-    if [[ -n "~{tree_title}" ]]; then
-      TITLE="~{tree_title}"
-    else
-      if [[ "$tree_type" == "accessory" ]]; then
-        TITLE="Accessory Genes Phylogenetic Tree"
-      else
-        TITLE="Core Genes Phylogenetic Tree"
+    if [ $(wc -c < "~{input_tree}") -le 10 ]; then
+      echo "[ERROR] Input tree appears empty; writing placeholder" | tee -a debug.log
+      python3 - <<'PY'
+from PIL import Image, ImageDraw
+w,h=~{width},~{height}
+img=Image.new('RGB',(w,h),'white')
+ImageDraw.Draw(img).text((20,20),"Empty tree input",fill='black')
+img.save("output/~{basename(input_tree, '.nwk')}.~{image_format}")
+PY
+      echo "Empty/invalid tree" > "${ERR_LOG}"
+      echo "Rendered placeholder at $(date)" > "${OUT_LOG}"
+      exit 0
+    fi
+    set +e
+    python3 - <<'PY'
+import colorsys, random
+from datetime import datetime
+try:
+    from ete3 import Tree, TreeStyle, TextFace
+except Exception as e:
+    open("output/~{basename(input_tree, '.nwk')}_error.log","a").write(f"[ete3 import error] {e}\n")
+    raise SystemExit(20)
+tree_path  = "~{input_tree}"
+title      = "~{tree_title}" if "~{tree_title}" != "None" else ""
+layout     = "~{layout}".lower()
+show_bl    = ~{if show_branch_lengths then "True" else "False"}
+show_scale = ~{if show_scale then "True" else "False"}
+bg         = "~{background_color}"
+margins    = ~{margins_px}
+thick      = float(~{branch_thickness})
+color_mode = "~{color_scheme}".lower()
+base_label_size = int(~{select_first([font_size, label_font_size])})
+label_bold      = ~{if label_bold then "True" else "False"}
+label_color     = "~{label_color}"
+label_heavy     = ~{if label_heavy then "True" else "False"}
+base_tip_size   = int(~{tip_size})
+tip_fill        = "~{tip_fill_color}"
+tip_border      = "~{tip_border_color}"
+autoscale       = ~{if autoscale_with_thickness then "True" else "False"}
+if autoscale:
+    tip_size = max(5, min(22, int(round(thick * 2.5))))
+    label_size = max(12, min(28, int(round(10 + thick * 1.6))))
+else:
+    tip_size = base_tip_size
+    label_size = base_label_size
+try:
+    t = Tree(tree_path)
+except Exception as e:
+    open("output/~{basename(input_tree, '.nwk')}_error.log","a").write(f"[ete3 load error] {e}\n")
+    raise SystemExit(21)
+ts = TreeStyle()
+ts.show_leaf_name = False
+ts.show_branch_length = show_bl
+ts.show_scale = show_scale
+ts.branch_vertical_margin = 14
+ts.scale = max(1.0, ~{width} / 6.0)
+ts.margin_left = margins
+ts.margin_right = margins
+ts.margin_top = margins
+ts.margin_bottom = margins
+ts.bgcolor = bg
+if title:
+    ts.title.add_face(TextFace(title, fsize=~{title_font_size}, bold=True), column=0)
+if layout == "circular":
+    ts.mode = "c"; ts.arc_start = 0; ts.arc_span = 360
+elif layout == "fan":
+    ts.mode = "c"; ts.arc_start = -180; ts.arc_span = 240
+else:
+    ts.mode = "r"; ts.root_opening_factor = 1.0
+if color_mode == "gradient":
+    max_dist = max([n.dist for n in t.traverse()], default=1.0) or 1.0
+    def color_for(n):
+        ratio = 0.0 if max_dist==0 else min(max(n.dist/max_dist,0.0),1.0)
+        r,g,b = colorsys.hsv_to_rgb(0.66*(1-ratio), 0.65, 0.92)
+        return f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
+elif color_mode == "categorical":
+    random.seed(42)
+    hues = {}
+    def color_for(n):
+        parent = n.up
+        if parent not in hues:
+            hues[parent] = random.uniform(0.0, 0.8)
+        r,g,b = colorsys.hsv_to_rgb(hues[parent], 0.8, 0.90)
+        return f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
+else:
+    def color_for(n): return "#000000"
+for n in t.traverse():
+    col = color_for(n)
+    n.img_style["hz_line_width"] = thick
+    n.img_style["vt_line_width"] = thick
+    n.img_style["hz_line_color"] = col
+    n.img_style["vt_line_color"] = col
+    if n.is_leaf():
+        n.img_style["size"] = max(1, tip_size)
+        n.img_style["shape"] = "circle"
+        n.img_style["fgcolor"] = tip_border
+        n.img_style["bgcolor"] = tip_fill
+        tf_main = TextFace(n.name, fsize=label_size, fgcolor=label_color, bold=label_bold)
+        if label_heavy:
+            tf_shadow = TextFace(n.name, fsize=label_size, fgcolor=label_color, bold=True)
+            n.add_face(tf_shadow, column=0, position="aligned")
+        n.add_face(tf_main, column=0, position="aligned")
+    else:
+        n.img_style["size"] = 0
+out_img = "output/~{basename(input_tree, '.nwk')}.~{image_format}"
+try:
+    t.render(out_img, w=~{width}, h=~{height}, units="px", tree_style=ts, dpi=300)
+    open("output/~{basename(input_tree, '.nwk')}.log","w").write(f"ete3 Rendered OK at {datetime.now().isoformat()}\n")
+    raise SystemExit(0)
+except Exception as e:
+    open("output/~{basename(input_tree, '.nwk')}_error.log","a").write(f"[ete3 render error] {e}\n")
+    raise SystemExit(22)
+PY
+    ETE_RC=$?
+    set -e
+    echo "[INFO] ete3 render exit code: ${ETE_RC}" | tee -a debug.log
+    if [ $ETE_RC -ne 0 ]; then
+      echo "[WARN] Falling back to Bio.Phylo + matplotlib" | tee -a debug.log
+      set +e
+      python3 - <<'PY'
+from datetime import datetime
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from Bio import Phylo
+tree_path="~{input_tree}"
+out_img="output/~{basename(input_tree, '.nwk')}.~{image_format}"
+w,h=~{width},~{height}
+dpi=150.0
+fig = plt.figure(figsize=(w/dpi, h/dpi), dpi=dpi, facecolor="~{background_color}")
+ax = fig.add_subplot(1,1,1, facecolor="~{background_color}")
+tree = Phylo.read(tree_path,"newick")
+Phylo.draw(tree, do_show=False, axes=ax)
+for line in ax.get_lines():
+    try:
+        line.set_linewidth(~{branch_thickness})
+        line.set_solid_capstyle("~{line_cap}")
+    except Exception:
+        pass
+for text in ax.texts:
+    text.set_fontsize(~{select_first([font_size, label_font_size])})
+    text.set_color("~{label_color}")
+    text.set_fontweight("bold" if ~{if label_bold then "True" else "False"} else "normal")
+if "~{tree_title}" != "None" and len("~{tree_title}")>0:
+    ax.set_title("~{tree_title}", fontsize=~{title_font_size}, fontweight='bold', color="#111111")
+ax.set_axis_off()
+plt.margins(x=0.02, y=0.02)
+plt.tight_layout(pad=~{margins_px}/100)
+fig.savefig(out_img, dpi=dpi, facecolor="~{background_color}")
+open("output/~{basename(input_tree, '.nwk')}.log","w").write(f"Phylo Rendered OK at {datetime.now().isoformat()}\n")
+PY
+      PHYLO_RC=$?
+      set -e
+      echo "[INFO] Phylo/matplotlib render exit code: ${PHYLO_RC}" | tee -a debug.log
+      if [ $PHYLO_RC -ne 0 ]; then
+        echo "[ERROR] All renderers failed; no image produced" | tee -a debug.log
+        printf "All renderers failed (ete3=%s, phylo=%s)\n" "$ETE_RC" "$PHYLO_RC" > "${ERR_LOG}"
+        exit 0
       fi
     fi
-
-    export TITLE
-    export color_scheme_val
-
-    python3 <<EOF
-  import os
-  from ete3 import Tree, TreeStyle, NodeStyle, TextFace
-  import colorsys
-  import random
-
-  # Inputs from bash/WDL
-  input_tree = "~{input_tree}"
-  width = ~{width}
-  height = ~{height}
-  show_branch_lengths = ~{show_branch_lengths}
-  show_scale = ~{show_scale}
-  layout = "~{layout}".lower()
-  branch_thickness = ~{branch_thickness}
-  title_text = os.environ.get("TITLE", "Phylogenetic Tree")
-  color_scheme = os.environ.get("color_scheme_val", "standard").lower()
-
-  # Load the tree
-  tree = Tree(input_tree)
-
-  # TreeStyle
-  ts = TreeStyle()
-  ts.show_leaf_name = True
-  ts.show_branch_length = show_branch_lengths
-  ts.show_scale = show_scale
-  ts.branch_vertical_margin = 10
-  ts.scale = ~{width / 6}  # use / not // in WDL
-  ts.title.add_face(TextFace(title_text, fsize=~{title_font_size}, fgcolor="black"), column=0)
-
-  # Layout
-  if layout == "circular":
-      ts.mode = "c"
-      ts.arc_start = -180
-      ts.arc_span = 240
-      ts.rotation = 90
-  elif layout == "fan":
-      ts.mode = "c"
-      ts.arc_start = 0
-      ts.arc_span = 360
-  else:
-      ts.mode = "r"
-      ts.root_opening_factor = 1.0
-
-  # Color schemes
-  if color_scheme == "gradient":
-      # Gradient color from blue to red based on branch length
-      max_dist = max((node.dist for node in tree.traverse()), default=1.0)
-      for node in tree.traverse():
-          if node.dist > 0:
-              ratio = min(node.dist / max_dist, 1.0)
-              r, g, b = colorsys.hsv_to_rgb(0.66 * (1 - ratio), 0.7, 0.8)
-              node.img_style["hz_line_color"] = f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
-  elif color_scheme == "categorical":
-      random.seed(42)
-      for node in tree.traverse():
-          if not node.is_leaf():
-              hue = random.uniform(0, 0.8)
-              r, g, b = colorsys.hsv_to_rgb(hue, 0.8, 0.8)
-              node.img_style["hz_line_color"] = f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
-
-  # Common node style
-  for n in tree.traverse():
-      n.img_style["size"] = 0
-      n.img_style["hz_line_width"] = branch_thickness
-      n.img_style["vt_line_width"] = branch_thickness
-      if n.is_leaf():
-          n.img_style["fgcolor"] = "black"
-          n.img_style["shape"] = "square"
-          n.img_style["size"] = 5
-
-  # Leaf font size
-  leaf_style = NodeStyle()
-  leaf_style["size"] = ~{font_size}
-  for leaf in tree.iter_leaves():
-      leaf.set_style(leaf_style)
-
-  # Render
-  output_file = f"output/{os.path.basename(input_tree)[:-4]}.~{image_format}"
-  tree.render(output_file, w=width, h=height, units="px", tree_style=ts, dpi=300)
-
-  # Log
-  with open(f"output/{os.path.basename(input_tree)[:-4]}.log", "w") as logfile:
-      logfile.write("Tree visualization parameters:\\n")
-      logfile.write(f"Input tree: {input_tree}\\n")
-      logfile.write(f"Dimensions: {width}x{height}px\\n")
-      logfile.write(f"Layout: {layout}\\n")
-      logfile.write(f"Color scheme: {color_scheme}\\n")
-      logfile.write(f"Branch thickness: {branch_thickness}\\n")
-      logfile.write(f"Output image: {output_file}\\n")
-  EOF
+    echo "[INFO] TREE_VISUALIZATION finished $(date)" | tee -a debug.log
   >>>
 
-
   runtime {
-    docker: "gmboowa/ete3-render:1.14"
-    memory: "8 GB"
+    docker: "gmboowa/ete3-render:1.18"
+    memory: "16 GB"
     cpu: 2
-    disks: "local-disk 20 HDD"
+    disks: "local-disk 50 HDD"
+    continueOnReturnCode: true
+    preemptible: 2
   }
 
   output {
     File final_image = "output/~{basename(input_tree, '.nwk')}.~{image_format}"
-    File render_log = "output/~{basename(input_tree, '.nwk')}.log"
+    File render_log  = "output/~{basename(input_tree, '.nwk')}.log"
+    File debug_log   = "debug.log"
+    File? error_log  = "output/~{basename(input_tree, '.nwk')}_error.log"
+    Boolean tree_valid  = size(input_tree, "B") > 10
   }
 }
+
+
 task MERGE_REPORTS {
   input {
     # Section HTMLs (optional)
     File? trimming_report_html
-    File? fastqc_summary_html
     File? assembly_stats_html
     File? annotation_summary_html
     File? pangenome_report_html
     File? gene_heatmap_png
     File? mlst_combined_html
     File? variant_summary_html
-    File? amr_combined_html
-    File? mge_combined_html
-    File? virulence_combined_html
+
+    # Per-sample arrays
+    Array[File] amr_reports = []
+    Array[File] mge_reports = []
+    Array[File] virulence_reports = []
+    Array[File] quality_reports = []
+    Array[File] blast_reports = []
 
     # Direct-file inputs
     File? pangenome_report
     File? gene_heatmap
 
     # Collections
-    Array[File] blast_reports = []
     Array[File] tree_images = []
 
     # Meta
@@ -3409,145 +3644,290 @@ task MERGE_REPORTS {
     String version = "2.0"
     String footer_sentence = ""
     Boolean skip = false
+
+    # Logo file as input (optional override)
+    File? logo_file
   }
 
   command <<<
     #!/usr/bin/env bash
     set -euo pipefail
+    shopt -s nullglob
 
-    # Always ensure this file exists so Cromwell can map it
+    LOG_FILE="report_generation.log"
+    exec > >(tee -a "$LOG_FILE") 2>&1
+    echo "=== Starting report generation at $(date) ==="
+
     : > skip_report.log
 
-    # Always start clean
-    rm -rf final_report default_report.tgz final_report.tgz || true
-    mkdir -p final_report/assets/images
+    echo "Cleaning working directory..."
+    rm -rfv final_report default_report.tgz final_report.tgz || true
+    mkdir -pv final_report/assets/images final_report/assets/sections
 
-    RUN_DATE="$(date)"
-    RUN_HEADER="This run was generated using rMAP version ~{version} performed on ${RUN_DATE}… Thank you for using this pipeline!!"
+    readonly REPORT_FILENAME="rMAP_~{version}_final_report.html"
+    readonly RUN_DATE="$(date +"%Y-%m-%d %H:%M:%S %Z")"
+    export RUN_DATE  # ensure available to tools like perl/sed if needed
 
-    if [ "~{skip}" == "true" ]; then
-      echo "Skipping report generation as requested" > skip_report.log
+    LOGO_HTML_TOP=""
+    LOGO_HTML_BOTTOM=""
+    LOGO_PATH="final_report/assets/images/rMAP_logo.png"
 
-      cat > final_report/index.html <<'EOF'
-<!DOCTYPE html>
-<html lang="en"><head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Report Generation Skipped</title>
-  <style>
-    body { font-family: Arial, sans-serif; margin: 40px; }
-    .skip-notice { background:#fff3cd;border:1px solid #ffeeba;padding:20px;border-radius:5px;margin:20px 0;text-align:center; }
-  </style>
-</head>
-<body>
-  <h1>Report Generation Skipped</h1>
-  <div class="skip-notice">
-    <p>This report was not generated because the workflow was configured to skip this step.</p>
-    <p>Generated: DATE_PLACEHOLDER</p>
-  </div>
-</body>
-</html>
-EOF
-      # Stamp date
-      sed -i "s/DATE_PLACEHOLDER/${RUN_DATE}/" final_report/index.html
+    # ----------------------------------------------------------
+    # Robust logo setup: copy if provided, otherwise download it
+    # Try 5 different methods in order until one succeeds.
+    # ----------------------------------------------------------
+    copy_provided_logo() {
+      if [[ -n "~{logo_file}" && -f "~{logo_file}" ]]; then
+        echo "[logo] Using provided logo file: ~{logo_file}"
+        cp -v "~{logo_file}" "$LOGO_PATH" && return 0 || true
+      fi
+      return 1
+    }
 
-      tar -czf final_report.tgz final_report
-      exit 0
-    fi
-
-    # Prepare a tiny default archive in case something fails later
-    echo "<html><body><h1>Report Generation Failed</h1></body></html>" > final_report/index.html
-    tar -czf default_report.tgz final_report/index.html
-
-    # Helper to copy if present
-    cp_if_exists() {
-      local src="$1"
-      local dst_dir="$2"
-      if [ -n "${src}" ] && [ -f "${src}" ]; then
-        cp "${src}" "${dst_dir}/"
+    ensure_tools() {
+      # Install minimal tools if missing
+      if ! command -v curl >/dev/null 2>&1 || ! command -v wget >/dev/null 2>&1 || ! command -v git >/dev/null 2>&1 || ! command -v python3 >/dev/null 2>&1; then
+        echo "[deps] Installing missing tools (curl, wget, git, python3, ca-certificates)..."
+        (apt-get update && apt-get install -y --no-install-recommends curl wget git python3 ca-certificates) || echo "[deps] Warning: apt-get failed; continuing with available tools" >&2
       fi
     }
 
-    # Heatmap image (two possible inputs)
-    GH_BASENAME=""
-    if [ -n "~{gene_heatmap}" ] && [ -f "~{gene_heatmap}" ]; then
-      cp "~{gene_heatmap}" final_report/assets/images/
-      GH_BASENAME="$(basename "~{gene_heatmap}")"
-    elif [ -n "~{gene_heatmap_png}" ] && [ -f "~{gene_heatmap_png}" ]; then
-      cp "~{gene_heatmap_png}" final_report/assets/images/
-      GH_BASENAME="$(basename "~{gene_heatmap_png}")"
+    try_curl_raw() {
+      local url="https://raw.githubusercontent.com/gmboowa/rMAP-2.0/main/rMAP-2.0_logo.png"
+      if command -v curl >/dev/null 2>&1; then
+        echo "[logo] curl raw.githubusercontent attempt..."
+        curl -fSL "$url" -o "$LOGO_PATH" && return 0 || true
+      fi
+      return 1
+    }
+
+    try_wget_raw() {
+      local url="https://raw.githubusercontent.com/gmboowa/rMAP-2.0/main/rMAP-2.0_logo.png"
+      if command -v wget >/dev/null 2>&1; then
+        echo "[logo] wget raw.githubusercontent attempt..."
+        wget -qO "$LOGO_PATH" "$url" && return 0 || true
+      fi
+      return 1
+    }
+
+    try_github_api() {
+      # Use GitHub API with Accept header for raw content
+      local api_url="https://api.github.com/repos/gmboowa/rMAP-2.0/contents/rMAP-2.0_logo.png"
+      if command -v curl >/dev/null 2>&1; then
+        echo "[logo] curl GitHub API attempt..."
+        curl -fSL -H "Accept: application/vnd.github.v3.raw" "$api_url" -o "$LOGO_PATH" && return 0 || true
+      fi
+      return 1
+    }
+
+    try_jsdelivr() {
+      # CDN mirror via jsDelivr
+      local cdn_url="https://cdn.jsdelivr.net/gh/gmboowa/rMAP-2.0@main/rMAP-2.0_logo.png"
+      if command -v curl >/dev/null 2>&1; then
+        echo "[logo] curl jsDelivr attempt..."
+        curl -fSL "$cdn_url" -o "$LOGO_PATH" && return 0 || true
+      fi
+      if command -v wget >/dev/null 2>&1; then
+        echo "[logo] wget jsDelivr attempt..."
+        wget -qO "$LOGO_PATH" "$cdn_url" && return 0 || true
+      fi
+      return 1
+    }
+
+    try_git_clone() {
+      # Shallow clone and copy the file
+      if command -v git >/dev/null 2>&1; then
+        echo "[logo] git clone attempt..."
+        rm -rf /tmp/rmap2logo || true
+        git clone --depth 1 https://github.com/gmboowa/rMAP-2.0.git /tmp/rmap2logo && \
+          cp -v /tmp/rmap2logo/rMAP-2.0_logo.png "$LOGO_PATH" && { rm -rf /tmp/rmap2logo || true; return 0; }
+        rm -rf /tmp/rmap2logo || true
+      fi
+      return 1
+    }
+
+    try_python_urllib() {
+      if command -v python3 >/dev/null 2>&1; then
+        echo "[logo] python urllib attempt..."
+        python3 - <<'PY' || exit 1
+import sys, ssl, urllib.request
+url = "https://raw.githubusercontent.com/gmboowa/rMAP-2.0/main/rMAP-2.0_logo.png"
+ctx = ssl.create_default_context()
+try:
+    with urllib.request.urlopen(url, context=ctx, timeout=60) as r, open("final_report/assets/images/rMAP_logo.png","wb") as f:
+        f.write(r.read())
+    sys.exit(0)
+except Exception as e:
+    sys.exit(1)
+PY
+        return 0
+      fi
+      return 1
+    }
+
+    logo_ok=false
+    copy_provided_logo && logo_ok=true || true
+    if [[ "$logo_ok" != true ]]; then ensure_tools || true; fi
+    if [[ "$logo_ok" != true ]]; then try_curl_raw   && logo_ok=true || true; fi
+    if [[ "$logo_ok" != true ]]; then try_wget_raw   && logo_ok=true || true; fi
+    if [[ "$logo_ok" != true ]]; then try_github_api && logo_ok=true || true; fi
+    if [[ "$logo_ok" != true ]]; then try_jsdelivr   && logo_ok=true || true; fi
+    if [[ "$logo_ok" != true ]]; then try_git_clone  && logo_ok=true || true; fi
+    if [[ "$logo_ok" != true ]]; then try_python_urllib && logo_ok=true || true; fi
+
+    if [[ "$logo_ok" == true && -s "$LOGO_PATH" ]]; then
+      echo "[logo] Logo obtained successfully: $LOGO_PATH"
+    else
+      echo "[logo] WARNING: Failed to obtain logo after multiple methods; captions will render, image will hide." >&2
     fi
 
-    # Copy tree images (if any)
-    for img in ~{sep=' ' tree_images}; do
-      if [ -f "$img" ]; then
-        cp "$img" final_report/assets/images/
-      fi
-    done
+    # --- Always build the logo snippet (image hides itself if missing) ---
+    cat <<EOT > "/tmp/logo_snippet.html"
+<div class="logo-combo">
+  <div class="logo-caption-top">rMAP-2.0 Comprehensive Analysis Report Summary: ${RUN_DATE}</div>
+  <div class="logo-container"><img src="assets/images/rMAP_logo.png" alt="rMAP Logo" style="height:200px;object-fit:contain;margin:10px" onerror="this.style.display='none'"></div>
+  <div class="logo-caption-bottom">This run was generated using rMAP version ~{version} performed on ${RUN_DATE}... Thank you for using this pipeline!!</div>
+</div>
+EOT
+    LOGO_HTML_TOP="$(cat /tmp/logo_snippet.html)"
+    LOGO_HTML_BOTTOM="$LOGO_HTML_TOP"
 
-    # HTML embedding function (safe: checks file existence)
+    if [[ "~{skip}" == "true" ]]; then
+      echo "Skipping report generation as requested" > skip_report.log
+      cat > "final_report/${REPORT_FILENAME}" <<EOF
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report Generation Skipped</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 40px; }
+  .skip-notice { background: #fff3cd; border: 1px solid #ffeeba; padding: 20px; border-radius: 5px; margin: 20px 0; text-align: center; }
+  .logo-container { text-align: center; margin: 10px 0; }
+  .logo-caption-top, .logo-caption-bottom { text-align: center; margin: 6px 0; font-weight: 600; }
+</style></head>
+<body>
+  ${LOGO_HTML_TOP}
+  <h1>Report Generation Skipped</h1>
+  <div class="skip-notice">
+    <p>This report was not generated because the workflow was configured to skip this step.</p>
+  </div>
+  ${LOGO_HTML_BOTTOM}
+</body></html>
+EOF
+      tar -czvf final_report.tgz final_report
+      exit 0
+    fi
+
+    echo "Creating default report (fallback)..."
+    cat > "final_report/${REPORT_FILENAME}" <<EOF
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report Generation Failed</title>
+<style>.logo-container{text-align:center;margin:10px 0}.logo-caption-top,.logo-caption-bottom{text-align:center;margin:6px 0;font-weight:600}</style>
+</head><body>
+  ${LOGO_HTML_TOP}
+  <h1>Report Generation Failed</h1>
+  <p>An error occurred while generating the report. Please check the workflow logs.</p>
+  ${LOGO_HTML_BOTTOM}
+</body></html>
+EOF
+    tar -czvf default_report.tgz "final_report/${REPORT_FILENAME}"
+
+    safe_copy() {
+      local src="$1"; local dst="$2"
+      [[ -n "${src}" && -f "${src}" ]] || { echo "Skip copy: missing ${src}" >&2; return 1; }
+      mkdir -p "$(dirname "${dst}")"
+      cp -v "${src}" "${dst}" || { echo "Copy failed: ${src}" >&2; return 1; }
+    }
+
     embed_html() {
-      local label="$1"
-      local file="$2"
-      local out="$3"
-
+      local label="$1"; local file="$2"; local out="$3"
       {
         echo "          <div class=\"report-card\">"
         echo "            <h3>${label}</h3>"
         echo "            <div class=\"report-content\">"
-        if [ -n "${file}" ] && [ -f "${file}" ]; then
-          if grep -q "<table" "$file" 2>/dev/null; then
-            sed -n '/<table[ >]/,/<\/table>/p' "$file"
+        if [[ -f "${file}" ]]; then
+          if grep -q "<table" "${file}" 2>/dev/null; then
+            sed -n '/<table[ >]/,/<\/table>/p' "${file}"
           else
-            cat "$file"
+            sed 's/<script[^>]*>.*<\/script>//gI; /<link[^>]*>/d' "${file}"
           fi
         else
-          echo "<p><em>No ${label} available.</em></p>"
+          echo "<p><em>No ${label} data available.</em></p>"
         fi
         echo "            </div>"
         echo "          </div>"
-      } >> "$out"
+      } >> "${out}"
     }
 
-    # --------- Build the main HTML ----------
-    cat > final_report/index.html <<EOF
+    # --- Modified Heatmap Handling with Explicit Precedence ---
+    GH_BASENAME=""
+    # Explicit precedence: gene_heatmap takes priority over gene_heatmap_png
+    if [[ -n "~{gene_heatmap}" && -f "~{gene_heatmap}" ]]; then
+      echo "[heatmap] Using primary gene_heatmap input"
+      if safe_copy "~{gene_heatmap}" "final_report/assets/images/$(basename "~{gene_heatmap}")"; then
+        GH_BASENAME="$(basename "~{gene_heatmap}")"
+      fi
+    elif [[ -n "~{gene_heatmap_png}" && -f "~{gene_heatmap_png}" ]]; then
+      echo "[heatmap] Falling back to gene_heatmap_png input"
+      if safe_copy "~{gene_heatmap_png}" "final_report/assets/images/$(basename "~{gene_heatmap_png}")"; then
+        GH_BASENAME="$(basename "~{gene_heatmap_png}")"
+      fi
+    fi
+
+    # Warn if both were provided but we're choosing one
+    if [[ -n "~{gene_heatmap}" && -f "~{gene_heatmap}" && -n "~{gene_heatmap_png}" && -f "~{gene_heatmap_png}" ]]; then
+      echo "WARNING: Both gene_heatmap and gene_heatmap_png provided - using gene_heatmap" >&2
+    fi
+
+    # Copy tree images up front (if any)
+    for img in ~{sep=' ' tree_images}; do
+      safe_copy "${img}" "final_report/assets/images/$(basename "${img}")" || true
+    done
+
+    echo "Generating main HTML report..."
+    cat > "final_report/${REPORT_FILENAME}" <<EOF
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>~{workflow_name} - Comprehensive Report</title>
   <style>
     :root { --primary:#3498db; --secondary:#2c3e50; --light:#f8f9fa; --text:#333; --accent:#fff3cd; }
-    body { font-family:Segoe UI,Tahoma,Arial,sans-serif; margin:0; background:#f5f5f5; color:var(--text) }
-    .container { max-width:1200px; margin:0 auto; padding:20px }
-    .header { background:var(--secondary); color:#fff; padding:24px; border-radius:6px; margin-bottom:24px }
-    h1 { margin:0; font-size:2rem }
-    .meta { opacity:.9 }
-    .run-banner { margin-top:10px; background:var(--accent); color:#333; padding:10px 12px; border-radius:6px; font-weight:600; border:1px solid #e6cf8b }
-    .layout { display:flex; gap:24px }
-    .nav { position:sticky; top:16px; width:260px; background:var(--light); padding:16px; border-radius:6px }
-    .nav a { display:block; padding:8px 10px; border-radius:4px; text-decoration:none; color:var(--secondary) }
-    .nav a:hover { background:var(--primary); color:#fff }
-    .content { flex:1; background:#fff; padding:20px; border-radius:6px }
-    .section { margin-bottom:36px; border-bottom:1px solid #eee; padding-bottom:20px }
-    .section:last-child { border:none }
-    .report-card { background:var(--light); padding:16px; border-radius:6px; margin:12px 0 }
-    .image-center { text-align:center; margin:12px 0 }
-    img { max-width:100%; height:auto; border:1px solid #ddd; border-radius:4px }
-    .tabs { display:flex; gap:8px; margin:12px 0 }
-    .tab-btn { border:0; padding:8px 12px; border-radius:4px; background:#eee; cursor:pointer }
-    .tab-btn.active { background:var(--primary); color:#fff }
-    .tab { display:none }
-    .tab.active { display:block }
+    body { font-family:'Segoe UI',Tahoma,Arial,sans-serif; margin:0; background:#f5f5f5; color:var(--text); line-height:1.6; }
+    .container { max-width:1200px; margin:0 auto; padding:20px; }
+    .header { background:var(--secondary); color:#fff; padding:24px; border-radius:6px; margin-bottom:24px; }
+    .logo-combo { margin: 20px 0; }
+    .logo-container { text-align:center; margin:10px 0 }
+    .logo-caption-top, .logo-caption-bottom { text-align:center; margin:6px 0; font-weight:600 }
+    h1,h2,h3{margin-top:0} h1{font-size:2rem;text-align:center}
+    h2{font-size:1.75rem;color:var(--secondary); border-bottom:2px solid #3498db; padding-bottom:8px;}
+    h3{font-size:1.25rem;color:var(--secondary)}
+    .meta{opacity:.9;text-align:center;font-size:.9rem}
+    .layout{display:flex;gap:24px}
+    .nav{position:sticky;top:16px;width:260px;background:#f8f9fa;padding:16px;border-radius:6px;height:fit-content}
+    .nav a{display:block;padding:8px 10px;border-radius:4px;text-decoration:none;color:#2c3e50;margin:4px 0}
+    .nav a:hover{background:#3498db;color:#fff}
+    .content{flex:1;background:#fff;padding:20px;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,.05)}
+    .section{margin-bottom:36px;border-bottom:1px solid #eee;padding-bottom:20px}.section:last-child{border:none}
+    .report-card{background:#f8f9fa;padding:16px;border-radius:6px;margin:12px 0}
+    .image-center{text-align:center;margin:12px 0}
+    img{max-width:100%;height:auto;border:1px solid #ddd;border-radius:4px}
+    table{width:100%;border-collapse:collapse;margin:12px 0}
+    th,td{padding:8px 12px;text-align:left;border:1px solid #ddd}
+    th{background-color:#2c3e50;color:white} tr:nth-child(even){background:#f2f2f2}
+    .footer-banner{text-align:center;color:#333;margin:24px 0;padding:10px 12px;background:#fff3cd;border:1px solid #e6cf8b;border-radius:6px;font-weight:600}
+    @media(max-width:768px){.layout{flex-direction:column}.nav{position:static;width:auto}}
   </style>
 </head>
 <body>
 <div class="container">
+  ${LOGO_HTML_TOP}
+
   <div class="header">
     <h1>~{workflow_name}</h1>
-    <div class="meta">Version ~{version} • Generated <span id="gen-date"></span></div>
-    <div class="run-banner">${RUN_HEADER}</div>
+    <div class="meta">Version ~{version} • Run: ${RUN_DATE}</div>
   </div>
+
   <div class="layout">
     <nav class="nav">
       <strong>Sections</strong>
@@ -3564,205 +3944,240 @@ EOF
       <a href="#blast">BLAST</a>
       <a href="#phylogeny">Phylogeny</a>
     </nav>
+
     <div class="content">
       <div id="summary" class="section">
         <h2>Analysis Summary</h2>
         <div class="report-card">
-          <p>This report aggregates results from rMAP modules (QC, assembly/annotation, pangenome/phylogeny, AMR/MGE/virulence, and BLAST).</p>
+          <p>This report aggregates results from rMAP modules (QC, assembly/annotation, pangenome/phylogeny, AMR/MGE/virulence/BLAST, and phylogeny).</p>
         </div>
       </div>
-EOF
 
-    # QC
-    cat >> final_report/index.html <<'EOF'
       <div id="qc" class="section">
         <h2>Quality Control</h2>
 EOF
-    embed_html "Read trimming" "~{trimming_report_html}" "final_report/index.html"
-    embed_html "FastQC / MultiQC summary" "~{fastqc_summary_html}" "final_report/index.html"
-    echo "      </div>" >> final_report/index.html
+    if (( ~{length(quality_reports)} )); then
+      echo '        <div class="report-card"><h3>Per-sample QC reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
+      idx=1
+      for qf in ~{sep=' ' quality_reports}; do
+        qb="$(basename "$qf")"
+        cp -v "$qf" "final_report/assets/sections/$qb" || true
+        echo "          <li><a href=\"assets/sections/$qb\" target=\"_blank\">QC Report ${idx} — $qb</a></li>" >> "final_report/${REPORT_FILENAME}"
+        idx=$((idx+1))
+      done
+      echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
+    fi
+    embed_html "Read trimming" "~{trimming_report_html}" "final_report/${REPORT_FILENAME}"
+    echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
     # Assembly
-    cat >> final_report/index.html <<'EOF'
-      <div id="assembly" class="section">
-        <h2>Assembly</h2>
+    cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
+      <div id="assembly" class="section"><h2>Assembly</h2>
 EOF
-    embed_html "Assembly statistics" "~{assembly_stats_html}" "final_report/index.html"
-    echo "      </div>" >> final_report/index.html
+    embed_html "Assembly statistics" "~{assembly_stats_html}" "final_report/${REPORT_FILENAME}"
+    echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
     # Annotation
-    cat >> final_report/index.html <<'EOF'
-      <div id="annotation" class="section">
-        <h2>Annotation</h2>
+    cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
+      <div id="annotation" class="section"><h2>Annotation</h2>
 EOF
-    embed_html "Annotation summary" "~{annotation_summary_html}" "final_report/index.html"
-    echo "      </div>" >> final_report/index.html
+    embed_html "Annotation summary" "~{annotation_summary_html}" "final_report/${REPORT_FILENAME}"
+    echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
     # Pangenome
-    cat >> final_report/index.html <<'EOF'
-      <div id="pangenome" class="section">
-        <h2>Pangenome</h2>
+    cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
+      <div id="pangenome" class="section"><h2>Pangenome</h2>
 EOF
-    if [ -n "~{pangenome_report}" ] && [ -f "~{pangenome_report}" ]; then
-      embed_html "Pangenome report" "~{pangenome_report}" "final_report/index.html"
+    if [[ -f "~{pangenome_report}" ]]; then
+      embed_html "Pangenome report" "~{pangenome_report}" "final_report/${REPORT_FILENAME}"
     else
-      embed_html "Pangenome report" "~{pangenome_report_html}" "final_report/index.html"
+      embed_html "Pangenome report" "~{pangenome_report_html}" "final_report/${REPORT_FILENAME}"
     fi
-
-    if [ -n "${GH_BASENAME:-}" ]; then
-      cat >> final_report/index.html <<EOF
+    if [[ -n "${GH_BASENAME:-}" ]]; then
+      cat >> "final_report/${REPORT_FILENAME}" <<EOF
         <div class="report-card">
           <h3>Gene Presence/Absence Heatmap</h3>
-          <div class="image-center">
-            <img src="assets/images/${GH_BASENAME}" alt="Gene presence/absence heatmap">
-          </div>
+          <div class="image-center"><img src="assets/images/${GH_BASENAME}" alt="Gene heatmap" onerror="this.style.display='none'"></div>
         </div>
 EOF
     fi
-    echo "      </div>" >> final_report/index.html
+    echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
     # MLST
-    cat >> final_report/index.html <<'EOF'
-      <div id="mlst" class="section">
-        <h2>MLST</h2>
+    cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
+      <div id="mlst" class="section"><h2>MLST</h2>
 EOF
-    embed_html "Combined MLST" "~{mlst_combined_html}" "final_report/index.html"
-    echo "      </div>" >> final_report/index.html
+    embed_html "Combined MLST" "~{mlst_combined_html}" "final_report/${REPORT_FILENAME}"
+    echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
     # Variants
-    cat >> final_report/index.html <<'EOF'
-      <div id="variants" class="section">
-        <h2>Variants</h2>
+    cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
+      <div id="variants" class="section"><h2>Variants</h2>
 EOF
-    embed_html "Variant summary" "~{variant_summary_html}" "final_report/index.html"
-    echo "      </div>" >> final_report/index.html
+    embed_html "Variant summary" "~{variant_summary_html}" "final_report/${REPORT_FILENAME}"
+    echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
-    # AMR
-    cat >> final_report/index.html <<'EOF'
-      <div id="amr" class="section">
-        <h2>Antimicrobial Resistance</h2>
+    # AMR — per-sample links only
+    cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
+      <div id="amr" class="section"><h2>Antimicrobial Resistance</h2>
 EOF
-    embed_html "Combined AMR" "~{amr_combined_html}" "final_report/index.html"
-    echo "      </div>" >> final_report/index.html
+    if (( ~{length(amr_reports)} )); then
+      echo '        <div class="report-card"><h3>Per-sample AMR reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
+      aidx=1
+      for ar in ~{sep=' ' amr_reports}; do
+        ab="$(basename "$ar")"
+        cp -v "$ar" "final_report/assets/sections/$ab" || true
+        echo "          <li><a href=\"assets/sections/$ab\" target=\"_blank\">AMR Report ${aidx} — $ab</a></li>" >> "final_report/${REPORT_FILENAME}"
+        aidx=$((aidx+1))
+      done
+      echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
+    fi
+    echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
-    # MGE
-    cat >> final_report/index.html <<'EOF'
-      <div id="mge" class="section">
-        <h2>Mobile Genetic Elements</h2>
+    # MGE — per-sample links only
+    cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
+      <div id="mge" class="section"><h2>Mobile Genetic Elements</h2>
 EOF
-    embed_html "Combined MGE" "~{mge_combined_html}" "final_report/index.html"
-    echo "      </div>" >> final_report/index.html
+    if (( ~{length(mge_reports)} )); then
+      echo '        <div class="report-card"><h3>Per-sample MGE reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
+      midx=1
+      for mr in ~{sep=' ' mge_reports}; do
+        mb="$(basename "$mr")"
+        cp -v "$mr" "final_report/assets/sections/$mb" || true
+        echo "          <li><a href=\"assets/sections/$mb\" target=\"_blank\">MGE Report ${midx} — $mb</a></li>" >> "final_report/${REPORT_FILENAME}"
+        midx=$((midx+1))
+      done
+      echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
+    fi
+    echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
-    # Virulence
-    cat >> final_report/index.html <<'EOF'
-      <div id="virulence" class="section">
-        <h2>Virulence</h2>
+    # VIRULENCE — per-sample links only
+    cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
+      <div id="virulence" class="section"><h2>Virulence</h2>
 EOF
-    embed_html "Combined virulence" "~{virulence_combined_html}" "final_report/index.html"
-    echo "      </div>" >> final_report/index.html
+    if (( ~{length(virulence_reports)} )); then
+      echo '        <div class="report-card"><h3>Per-sample virulence reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
+      vidx=1
+      for vf in ~{sep=' ' virulence_reports}; do
+        vb="$(basename "$vf")"
+        cp -v "$vf" "final_report/assets/sections/$vb" || true
+        echo "          <li><a href=\"assets/sections/$vb\" target=\"_blank\">Virulence Report ${vidx} — $vb</a></li>" >> "final_report/${REPORT_FILENAME}"
+        vidx=$((vidx+1))
+      done
+      echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
+    fi
+    echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
-    # BLAST tabs (only for existing files)
-    cat >> final_report/index.html <<'EOF'
-      <div id="blast" class="section">
-        <h2>BLAST</h2>
-        <div class="tabs">
+    # BLAST — per-sample links only (unique names by sample folder)
+    cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
+      <div id="blast" class="section"><h2>BLAST</h2>
 EOF
-    i=0
-    for br in ~{sep=' ' blast_reports}; do
-      if [ -f "$br" ]; then
-        sname=$(basename "$(dirname "$br")")
-        cls=""
-        if [ $i -eq 0 ]; then cls="active"; fi
-        echo "<button class=\"tab-btn ${cls}\" onclick=\"openTab(event,'tab${i}')\">${sname}</button>" >> final_report/index.html
-        i=$((i+1))
-      fi
-    done
-    echo "        </div>" >> final_report/index.html
-
-    i=0
-    for br in ~{sep=' ' blast_reports}; do
-      if [ -f "$br" ]; then
-        cls=""
-        if [ $i -eq 0 ]; then cls="active"; fi
-        echo "<div id=\"tab${i}\" class=\"tab ${cls}\">" >> final_report/index.html
-        if grep -q "<table" "$br" 2>/dev/null; then
-          sed -n '/<table[ >]/,/<\/table>/p' "$br" >> final_report/index.html
-        else
-          echo "<p><em>BLAST report available: $(basename "$br")</em></p>" >> final_report/index.html
-        fi
-        echo "</div>" >> final_report/index.html
-        i=$((i+1))
-      fi
-    done
-    echo "      </div>" >> final_report/index.html
+    if (( ~{length(blast_reports)} )); then
+      echo '        <div class="report-card"><h3>Per-sample BLAST reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
+      bidx=1
+      for br in ~{sep=' ' blast_reports}; do
+        parent="$(basename "$(dirname "$br")"        # sample folder name, e.g. SRR123
+        ext="${br##*.}"
+        unique="${parent}_blast.${ext}"                # e.g., SRR123_blast.html
+        cp -v "$br" "final_report/assets/sections/$unique" || true
+        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">BLAST Report ${bidx} — ${parent}</a></li>" >> "final_report/${REPORT_FILENAME}"
+        bidx=$((bidx+1))
+      done
+      echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
+    fi
+    echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
     # Phylogeny
-    cat >> final_report/index.html <<'EOF'
-      <div id="phylogeny" class="section">
-        <h2>Phylogeny</h2>
+    cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
+      <div id="phylogeny" class="section"><h2>Phylogeny</h2>
 EOF
     for img in ~{sep=' ' tree_images}; do
-      if [ -f "$img" ]; then
-        b=$(basename "$img")
-        cat >> final_report/index.html <<EOF
+      if [[ -f "${img}" ]]; then
+        b=$(basename "${img}")
+        cat >> "final_report/${REPORT_FILENAME}" <<EOF
         <div class="report-card">
-          <h3>$b</h3>
-          <div class="image-center"><img src="assets/images/$b" alt="Phylogenetic tree"></div>
+          <h3>${b}</h3>
+          <div class="image-center"><img src="assets/images/${b}" alt="Phylogenetic tree" onerror="this.style.display='none'"></div>
         </div>
 EOF
       fi
     done
-    echo "      </div>" >> final_report/index.html
+    echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
-    # Footer + closing (footer text stamped below)
-    cat >> final_report/index.html <<'EOF'
-    </div>
-  </div>
-  <div class="footer-banner" style="text-align:center;color:#333;margin:24px 0;padding:10px 12px;background:#fff3cd;border:1px solid #e6cf8b;border-radius:6px;font-weight:600">
-    FOOTER_SENTENCE_PLACEHOLDER
-  </div>
+    # Footer (close HTML)
+    cat >> "final_report/${REPORT_FILENAME}" <<EOF
+    </div> <!-- content -->
+  </div> <!-- layout -->
+
+  ${LOGO_HTML_BOTTOM}
+  <div class="footer-banner">FOOTER_SENTENCE_PLACEHOLDER</div>
 </div>
-<script>
-  document.getElementById('gen-date').textContent = new Date().toLocaleString();
-  function openTab(evt, id){
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-    evt.currentTarget.classList.add('active');
-  }
-</script>
-</body>
-</html>
+</body></html>
 EOF
 
-    # Build footer sentence with dynamic date/version, honoring user text if provided.
-    FS="~{footer_sentence}"
-    if [ -z "${FS// }" ]; then
-      FS="This run was generated using rMAP version ~{version} performed on ${RUN_DATE}… Thank you for using this pipeline!!"
-    else
-      FS="${FS//{RUN_DATE}/${RUN_DATE}}"
-      FS="${FS//{VERSION}/~{version}}"
-      FS="${FS//2021-06-14/${RUN_DATE}}"
-    fi
-    # Stamp footer into HTML
-    sed -i "s|FOOTER_SENTENCE_PLACEHOLDER|${FS}|" final_report/index.html
+    # Extra safety: if any literal ${RUN_DATE} survived (e.g., someone re-quoted a heredoc),
+    # replace it now with the actual timestamp.
+    perl -0777 -pe 's/\$\{RUN_DATE\}/$ENV{RUN_DATE}/g' -i "final_report/${REPORT_FILENAME}" || true
 
-    # Create archive; if tar fails, fall back to default
-    tar -czf final_report.tgz final_report || cp default_report.tgz final_report.tgz
+    FS="~{footer_sentence}"
+    if [[ -z "${FS// }" ]]; then
+      FS="Analysis performed using rMAP version ~{version}"
+    else
+      FS="${FS//\{RUN_DATE\}/${RUN_DATE}}"
+      FS="${FS//\{VERSION\}/~{version}}"
+    fi
+    sed -i "s|FOOTER_SENTENCE_PLACEHOLDER|${FS}|" "final_report/${REPORT_FILENAME}"
+
+    echo "Creating final_report.tgz..."
+    tar -czvf final_report.tgz final_report || cp -v default_report.tgz final_report.tgz
+
+    [[ -f "final_report.tgz" && -f "final_report/${REPORT_FILENAME}" ]] || { echo "Error: outputs missing" >&2; exit 1; }
+    echo "=== Report generation complete $(date) ==="
+    ls -lh final_report.tgz final_report/${REPORT_FILENAME} || true
   >>>
 
   runtime {
     docker: "ubuntu:20.04"
-    cpu: 2
-    memory: "2 GB"
-    disks: "local-disk 50 HDD"
+    cpu: 4
+    memory: "8 GB"
+    disks: "local-disk 100 HDD"
+    dockerVolumeMode: "delegated"
     continueOnReturnCode: true
-    maxRetries: 1
+    maxRetries: 3
+    preemptible: 0
+    bootDiskSizeGb: 20
+    bootDiskType: "pd-ssd"
   }
 
   output {
-    File final_report_html = "final_report/index.html"
-    File final_report_tgz = "final_report.tgz"
-    File skip_log = "skip_report.log"
+    File final_report_html = "final_report/rMAP_~{version}_final_report.html"
+    File final_report_tgz  = "final_report.tgz"
+    File skip_log          = "skip_report.log"
+    File? generation_log   = "report_generation.log"
+  }
+
+  parameter_meta {
+    trimming_report_html: "HTML report from read trimming"
+    assembly_stats_html:  "HTML with assembly statistics"
+    annotation_summary_html: "HTML with annotation summary"
+    pangenome_report_html: "HTML pangenome report"
+    gene_heatmap_png:     "PNG image of gene presence/absence heatmap"
+    mlst_combined_html:   "Combined MLST results in HTML"
+    variant_summary_html: "HTML variant summary"
+
+    amr_reports:          "Array of per-sample AMR HTML reports"
+    mge_reports:          "Array of per-sample MGE HTML reports"
+    virulence_reports:    "Array of per-sample virulence HTML reports"
+    quality_reports:      "Array of per-sample QC HTML reports"
+    blast_reports:        "Array of per-sample BLAST HTML reports"
+
+    pangenome_report:     "Direct pangenome report file"
+    gene_heatmap:         "Direct gene heatmap image file"
+    tree_images:          "Array of phylogenetic tree images"
+    workflow_name:        "Name of the workflow for report title"
+    version:              "Version number to display in report"
+    footer_sentence:      "Custom footer text (supports {RUN_DATE} and {VERSION} placeholders)"
+    skip:                 "Whether to skip report generation"
+    logo_file:            "Optional logo file to use instead of downloading"
   }
 }
