@@ -58,8 +58,8 @@ workflow rMAP {
     allowNestedInputs: true
     maxRetries: 3
     continueOnReturnCode: "0,1"
-    author: "Gerald Mboowa, Ivan Sserwadda & Stephen Kanyerezi"
-    email: "gmboowa@gmail.com | ivangunz23@gmail.com | kanyerezi30@gmail.com"
+    authors: "Gerald Mboowa, Ivan Sserwadda & Stephen Kanyerezi"
+    email addresses: "gmboowa@gmail.com | ivangunz23@gmail.com | kanyerezi30@gmail.com"
   }
 
   call CONFIGURATION {
