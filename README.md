@@ -105,8 +105,6 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 - `tree_visualization/` – Tree image visualizations from ETE3 (`*.png`)  
 - `merged_reports/` – Final summary report (`index.html`), logs, & combined tables  
 
-
-
 ---
 
 ## Sample input JSON
