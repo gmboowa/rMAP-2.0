@@ -136,6 +136,7 @@ Validate your JSON at: 'https://jsonlint.com/'
   "rMAP.do_pangenome": true,
   "rMAP.do_phylogeny": true,
   "rMAP.do_mge_analysis": true,
+  "rMAP.do_virulence": true,
   "rMAP.do_reporting": true,
   "rMAP.do_blast": true,
   "rMAP.use_local_blast": true,
