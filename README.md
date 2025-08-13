@@ -171,13 +171,13 @@ Validate your JSON at: 'https://jsonlint.com/'
 | Annotation          | Prokka        | `staphb/prokka:1.14.6`                |
 | Variant Calling     | Snippy        | `staphb/snippy:4.6.0`                 |
 | MLST                | MLST          | `staphb/mlst:2.19.0`                  |
-| Pangenome           | Roary         | `quay.io/biocontainers/roary:3.13.0--pl526h516909a_0`                 |
+| Pangenome           | Roary         | `gmboowa/roary-pillow:0.4`                 |
 | Phylogeny           | FastTree      | `staphb/fasttree:2.1.11`              |
-| Tree Visualization  | ETE3          | `gmboowa/ete3-render:1.14`            |
+| Tree Visualization  | ETE3          | `gmboowa/ete3-render:1.18`            |
 | AMR Profiling       | Abricate      | `staphb/abricate:1.0.0`               |
 | MGE Analysis        | Abricate      | `staphb/abricate:latest`              |
 | Virulence Analysis  | Abricate      | `staphb/abricate:latest`              |
-| BLAST               | BLAST+        | `gmboowa/blast-analysis:1.9.3`        |
+| BLAST               | BLAST+        | `gmboowa/blast-analysis:1.9.4`        |
 
 ---
 
