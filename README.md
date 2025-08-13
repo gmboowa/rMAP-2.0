@@ -253,18 +253,10 @@ Certain analysis modules require minimum sample numbers to function properly:
 ### Configuration guidance
 
 ```json
-// For datasets with <4 samples:
-{
-  "rMAP.do_phylogeny": false,
-  // Other parameters...
-}
 
-// For single-sample analyses:
-{
-  "rMAP.do_pangenome": false,
-  "rMAP.do_phylogeny": false,
-  // Other parameters...
-}
+
+- **Pangenome analysis** requires at least **2 samples**.
+- **Phylogeny analysis** requires at least **4 samples**.
 
 ```
 
