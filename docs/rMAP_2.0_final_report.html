@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>rMAP Analysis Pipeline - Comprehensive Report</title>
+  <style>
+    :root {
+      --primary: #3498db;
+      --secondary: #2c3e50;
+      --light: #f8f9fa;
+      --text: #333;
+      --accent: #fff3cd;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
+      margin: 0;
+      background: #f5f5f5;
+      color: var(--text);
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background: var(--secondary);
+      color: #fff;
+      padding: 24px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+      position: relative;
+    }
+    .logo-container {
+      text-align: center;
+      margin: 20px 0;
+    }
+    .logo {
+      height: 150px;  /* Increased from 120px */
+      object-fit: contain;
+      margin: 10px;
+    }
+    .footer-logo {
+      height: 120px;  /* New style for footer logo */
+      object-fit: contain;
+      margin: 10px;
+    }
+    h1, h2, h3 {
+      margin-top: 0;
+    }
+    h1 {
+      font-size: 2rem;
+      text-align: center;
+    }
+    h2 {
+      font-size: 1.75rem;
+      color: var(--secondary);
+      border-bottom: 2px solid var(--primary);
+      padding-bottom: 8px;
+    }
+    h3 {
+      font-size: 1.25rem;
+      color: var(--secondary);
+    }
+    .meta {
+      opacity: 0.9;
+      text-align: center;
+      font-size: 0.9rem;
+    }
+    .run-banner {
+      margin-top: 10px;
+      background: var(--accent);
+      color: #333;
+      padding: 10px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      border: 1px solid #e6cf8b;
+      text-align: center;
+    }
+    .layout {
+      display: flex;
+      gap: 24px;
+    }
+    .nav {
+      position: sticky;
+      top: 16px;
+      width: 260px;
+      background: var(--light);
+      padding: 16px;
+      border-radius: 6px;
+      height: fit-content;
+    }
+    .nav a {
+      display: block;
+      padding: 8px 10px;
+      border-radius: 4px;
+      text-decoration: none;
+      color: var(--secondary);
+      margin: 4px 0;
+      transition: all 0.2s;
+    }
+    .nav a:hover {
+      background: var(--primary);
+      color: #fff;
+    }
+    .content {
+      flex: 1;
+      background: #fff;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .section {
+      margin-bottom: 36px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 20px;
+    }
+    .section:last-child {
+      border: none;
+    }
+    .report-card {
+      background: var(--light);
+      padding: 16px;
+      border-radius: 6px;
+      margin: 12px 0;
+    }
+    .image-center {
+      text-align: center;
+      margin: 12px 0;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    .tabs {
+      display: flex;
+      gap: 8px;
+      margin: 12px 0;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      border: 0;
+      padding: 8px 12px;
+      border-radius: 4px;
+      background: #eee;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tab-btn:hover {
+      background: #ddd;
+    }
+    .tab-btn.active {
+      background: var(--primary);
+      color: #fff;
+    }
+    .tab {
+      display: none;
+    }
+    .tab.active {
+      display: block;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+    }
+    th, td {
+      padding: 8px 12px;
+      text-align: left;
+      border: 1px solid #ddd;
+    }
+    th {
+      background-color: var(--secondary);
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+    .footer-banner {
+      text-align: center;
+      color: #333;
+      margin: 24px 0;
+      padding: 10px 12px;
+      background: var(--accent);
+      border: 1px solid #e6cf8b;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+    @media (max-width: 768px) {
+      .layout {
+        flex-direction: column;
+      }
+      .nav {
+        position: static;
+        width: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- Logo at top center -->
+  <div class="logo-container"><img src="assets/images/rMAP_logo.png" alt="rMAP Logo" class="logo" onerror="this.style.display='none'"></div>
+
+  <div class="header">
+    <h1>rMAP Analysis Pipeline</h1>
+    <div class="meta">Version 2.0 • Generated <span id="gen-date"></span></div>
+    <div class="run-banner">Analysis performed using rMAP version 2.0 on 2025-08-09 00:34:22 UTC</div>
+  </div>
+
+  <div class="layout">
+    <nav class="nav">
+      <strong>Sections</strong>
+      <a href="#summary">Summary</a>
+      <a href="#qc">Quality Control</a>
+      <a href="#assembly">Assembly</a>
+      <a href="#annotation">Annotation</a>
+      <a href="#pangenome">Pangenome</a>
+      <a href="#mlst">MLST</a>
+      <a href="#variants">Variants</a>
+      <a href="#amr">AMR</a>
+      <a href="#mge">MGE</a>
+      <a href="#virulence">Virulence</a>
+      <a href="#blast">BLAST</a>
+      <a href="#phylogeny">Phylogeny</a>
+    </nav>
+
+    <div class="content">
+      <div id="summary" class="section">
+        <h2>Analysis Summary</h2>
+        <div class="report-card">
+          <p>This report aggregates results from rMAP modules (QC, assembly/annotation, pangenome/phylogeny, AMR/MGE/virulence, and BLAST).</p>
+        </div>
+      </div>
+      <div id="qc" class="section">
+        <h2>Quality Control</h2>
+          <div class="report-card">
+            <h3>Read trimming</h3>
+            <div class="report-content">
+        <table>
+            <thead>
+                <tr>
+                    <th>Sample</th>
+                    <th>Input Pairs</th>
+                    <th>Both Surviving</th>
+                    <th>Forward Only</th>
+                    <th>Reverse Only</th>
+                    <th>Dropped (%)</th>
+                    <th>Survival Rate (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>A55738</td>
+                <td>1894492</td>
+                <td>1799185</td>
+                <td>23765</td>
+                <td>55411</td>
+                <td>0.85%</td>
+                <td class="good">99.15%</td>
+            </tr>
+            </tbody>
+        </table>
+<table>
+<tr><th>Metric</th><th>R1</th><th>R2</th></tr>
+<tr>
+<td>Number of reads</td>
+<td>1799185</td>
+<td>1799185</td>
+</tr>
+<tr>
+<td>Average length</td>
+<td>232.974</td>
+<td>241.154</td>
+</tr>
+<tr>
+<td>GC content</td>
+<td>56.7105</td>
+<td>56.5715</td>
+</tr>
+</table>
+            </div>
+          </div>
+          <div class="report-card">
+            <h3>FastQC / MultiQC summary</h3>
+            <div class="report-content">
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Report</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>A55738_1.trim</td>
+                <td><a href="A55738_1.trim_fastqc.html">HTML Report</a></td>
+                <td><a href="A55738_1.trim_fastqc.zip">Raw Data</a></td>
+            </tr>
+            <tr>
+                <td>A55738_2.trim</td>
+                <td><a href="A55738_2.trim_fastqc.html">HTML Report</a></td>
+                <td><a href="A55738_2.trim_fastqc.zip">Raw Data</a></td>
+            </tr>
+        </tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="assembly" class="section">
+        <h2>Assembly</h2>
+          <div class="report-card">
+            <h3>Assembly statistics</h3>
+            <div class="report-content">
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Contigs</th>
+                <th>Total Length</th>
+                <th>Min Length</th>
+                <th>Max Length</th>
+                <th>Avg Length</th>
+                <th>N50</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr><td>A55738</td><td>982</td><td>5653703</td><td>122</td><td>221679</td><td>5757</td><td>46815</td></tr>
+        </tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="annotation" class="section">
+        <h2>Annotation</h2>
+          <div class="report-card">
+            <h3>Annotation summary</h3>
+            <div class="report-content">
+<p><em>No Annotation summary data available.</em></p>
+            </div>
+          </div>
+      </div>
+      <div id="pangenome" class="section">
+        <h2>Pangenome</h2>
+          <div class="report-card">
+            <h3>Pangenome report</h3>
+            <div class="report-content">
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Pangenome Analysis Report</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;margin:20px}h1{color:#2c3e50}</style>
+</head>
+<body>
+  <h1>Pangenome Analysis</h1>
+  <p id="status">Pangenome step was disabled by parameters. (This page will show Roary results if available.)</p>
+  <img id="heatmap" src="gene_presence_heatmap.png" alt="Gene presence/absence heatmap" onerror="this.style.display='none'">
+</body>
+</html>
+            </div>
+          </div>
+        <div class="report-card">
+          <h3>Gene Presence/Absence Heatmap</h3>
+          <div class="image-center">
+            <img src="assets/images/gene_presence_heatmap.png" alt="Gene presence/absence heatmap" onerror="this.style.display='none'">
+          </div>
+        </div>
+      </div>
+      <div id="mlst" class="section">
+        <h2>MLST</h2>
+          <div class="report-card">
+            <h3>Combined MLST</h3>
+            <div class="report-content">
+    <table>
+<thead><tr>
+<th>Sample ID</th>
+<th>Species</th>
+<th>ST</th>
+<th>gapA</th>
+<th>infB</th>
+<th>mdh</th>
+<th>pgi</th>
+<th>phoE</th>
+<th>rpoB</th>
+<th>tonB</th>
+</tr></thead><tbody>
+<tr>
+<td>A55738</td>
+<td>kpneumoniae</td>
+<td class="st">297</td>
+<td>31</td>
+<td>1</td>
+<td>1</td>
+<td>37</td>
+<td>3</td>
+<td>27</td>
+<td>64</td>
+</tr>
+</tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="variants" class="section">
+        <h2>Variants</h2>
+          <div class="report-card">
+            <h3>Variant summary</h3>
+            <div class="report-content">
+<!DOCTYPE html>
+<html>
+<head><title>Variant Calling Summary</title></head>
+<body>
+  <h1>Variant Calling Summary</h1>
+  <p>Analysis failed - see variant.log for details</p>
+</body>
+</html>
+            </div>
+          </div>
+      </div>
+      <div id="amr" class="section">
+        <h2>Antimicrobial Resistance</h2>
+          <div class="report-card">
+            <h3>Combined AMR</h3>
+            <div class="report-content">
+<h1>AMR profiling skipped by user request</h1>
+            </div>
+          </div>
+      </div>
+      <div id="mge" class="section">
+        <h2>Mobile Genetic Elements</h2>
+          <div class="report-card">
+            <h3>Combined MGE</h3>
+            <div class="report-content">
+<h1>MGE analysis skipped by user request</h1>
+            </div>
+          </div>
+      </div>
+      <div id="virulence" class="section">
+        <h2>Virulence</h2>
+          <div class="report-card">
+            <h3>Combined virulence</h3>
+            <div class="report-content">
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Virulence Factor</th>
+                <th>Product</th>
+                <th>% Coverage</th>
+                <th>% Identity</th>
+                <th>Risk Level</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">-</td>
+<td>NP_752614</td>
+<td>5/8</td>
+<td>99.33</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">-</td>
+<td>NP_752613</td>
+<td>4/8</td>
+<td>99.18</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_752606</td>
+<td>0/0</td>
+<td>94.61</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">-</td>
+<td>AAF37887</td>
+<td>3/36</td>
+<td>100.00</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_286011</td>
+<td>0/0</td>
+<td>98.31</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_286010</td>
+<td>0/0</td>
+<td>99.32</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_286009</td>
+<td>0/0</td>
+<td>100.00</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_286008</td>
+<td>2/2</td>
+<td>99.96</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_286007</td>
+<td>0/0</td>
+<td>100.00</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_286006</td>
+<td>0/0</td>
+<td>99.74</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">-</td>
+<td>NP_752614</td>
+<td>5/8</td>
+<td>99.33</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">-</td>
+<td>NP_752613</td>
+<td>4/8</td>
+<td>99.18</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_752606</td>
+<td>0/0</td>
+<td>94.61</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">-</td>
+<td>AAF37887</td>
+<td>3/36</td>
+<td>100.00</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_286011</td>
+<td>0/0</td>
+<td>98.31</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_286010</td>
+<td>0/0</td>
+<td>99.32</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_286009</td>
+<td>0/0</td>
+<td>100.00</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_286008</td>
+<td>2/2</td>
+<td>99.96</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_286007</td>
+<td>0/0</td>
+<td>100.00</td>
+<td class="risk-low">Low</td>
+</tr>
+<tr>
+<td>A55738_contigs</td>
+<td class="virulence">+</td>
+<td>NP_286006</td>
+<td>0/0</td>
+<td>99.74</td>
+<td class="risk-low">Low</td>
+</tr>
+        </tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="blast" class="section">
+        <h2>BLAST</h2>
+        <div class="tabs">
+<button class="tab-btn active" onclick="openTab(event,'tab0')">-1715223084</button>
+        </div>
+<div id="tab0" class="tab active">
+<table><thead><tr>
+<th>qseqid</th>
+<th>sseqid</th>
+<th>pident</th>
+<th>length</th>
+<th>mismatch</th>
+<th>gapopen</th>
+<th>qstart</th>
+<th>qend</th>
+<th>sstart</th>
+<th>send</th>
+<th>evalue</th>
+<th>bitscore</th>
+<th>qlen</th>
+<th>slen</th>
+<th>stitle</th>
+<th>species</th>
+</tr></thead><tbody>
+<tr><td>qseqid</td><td>sseqid</td><td>pident</td><td>length</td><td>mismatch</td><td>gapopen</td><td>qstart</td><td>qend</td><td>sstart</td><td>send</td><td>evalue</td><td>bitscore</td><td>qlen</td><td>slen</td><td>stitle</td><td class="species">Unknown</td></tr>
+</tbody></table></body></html>
+</div>
+      </div>
+      <div id="phylogeny" class="section">
+        <h2>Phylogeny</h2>
+      </div>
+    </div>
+  </div>
+
+  <!-- Logo at bottom center with larger size -->
+  <div class="logo-container"><img src="assets/images/rMAP_logo.png" alt="rMAP Logo" class="footer-logo" onerror="this.style.display='none'"></div>
+
+  <div class="footer-banner">
+    This report was generated by rMAP 2.0 pipeline
+  </div>
+</div>
+<script>
+  // Set generation date
+  document.getElementById('gen-date').textContent = new Date().toLocaleString();
+
+  // Tab functionality
+  function openTab(evt, tabId) {
+    const tabs = document.querySelectorAll('.tab');
+    const buttons = document.querySelectorAll('.tab-btn');
+
+    tabs.forEach(tab => tab.classList.remove('active'));
+    buttons.forEach(btn => btn.classList.remove('active'));
+
+    document.getElementById(tabId).classList.add('active');
+    evt.currentTarget.classList.add('active');
+  }
+
+  // Error handling for images
+  document.addEventListener('DOMContentLoaded', function() {
+    const images = document.querySelectorAll('img');
+    images.forEach(img => {
+      img.onerror = function() {
+        this.style.display = 'none';
+      };
+    });
+  });
+</script>
+</body>
+</html>
