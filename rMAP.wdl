@@ -941,7 +941,7 @@ task ASSEMBLY {
     Boolean do_assembly = true
     String output_dir = "assembly"
     Int cpu = 8
-    Int memory_gb = 10
+    Int memory_gb = 16
     Int min_quality = 50
     Boolean run_quast = false
     Float memory_usage = 0.8
@@ -1015,7 +1015,7 @@ EOF
         R2="${files[i+1]}"
         sample_name=$(basename "$R1" | sed 's/_1.fastq.gz//; s/_1.trim.fastq.gz//; s/_R1.*//; s/_1.*//')
         outdir="~{output_dir}/megahit_${sample_name}"
-        contig_file="~{output_dir}/${sample_name}.fa"
+        contig_file="~{output_dir}/${sample_name}.fa"  # Removed _contigs suffix
 
         echo "Assembling $sample_name (R1: $R1, R2: $R2)" >> assembly.log
 
@@ -1249,7 +1249,7 @@ task PANGENOME {
   command <<<
     set -euo pipefail
 
-    # Always provision output dir & the files Cromwell expects
+    # Always provision output dir and the files Cromwell expects
     mkdir -p final_output
     : > final_output/gene_presence_absence.csv
     : > final_output/summary_statistics.txt
@@ -1336,12 +1336,12 @@ EOF
         cp -f "$outdir"/number_of_new_genes.Rtab                final_output/ 2>/dev/null || true
         cp -f "$outdir"/number_of_conserved_genes.Rtab          final_output/ 2>/dev/null || true
 
-        # Improved heatmap generation with better error handling & memory optimization
+        # Improved heatmap generation with better error handling and memory optimization
         if command -v Rscript >/dev/null 2>&1; then
           cat > final_output/generate_visualizations.R <<'RS'
-# Enhanced heatmap generation with validation & memory optimization
+# Enhanced heatmap generation with validation and memory optimization
 tryCatch({
-  # Set memory limits & force garbage collection
+  # Set memory limits and force garbage collection
   options(future.globals.maxSize = ~{memory_gb} * 1024^3)
   gc()
 
@@ -1353,7 +1353,7 @@ tryCatch({
     stop("RColorBrewer package not available")
   }
 
-  # Read & validate data
+  # Read and validate data
   if (!file.exists("gene_presence_absence.csv")) {
     stop("Input file not found")
   }
@@ -1389,7 +1389,7 @@ tryCatch({
     mat <- mat[sample(1:nrow(mat), 10000), ]
   }
 
-  # Only plot if we have at least 2 samples & 2 genes
+  # Only plot if we have at least 2 samples and 2 genes
   if (ncol(mat) >= 2 && nrow(mat) >= 2) {
     # Use sparse matrices if available
     if (requireNamespace("Matrix", quietly = TRUE)) {
@@ -1468,7 +1468,7 @@ task CORE_PHYLOGENY {
   command <<<
     set -euo pipefail
 
-    # Initialize output directory & log file
+    # Initialize output directory and log file
     mkdir -p phylogeny_results
     echo "Core Phylogeny Analysis Log - $(date)" > phylogeny.log
     echo "====================================" >> phylogeny.log
@@ -1617,7 +1617,7 @@ task ACCESSORY_PHYLOGENY {
 
     # Initialize directories with proper permissions
     mkdir -p phylogeny_results
-    chmod 777 phylogeny_results
+    chmod 777 phylogeny_results  # Ensure Docker can write
 
     # Start logging
     {
@@ -2020,7 +2020,7 @@ task VARIANT_CALLING {
     set -euo pipefail
     set -x
 
-    # Initialize directories & logs
+    # Initialize directories and logs
     mkdir -p variants || { echo "ERROR: Failed to create variants directory" >&2; exit 1; }
     echo "Variant Calling Analysis Log - $(date)" > variant.log
     echo "=====================================" >> variant.log
@@ -2136,7 +2136,7 @@ EOF
       SNP_COUNT=0
       INDEL_COUNT=0
       TOTAL=0
-      STATUS="failed"
+      STATUS="failed"  # Default to failed unless proven otherwise
       ATTEMPTS=0
       MAX_ATTEMPTS=~{max_retries}
 
@@ -2290,8 +2290,8 @@ task AMR_PROFILING {
     Int cpu = 2
     Boolean abricate_nopath = true
     Boolean abricate_make_summary = false
-    Int merge_minid = 95
-    Int merge_mincov = 90
+    Int merge_minid = 95  # Retained (used in per-sample filtering)
+    Int merge_mincov = 90  # Retained (used in per-sample filtering)
   }
 
   command <<<
@@ -2314,7 +2314,7 @@ task AMR_PROFILING {
     echo "- merge_mincov: ~{merge_mincov}" >> amr.log
     echo "===================================" >> amr.log
 
-    # HTML template
+    # HTML template (unchanged)
     HTML_HEADER='<!DOCTYPE html>
 <html>
 <head>
@@ -2371,7 +2371,7 @@ task AMR_PROFILING {
 </body>
 </html>'
 
-    # Skip conditions
+    # Skip conditions (unchanged)
     if [ "~{do_amr_profiling}" != "true" ]; then
       echo "AMR profiling disabled by user parameter" >> amr.log
       echo "AMR profiling skipped by user request" > amr_results/skipped.txt
@@ -2386,7 +2386,7 @@ task AMR_PROFILING {
       exit 0
     fi
 
-    # Verify input files
+    # Verify input files (unchanged)
     echo "Input files verification:" >> amr.log
     valid_files=0
     for f in ~{sep=' ' assembly_output}; do
@@ -2410,7 +2410,7 @@ task AMR_PROFILING {
       exit 0
     fi
 
-    # Database setup
+    # Database setup (unchanged)
     db_to_use="resfinder"
     if [ "~{use_local_db}" == "true" ]; then
       if [ ! -f "~{local_db}" ]; then
@@ -2441,7 +2441,7 @@ task AMR_PROFILING {
       }
     fi
 
-    # Process samples
+    # Process samples (unchanged except for combined file removal)
     processed_samples=0
     for asm_file in ~{sep=' ' assembly_output}; do
       [ ! -f "$asm_file" ] && continue
@@ -2478,10 +2478,10 @@ task AMR_PROFILING {
           continue
         }
 
-      # Save raw CSV
+      # Save raw CSV (unchanged)
       cp -f "${output_file}.tmp" "$raw_csv" || true
 
-      # Convert CSV -> TSV
+      # Convert CSV -> TSV (unchanged)
       awk -F',' -v sample="$sample_name" '
       NR==1 {
         for (i=1; i<=NF; i++) {
@@ -2508,7 +2508,7 @@ task AMR_PROFILING {
         print sample, contig, gene, pcov, pid, prod, res
       }' "${output_file}.tmp" > "$output_file"
 
-      # Best-hit filtering
+      # Best-hit filtering (unchanged)
       awk -F'\t' '
         NR==1 { header=$0; next }
         {
@@ -2529,7 +2529,7 @@ task AMR_PROFILING {
       ' "$output_file" | sort -t$'\t' -k1,1 -k3,3 > "${output_file}.best"
       mv -f "${output_file}.best" "$output_file"
 
-      # Generate per-sample HTML
+      # Generate per-sample HTML (unchanged)
       {
         echo "$HTML_HEADER"
         tail -n +2 "$output_file" | while IFS=$'\t' read -r sample contig gene coverage identity product resistance; do
@@ -2557,7 +2557,7 @@ task AMR_PROFILING {
       rm -f "${output_file}.tmp" || true
     done
 
-    # Optional abricate summary
+    # Optional abricate summary (unchanged)
     if [ "~{abricate_make_summary}" = "true" ]; then
       if ls amr_results/raw_csv/*.csv >/dev/null 2>&1; then
         abricate --summary amr_results/raw_csv/*.csv > amr_results/abricate_summary.tsv 2>> amr.log || true
@@ -2565,7 +2565,7 @@ task AMR_PROFILING {
       fi
     fi
 
-    # Generate combined HTML report
+    # Generate combined HTML report (modified to skip TSV generation)
     if [ $processed_samples -gt 0 ]; then
       {
         echo "$HTML_HEADER"
@@ -2612,7 +2612,7 @@ task AMR_PROFILING {
     cpu: cpu
     disks: "local-disk 50 HDD"
     continueOnReturnCode: true
-    timeout: "5 hours"
+    timeout: "10 hours"
   }
 
   output {
@@ -3234,7 +3234,7 @@ task BLAST_ANALYSIS {
     Int? max_contig_length
     Boolean do_blast = true
     Int cpu = 8
-    Int memory_gb = 10
+    Int memory_gb = 12
     Boolean skip = false
     Boolean debug = false
     Boolean parse_seqids = false
@@ -3246,6 +3246,13 @@ task BLAST_ANALYSIS {
     #!/bin/bash
     set -euo pipefail
     export LC_ALL=C
+
+    # --- Full-access preamble ---
+    umask 000
+    chmod -R a+rwX . || true
+    if [ -d "./inputs" ]; then
+      chmod -R a+rwX ./inputs || true
+    fi
 
     # Enhanced debugging
     debug_log() {
@@ -3266,7 +3273,7 @@ task BLAST_ANALYSIS {
     if [ -z "~{sep=' ' contig_fastas}" ]; then
       echo "No contig files provided - creating empty outputs" >> execution.log
       mkdir -p blast_results
-      touch sample_ids.txt
+      : > sample_ids.txt
       exit 0
     fi
 
@@ -3278,6 +3285,9 @@ task BLAST_ANALYSIS {
     export TMPDIR
     TMPDIR=$(mktemp -d ./blast_tmp.XXXXXX)
     debug_log "Created temp directory: $TMPDIR"
+
+    # Ensure created dirs are fully accessible
+    chmod -R a+rwX blast_results parallel_tmp "$TMPDIR" || true
 
     # Handle BLAST database setup
     if [ "~{use_local_blast}" = "true" ] && [ -n "~{local_blast_db}" ]; then
@@ -3297,8 +3307,8 @@ task BLAST_ANALYSIS {
     # System diagnostics
     {
       echo -e "\n=== SYSTEM CHECK ==="
-      echo "CPU cores: $(nproc)"
-      echo "Memory: $(free -h | awk '/Mem:/{print $2}') available"
+      if command -v nproc >/dev/null 2>&1; then echo "CPU cores: $(nproc)"; fi
+      if command -v free >/dev/null 2>&1;  then echo "Memory: $(free -h | awk '/Mem:/{print $2}') available"; fi
       echo "Disk space: $(df -h . | awk 'NR==2{print $4}') free"
       echo "BLAST version: $(blastn -version 2>&1 | head -1)"
       echo "Python version: $(python3 --version 2>&1)"
@@ -3375,10 +3385,10 @@ def generate_report(sample_dir):
   else:
     try:
       with open(input_tsv, "r", encoding="utf-8") as f:
-        headers = f.readline().rstrip("\n").split("\t")
-        rows = [line.rstrip("\n").split("\t") for line in f]
+        headers = f.readline().rstrip("\\n").split("\\t")
+        rows = [line.rstrip("\\n").split("\\t") for line in f]
 
-      # Display header: rename stitle -> species
+      # Display header: rename stitle -> species (safety even if upstream already renamed)
       headers = ["species" if h == "stitle" else h for h in headers]
 
       # Find the species column index (if present)
@@ -3406,7 +3416,7 @@ def generate_report(sample_dir):
 
       parts.append("  </tbody>")
       parts.append("</table>")
-      content = "\n".join(parts)
+      content = "\\n".join(parts)
 
     except Exception as e:
       content = f"""
@@ -3443,6 +3453,21 @@ PYEOF
       mkdir -p "$sample_dir"
       debug_log "Processing sample: $sample_id"
 
+      # Ensure readability of input contig; then work from a local copy with permissive perms
+      if [ ! -r "$contig_file" ]; then
+        debug_log "Input not readable, trying chmod a+r: $contig_file"
+        chmod a+r "$contig_file" 2>/dev/null || true
+      fi
+      if ! head -c 1 "$contig_file" >/dev/null 2>&1; then
+        echo "ERROR: Cannot read input contig: $contig_file" >> execution.log
+        echo "$sample_id (unreadable)" >> sample_ids.txt
+        return 0
+      fi
+
+      cp -f "$contig_file" "${sample_dir}/source.fa"
+      chmod 666 "${sample_dir}/source.fa" || true
+      local work_fa="${sample_dir}/source.fa"
+
       # 1. Filter contigs by length
       awk -v min_len=~{min_contig_length} \
           -v max_len=~{if defined(max_contig_length) then max_contig_length else "NULL"} \
@@ -3454,7 +3479,7 @@ PYEOF
               print ">"$1;
               for(i=2;i<=NF;i++) print $i
             }
-          }' "$contig_file" > "${sample_dir}/filtered.fa"
+          }' "$work_fa" > "${sample_dir}/filtered.fa"
 
       debug_log "Filtered contigs: $(grep -c '^>' "${sample_dir}/filtered.fa" || true) sequences"
 
@@ -3498,7 +3523,7 @@ PYEOF
     export -f process_sample debug_log
     export BLAST_DB
 
-    # Process samples in parallel (one input per line via sep='\\n')
+    # Process samples in parallel (one input per line via sep='\n')
     printf "%s\n" ~{sep='\n' contig_fastas} | \
       /usr/bin/parallel --will-cite --noswap -j ~{cpu} --joblog parallel.log --progress --eta \
         --tagstring "{}" "process_sample {}" > sample_ids.txt 2>&1
@@ -3513,6 +3538,9 @@ PYEOF
       echo "Timestamp: $(date +"%Y-%m-%d %H:%M:%S")"
     } >> execution.log
 
+    # Make all outputs world-readable/writable so Cromwell/host can collect them
+    chmod -R a+rwX blast_results *.log parallel.log makeblastdb.log 2>/dev/null || true
+
     # Cleanup
     rm -rf "${TMPDIR}"
   >>>
@@ -3523,7 +3551,7 @@ PYEOF
     memory: "~{memory_gb} GB"
     disks: "local-disk 100 HDD"
     preemptible: 2
-    dockerOptions: "--entrypoint /bin/bash"
+    dockerOptions: "--user 0:0 --privileged --entrypoint /bin/bash"
   }
 
   output {
