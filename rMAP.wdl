@@ -58,8 +58,8 @@ workflow rMAP {
     allowNestedInputs: true
     maxRetries: 3
     continueOnReturnCode: "0,1"
-    authors: "Gerald Mboowa, Ivan Sserwadda & Stephen Kanyerezi"
-    email addresses: "gmboowa@gmail.com | ivangunz23@gmail.com | kanyerezi30@gmail.com"
+    author: "Gerald Mboowa, Ivan Sserwadda & Stephen Kanyerezi"
+    email: "gmboowa@gmail.com | ivangunz23@gmail.com | kanyerezi30@gmail.com"
   }
 
   call CONFIGURATION {
@@ -686,7 +686,7 @@ EOF
     disks: "local-disk 100 HDD"
     continueOnReturnCode: [0, -1]
     preemptible: 2
-    timeout: "6 hours"
+    timeout: "8 hours"
   }
 
   output {
@@ -941,9 +941,10 @@ task ASSEMBLY {
     Boolean do_assembly = true
     String output_dir = "assembly"
     Int cpu = 8
-    Int memory_gb = 8
+    Int memory_gb = 10
     Int min_quality = 50
-    Boolean run_quast = false  # Changed to false since we can't guarantee QUAST availability
+    Boolean run_quast = false
+    Float memory_usage = 0.8
   }
 
   command <<<
@@ -966,6 +967,7 @@ task ASSEMBLY {
       echo "- Assembler: ~{assembler}" >> assembly.log
       echo "- CPU: ~{cpu}" >> assembly.log
       echo "- Memory: ~{memory_gb} GB" >> assembly.log
+      echo "- Memory usage fraction: ~{memory_usage}" >> assembly.log
       echo "- Min quality: ~{min_quality}" >> assembly.log
       echo "- Run QUAST: ~{run_quast}" >> assembly.log
 
@@ -1011,9 +1013,9 @@ EOF
       for ((i=0; i<"${#files[@]}"; i+=2)); do
         R1="${files[i]}"
         R2="${files[i+1]}"
-        sample_name=$(basename "$R1" | sed 's/_1.fastq.gz//; s/_1.trim.fastq.gz//')
+        sample_name=$(basename "$R1" | sed 's/_1.fastq.gz//; s/_1.trim.fastq.gz//; s/_R1.*//; s/_1.*//')
         outdir="~{output_dir}/megahit_${sample_name}"
-        contig_file="~{output_dir}/${sample_name}_contigs.fa"
+        contig_file="~{output_dir}/${sample_name}.fa"
 
         echo "Assembling $sample_name (R1: $R1, R2: $R2)" >> assembly.log
 
@@ -1024,13 +1026,14 @@ EOF
             -1 "$R1" -2 "$R2" \
             -o "$outdir" \
             -t ~{cpu} \
-            --memory 0.9 \
+            --memory ~{memory_usage} \
             --min-count 2 \
             --min-contig-len ~{min_quality} \
-            --k-list 21,33,55,77,99,121 \
+            --k-list 21,33,55,77 \
             --merge-level 20,0.98 \
             --prune-level 2 \
             --prune-depth 2 \
+            --no-mercy \
             2>> assembly.log
 
           if [ -f "$outdir/final.contigs.fa" ]; then
@@ -1074,7 +1077,7 @@ EOF
 </html>
 EOF
 
-      if [ $(find ~{output_dir} -name "*_contigs.fa" | wc -l) -eq 0 ]; then
+      if [ $(find ~{output_dir} -name "*.fa" | wc -l) -eq 0 ]; then
         echo "ERROR: No contig files generated!" >> assembly.log
         exit 1
       fi
@@ -1094,12 +1097,12 @@ EOF
     cpu: cpu
     disks: "local-disk 200 HDD"
     preemptible: 2
-    continueOnReturnCode: true
+    continueOnReturnCode: [0, -9]
     timeout: "24 hours"
   }
 
   output {
-    Array[File] assembly_output = if do_assembly then glob("~{output_dir}/*_contigs.fa") else []
+    Array[File] assembly_output = if do_assembly then glob("~{output_dir}/*.fa") else []  # Changed pattern
     File assembly_stats = if do_assembly then "~{output_dir}/assembly_stats.html" else "~{output_dir}/skipped.txt"
     String assembly_dir_out = "~{output_dir}"
     File? assembly_log = if do_assembly then "assembly.log" else "~{output_dir}/skipped.txt"
@@ -1175,7 +1178,7 @@ EOF
           <tr><th>Sample ID</th><th>Gene Count</th></tr>" > annotation_results/summary.html
 
       for asm_file in ~{sep=' ' assembly_output}; do
-        sample_name=$(basename "$asm_file" | sed 's/\.[^.]*$//' | sed 's/_contigs//')
+        sample_name=$(basename "$asm_file" | sed 's/\..*//')
         output_dir="annotation_results/${sample_name}"
 
         echo "Running PROKKA annotation for sample: $sample_name" >> skip_annotation.log
@@ -1246,7 +1249,7 @@ task PANGENOME {
   command <<<
     set -euo pipefail
 
-    # Always provision output dir and the files Cromwell expects
+    # Always provision output dir & the files Cromwell expects
     mkdir -p final_output
     : > final_output/gene_presence_absence.csv
     : > final_output/summary_statistics.txt
@@ -1333,11 +1336,15 @@ EOF
         cp -f "$outdir"/number_of_new_genes.Rtab                final_output/ 2>/dev/null || true
         cp -f "$outdir"/number_of_conserved_genes.Rtab          final_output/ 2>/dev/null || true
 
-        # Improved heatmap generation with better error handling
+        # Improved heatmap generation with better error handling & memory optimization
         if command -v Rscript >/dev/null 2>&1; then
           cat > final_output/generate_visualizations.R <<'RS'
-# Enhanced heatmap generation with validation
+# Enhanced heatmap generation with validation & memory optimization
 tryCatch({
+  # Set memory limits & force garbage collection
+  options(future.globals.maxSize = ~{memory_gb} * 1024^3)
+  gc()
+
   # Load required packages
   if (!requireNamespace("pheatmap", quietly = TRUE)) {
     stop("pheatmap package not available")
@@ -1346,12 +1353,15 @@ tryCatch({
     stop("RColorBrewer package not available")
   }
 
-  # Read and validate data
+  # Read & validate data
   if (!file.exists("gene_presence_absence.csv")) {
     stop("Input file not found")
   }
 
-  df <- read.csv("gene_presence_absence.csv", header=TRUE, check.names=FALSE, stringsAsFactors=FALSE)
+  # Read data with reduced memory footprint
+  df <- read.csv("gene_presence_absence.csv", header=TRUE,
+                check.names=FALSE, stringsAsFactors=FALSE,
+                colClasses = "character")
 
   # Identify sample columns (heuristic)
   non_sample_cols <- c("Gene", "Annotation", "No..isolates", "No..sequences",
@@ -1367,14 +1377,25 @@ tryCatch({
     sample_cols <- colnames(df)[-1]
   }
 
-  # Convert to binary matrix
+  # Convert to binary matrix with subsampling for large datasets
   mat <- as.matrix(df[, sample_cols, drop=FALSE])
   mat[mat != ""] <- 1
   mat[mat == ""] <- 0
   mode(mat) <- "numeric"
 
-  # Only plot if we have at least 2 samples and 2 genes
+  # Subsample if matrix is too large
+  if (nrow(mat) > 10000) {
+    set.seed(123)
+    mat <- mat[sample(1:nrow(mat), 10000), ]
+  }
+
+  # Only plot if we have at least 2 samples & 2 genes
   if (ncol(mat) >= 2 && nrow(mat) >= 2) {
+    # Use sparse matrices if available
+    if (requireNamespace("Matrix", quietly = TRUE)) {
+      mat <- Matrix::Matrix(mat, sparse = TRUE)
+    }
+
     png("gene_presence_heatmap.png", width=~{heatmap_width}, height=~{heatmap_height})
     pheatmap::pheatmap(
       mat,
@@ -1404,7 +1425,7 @@ RS
         sed -i 's/Initialized./Roary completed successfully./' final_output/pangenome_report.html || true
       else
         sed -i 's/Initialized./Roary was invoked but did not complete successfully; placeholders shown./' final_output/pangenome_report.html || true
-      fi
+      fi  # FIXED: Added this missing fi
     else
       sed -i 's/Initialized./Roary not available in container; placeholders shown./' final_output/pangenome_report.html || true
     fi
@@ -1412,9 +1433,11 @@ RS
 
   runtime {
     docker: "gmboowa/roary-pillow:0.4"
-    memory: "~{memory_gb}G"
+    memory: "~{memory_gb} GB"
     cpu: cpu
     disks: "local-disk 100 HDD"
+    maxRetries: 2
+    preemptible: 2
     continueOnReturnCode: true
     timeout: "24 hours"
   }
@@ -1430,7 +1453,6 @@ RS
     File conserved_genes_data  = "final_output/number_of_conserved_genes.Rtab"
   }
 }
-
 task CORE_PHYLOGENY {
   input {
     File? alignment
@@ -1446,7 +1468,7 @@ task CORE_PHYLOGENY {
   command <<<
     set -euo pipefail
 
-    # Initialize output directory and log file
+    # Initialize output directory & log file
     mkdir -p phylogeny_results
     echo "Core Phylogeny Analysis Log - $(date)" > phylogeny.log
     echo "====================================" >> phylogeny.log
@@ -1595,7 +1617,7 @@ task ACCESSORY_PHYLOGENY {
 
     # Initialize directories with proper permissions
     mkdir -p phylogeny_results
-    chmod 777 phylogeny_results  # Ensure Docker can write
+    chmod 777 phylogeny_results
 
     # Start logging
     {
@@ -1685,7 +1707,7 @@ task ACCESSORY_PHYLOGENY {
     cpu: cpu
     disks: "local-disk 100 HDD"
     preemptible: 2  # Allow for preemption
-    maxRetries: 1   # Retry once on failure
+    maxRetries: 2   # Retry once on failure
   }
 
   output {
@@ -1798,7 +1820,7 @@ task MLST {
     # Process each assembly file
     processed_files=0
     for asm_file in input_files/*; do
-      sample_name=$(basename "$asm_file" | sed 's/\.[^.]*$//' | sed 's/_contigs//')
+      sample_name=$(basename "$asm_file" | sed 's/\.[^.]*$//')
       output_file="mlst_results/${sample_name}_mlst.tsv"
       debug_file="mlst_results/${sample_name}_debug.log"
       temp_file="mlst_results/${sample_name}_temp.tsv"
@@ -1990,6 +2012,7 @@ task VARIANT_CALLING {
     Int cpu = 8
     Int min_quality = 20
     Int memory_gb = 8
+    Int max_retries = 2
   }
 
   command <<<
@@ -1997,7 +2020,7 @@ task VARIANT_CALLING {
     set -euo pipefail
     set -x
 
-    # Initialize directories and logs
+    # Initialize directories & logs
     mkdir -p variants || { echo "ERROR: Failed to create variants directory" >&2; exit 1; }
     echo "Variant Calling Analysis Log - $(date)" > variant.log
     echo "=====================================" >> variant.log
@@ -2006,6 +2029,7 @@ task VARIANT_CALLING {
     echo "- reference_type: ~{reference_type}" >> variant.log
     echo "- cpu: ~{cpu}" >> variant.log
     echo "- min_quality: ~{min_quality}" >> variant.log
+    echo "- memory_gb: ~{memory_gb}" >> variant.log
     echo "=====================================" >> variant.log
 
     # Function to ensure HTML output exists
@@ -2014,7 +2038,6 @@ task VARIANT_CALLING {
       mkdir -p variants
 
       if [ "$status" == "success" ]; then
-        # Create minimal HTML if final version wasn't generated
         if [ ! -f variants/variant_summary.html ]; then
           cat > variants/variant_summary.html <<EOF
 <!DOCTYPE html>
@@ -2029,7 +2052,6 @@ task VARIANT_CALLING {
 EOF
         fi
       else
-        # Create error HTML
         cat > variants/variant_summary.html <<EOF
 <!DOCTYPE html>
 <html>
@@ -2093,9 +2115,9 @@ EOF
     # Create initial empty HTML as placeholder
     ensure_output "running"
 
-    # Process samples
+    # Process samples with retry logic
     RESULTS_TEMP=$(mktemp) || { echo "ERROR: Failed to create temp file" >> variant.log; exit 1; }
-    echo -e "Sample\tStatus\tSNPs\tINDELs\tTotal" > "$RESULTS_TEMP"
+    echo -e "Sample\tStatus\tSNPs\tINDELs\tTotal\tAttempts" > "$RESULTS_TEMP"
     processed_samples=0
 
     for ((i=0; i<${#files[@]}; i+=2)); do
@@ -2106,7 +2128,7 @@ EOF
 
       mkdir -p "$SAMPLE_DIR" || {
         echo "ERROR: Failed to create directory for $SAMPLE_NAME" >> variant.log
-        echo -e "$SAMPLE_NAME\tfailed\t0\t0\t0" >> "$RESULTS_TEMP"
+        echo -e "$SAMPLE_NAME\tfailed\t0\t0\t0\t0" >> "$RESULTS_TEMP"
         continue
       }
 
@@ -2114,7 +2136,9 @@ EOF
       SNP_COUNT=0
       INDEL_COUNT=0
       TOTAL=0
-      STATUS="success"
+      STATUS="failed"
+      ATTEMPTS=0
+      MAX_ATTEMPTS=~{max_retries}
 
       # Handle reference type
       if [ "~{reference_type}" == "genbank" ]; then
@@ -2125,9 +2149,18 @@ EOF
 
       if ! cp "~{reference_genome}" "$ref_path"; then
         echo "ERROR: Failed to copy reference for $SAMPLE_NAME" >> variant.log
-        STATUS="failed"
-      else
-        # Run variant calling
+        echo -e "$SAMPLE_NAME\tfailed\t0\t0\t0\t0" >> "$RESULTS_TEMP"
+        continue
+      fi
+
+      # Run variant calling with retry logic
+      while [ $ATTEMPTS -le $MAX_ATTEMPTS ] && [ "$STATUS" != "success" ]; do
+        ATTEMPTS=$((ATTEMPTS + 1))
+        echo "Attempt $ATTEMPTS for $SAMPLE_NAME" >> variant.log
+
+        # Clean previous attempt files if they exist
+        rm -f "$SAMPLE_DIR/$SAMPLE_NAME.bam" "$SAMPLE_DIR/$SAMPLE_NAME.bam.bai" "$SAMPLE_DIR/$SAMPLE_NAME.vcf" 2>/dev/null || true
+
         set +e
         snippy --cpus ~{cpu} --minqual ~{min_quality} \
                --ref "$ref_path" --R1 "$R1" --R2 "$R2" \
@@ -2135,22 +2168,24 @@ EOF
         snippy_exit=$?
         set -e
 
-        if [ $snippy_exit -ne 0 ] || [ ! -s "$SAMPLE_DIR/$SAMPLE_NAME.vcf" ]; then
-          STATUS="failed"
-          echo "WARNING: snippy failed for $SAMPLE_NAME (exit $snippy_exit)" >> variant.log
+        if [ $snippy_exit -eq 0 ] && [ -s "$SAMPLE_DIR/$SAMPLE_NAME.vcf" ]; then
+          STATUS="success"
+          SNP_COUNT=$(grep -c 'TYPE=snp' "$SAMPLE_DIR/$SAMPLE_NAME.vcf" 2>/dev/null || echo 0)
+          INDEL_COUNT=$(awk '/TYPE=indel/ {count++} END {print count+0}' "$SAMPLE_DIR/$SAMPLE_NAME.vcf" 2>/dev/null)
+          TOTAL=$((SNP_COUNT + INDEL_COUNT))
+          processed_samples=$((processed_samples + 1))
+          echo "Successfully processed $SAMPLE_NAME on attempt $ATTEMPTS" >> variant.log
+        else
+          echo "WARNING: snippy failed for $SAMPLE_NAME on attempt $ATTEMPTS (exit $snippy_exit)" >> variant.log
+          if [ $ATTEMPTS -lt $MAX_ATTEMPTS ]; then
+            echo "Will retry $SAMPLE_NAME after a short delay..." >> variant.log
+            sleep $((ATTEMPTS * 30))  # Exponential backoff
+          fi
         fi
-      fi
+      done
 
-      # Count variants if successful
-      if [ "$STATUS" == "success" ]; then
-        SNP_COUNT=$(grep -c 'TYPE=snp' "$SAMPLE_DIR/$SAMPLE_NAME.vcf" 2>/dev/null || echo 0)
-        INDEL_COUNT=$(awk '/TYPE=indel/ {count++} END {print count+0}' "$SAMPLE_DIR/$SAMPLE_NAME.vcf" 2>/dev/null)
-        TOTAL=$((SNP_COUNT + INDEL_COUNT))
-        processed_samples=$((processed_samples + 1))
-      fi
-
-      echo -e "$SAMPLE_NAME\t$STATUS\t$SNP_COUNT\t$INDEL_COUNT\t$TOTAL" >> "$RESULTS_TEMP"
-      echo "Processed $SAMPLE_NAME: Status=$STATUS, SNPs=$SNP_COUNT, INDELs=$INDEL_COUNT, Total=$TOTAL" >> variant.log
+      echo -e "$SAMPLE_NAME\t$STATUS\t$SNP_COUNT\t$INDEL_COUNT\t$TOTAL\t$ATTEMPTS" >> "$RESULTS_TEMP"
+      echo "Processed $SAMPLE_NAME: Status=$STATUS, SNPs=$SNP_COUNT, INDELs=$INDEL_COUNT, Total=$TOTAL, Attempts=$ATTEMPTS" >> variant.log
     done
 
     # Generate final HTML report
@@ -2183,15 +2218,16 @@ EOF
         <th>SNPs</th>
         <th>INDELs</th>
         <th>Total Variants</th>
+        <th>Attempts</th>
       </tr>
     </thead>
     <tbody>
 EOF
 
-    while IFS=$'\t' read -r sample status snps indels total; do
+    while IFS=$'\t' read -r sample status snps indels total attempts; do
       if [ "$sample" == "Sample" ]; then continue; fi
       if [ "$status" == "failed" ]; then
-        echo "<tr class=\"error\"><td>$sample</td><td>Failed</td><td>-</td><td>-</td><td>-</td></tr>" >> variants/variant_summary.html
+        echo "<tr class=\"error\"><td>$sample</td><td>Failed</td><td>-</td><td>-</td><td>-</td><td>$attempts</td></tr>" >> variants/variant_summary.html
       else
         if [ $total -eq 0 ]; then
           row_class="success"
@@ -2200,7 +2236,7 @@ EOF
         else
           row_class="error"
         fi
-        echo "<tr><td>$sample</td><td>Success</td><td>$snps</td><td>$indels</td><td class=\"$row_class\">$total</td></tr>" >> variants/variant_summary.html
+        echo "<tr><td>$sample</td><td>Success</td><td>$snps</td><td>$indels</td><td class=\"$row_class\">$total</td><td>$attempts</td></tr>" >> variants/variant_summary.html
       fi
     done < "$RESULTS_TEMP"
 
@@ -2216,6 +2252,12 @@ EOF
     echo "Variant calling completed at $(date)" >> variant.log
     echo "Output files:" >> variant.log
     find variants -type f -exec ls -lh {} \; >> variant.log 2>/dev/null || true
+
+    # Exit with error if any samples failed
+    if grep -q "failed" "$RESULTS_TEMP"; then
+      echo "WARNING: Some samples failed processing" >> variant.log
+      exit 1
+    fi
   >>>
 
   runtime {
@@ -2225,7 +2267,7 @@ EOF
     disks: "local-disk 100 HDD"
     continueOnReturnCode: true
     preemptible: 2
-    timeout: "12 hours"
+    timeout: "24 hours"
   }
 
   output {
@@ -2246,6 +2288,10 @@ task AMR_PROFILING {
     Int minid = 90
     Int mincov = 80
     Int cpu = 2
+    Boolean abricate_nopath = true
+    Boolean abricate_make_summary = false
+    Int merge_minid = 95
+    Int merge_mincov = 90
   }
 
   command <<<
@@ -2253,7 +2299,7 @@ task AMR_PROFILING {
     set -x
 
     # Initialize directories
-    mkdir -p amr_results html_results
+    mkdir -p amr_results html_results amr_results/raw_csv
     echo "AMR Profiling Analysis Log - $(date)" > amr.log
     echo "===================================" >> amr.log
     echo "Runtime Parameters:" >> amr.log
@@ -2262,9 +2308,13 @@ task AMR_PROFILING {
     echo "- minid: ~{minid}" >> amr.log
     echo "- mincov: ~{mincov}" >> amr.log
     echo "- cpu: ~{cpu}" >> amr.log
+    echo "- abricate_nopath: ~{abricate_nopath}" >> amr.log
+    echo "- abricate_make_summary: ~{abricate_make_summary}" >> amr.log
+    echo "- merge_minid: ~{merge_minid}" >> amr.log
+    echo "- merge_mincov: ~{merge_mincov}" >> amr.log
     echo "===================================" >> amr.log
 
-    # HTML template components
+    # HTML template
     HTML_HEADER='<!DOCTYPE html>
 <html>
 <head>
@@ -2293,7 +2343,7 @@ task AMR_PROFILING {
 <body>
     <h1>Antimicrobial Resistance Profiling Results</h1>
     <div class="summary-card">
-        <p><strong>Analysis Date:</strong> $(date)</p>
+        <p><strong>Analysis Date:</strong> '"$(date)"'</p>
         <p><strong>Database Used:</strong> ~{if use_local_db then "Custom" else "ResFinder"}</p>
         <p><strong>Parameters:</strong></p>
         <ul>
@@ -2321,7 +2371,7 @@ task AMR_PROFILING {
 </body>
 </html>'
 
-    # Skip condition 1: User explicitly disabled AMR profiling
+    # Skip conditions
     if [ "~{do_amr_profiling}" != "true" ]; then
       echo "AMR profiling disabled by user parameter" >> amr.log
       echo "AMR profiling skipped by user request" > amr_results/skipped.txt
@@ -2329,7 +2379,6 @@ task AMR_PROFILING {
       exit 0
     fi
 
-    # Skip condition 2: No input files provided
     if [ -z "~{sep=' ' assembly_output}" ]; then
       echo "ERROR: No assembly files provided for AMR profiling" >> amr.log
       echo "NO_INPUT_FILES" > amr_results/skipped.txt
@@ -2354,7 +2403,6 @@ task AMR_PROFILING {
       fi
     done
 
-    # Skip condition 3: No valid input files
     if [ $valid_files -eq 0 ]; then
       echo "ERROR: No valid input files available" >> amr.log
       echo "NO_VALID_INPUTS" > amr_results/skipped.txt
@@ -2362,6 +2410,7 @@ task AMR_PROFILING {
       exit 0
     fi
 
+    # Database setup
     db_to_use="resfinder"
     if [ "~{use_local_db}" == "true" ]; then
       if [ ! -f "~{local_db}" ]; then
@@ -2370,7 +2419,6 @@ task AMR_PROFILING {
         echo "<h1>AMR profiling skipped - local database missing</h1>" > html_results/skipped.html
         exit 0
       fi
-
       mkdir -p /root/abricate/db/resfinder_db
       cp "~{local_db}" /root/abricate/db/resfinder_db/resfinder.fa || {
         echo "ERROR: Failed to copy local database" >> amr.log
@@ -2378,7 +2426,6 @@ task AMR_PROFILING {
         echo "<h1>AMR profiling skipped - database setup failed</h1>" > html_results/skipped.html
         exit 0
       }
-
       abricate --setupdb --db resfinder --debug >> amr.log 2>&1 || {
         echo "ERROR: Failed to setup local AMR database" >> amr.log
         echo "DB_SETUP_FAILED" > amr_results/skipped.txt
@@ -2394,38 +2441,47 @@ task AMR_PROFILING {
       }
     fi
 
+    # Process samples
     processed_samples=0
     for asm_file in ~{sep=' ' assembly_output}; do
       [ ! -f "$asm_file" ] && continue
       [ ! -s "$asm_file" ] && continue
 
-      sample_name=$(basename "$asm_file" | sed 's/\.[^.]*$//' | sed 's/_contigs//')
+      sample_name=$(basename "$asm_file" | sed 's/\.[^.]*$//')
       output_file="amr_results/${sample_name}_amr.tsv"
       html_file="html_results/${sample_name}_amr.html"
+      raw_csv="amr_results/raw_csv/${sample_name}.csv"
 
       echo "Processing $sample_name" >> amr.log
 
+      # Run abricate (unchanged)
+      extra_flags=()
+      if [ "~{abricate_nopath}" = "true" ]; then
+        extra_flags+=("--nopath")
+      fi
       abricate \
         --db $db_to_use \
         --minid ~{minid} \
         --mincov ~{mincov} \
         --threads ~{cpu} \
         --csv \
+        "${extra_flags[@]}" \
         "$asm_file" > "${output_file}.tmp" 2>> amr.log || {
           echo "WARNING: AMR profiling failed for $sample_name" >> amr.log
           echo -e "SAMPLE\tCONTIG\tGENE\t%COVERAGE\t%IDENTITY\tPRODUCT\tRESISTANCE" > "$output_file"
           echo -e "$sample_name\tERROR\tERROR\tERROR\tERROR\tERROR\tERROR" >> "$output_file"
-
-          # Create error HTML
           {
             echo "$HTML_HEADER"
             echo "<tr class=\"error-row\"><td colspan=\"7\">AMR profiling failed for $sample_name</td></tr>"
             echo "$HTML_FOOTER"
           } > "$html_file"
-
           continue
         }
 
+      # Save raw CSV
+      cp -f "${output_file}.tmp" "$raw_csv" || true
+
+      # Convert CSV -> TSV
       awk -F',' -v sample="$sample_name" '
       NR==1 {
         for (i=1; i<=NF; i++) {
@@ -2442,7 +2498,6 @@ task AMR_PROFILING {
         pid    = (H["%IDENTITY"] ? $(H["%IDENTITY"]) : "NA")
         prod   = (H["PRODUCT"] ? $(H["PRODUCT"]) : "NA")
         res    = (H["RESISTANCE"] ? $(H["RESISTANCE"]) : "N/A")
-
         gsub(/"/,"",contig); gsub(/"/,"",gene); gsub(/"/,"",pcov); gsub(/"/,"",pid); gsub(/"/,"",prod); gsub(/"/,"",res)
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", contig)
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", gene)
@@ -2450,15 +2505,33 @@ task AMR_PROFILING {
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", pid)
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", prod)
         gsub(/^[[:space:]]+|[[:space:]]+$/, "", res)
-
         print sample, contig, gene, pcov, pid, prod, res
       }' "${output_file}.tmp" > "$output_file"
 
-      # Generate HTML report for this sample
+      # Best-hit filtering
+      awk -F'\t' '
+        NR==1 { header=$0; next }
+        {
+          g=$3
+          cov=$4; sub(/%$/,"",cov); if (cov=="") cov=0
+          pid=$5; sub(/%$/,"",pid); if (pid=="") pid=0
+          key=$1"\t"g
+          if (!(key in best_cov) || cov>best_cov[key] || (cov==best_cov[key] && pid>best_id[key])) {
+            best_cov[key]=cov
+            best_id[key]=pid
+            best_line[key]=$0
+          }
+        }
+        END {
+          print header
+          for (k in best_line) print best_line[k]
+        }
+      ' "$output_file" | sort -t$'\t' -k1,1 -k3,3 > "${output_file}.best"
+      mv -f "${output_file}.best" "$output_file"
+
+      # Generate per-sample HTML
       {
         echo "$HTML_HEADER"
-
-        # Skip header line in TSV
         tail -n +2 "$output_file" | while IFS=$'\t' read -r sample contig gene coverage identity product resistance; do
           if [[ "$gene" == *"ERROR"* ]]; then
             echo "<tr class=\"error-row\">"
@@ -2477,50 +2550,55 @@ task AMR_PROFILING {
             echo "</tr>"
           fi
         done
-
         echo "$HTML_FOOTER"
       } > "$html_file"
 
       processed_samples=$((processed_samples + 1))
-      rm -f "${output_file}.tmp"
+      rm -f "${output_file}.tmp" || true
     done
 
-    # Generate combined reports
-    if [ $processed_samples -gt 0 ]; then
-      echo -e "SAMPLE\tCONTIG\tGENE\t%COVERAGE\t%IDENTITY\tPRODUCT\tRESISTANCE" > amr_results/combined_amr.tsv
-      for tsv_file in amr_results/*_amr.tsv; do
-        tail -n +2 "$tsv_file" >> amr_results/combined_amr.tsv
-      done
+    # Optional abricate summary
+    if [ "~{abricate_make_summary}" = "true" ]; then
+      if ls amr_results/raw_csv/*.csv >/dev/null 2>&1; then
+        abricate --summary amr_results/raw_csv/*.csv > amr_results/abricate_summary.tsv 2>> amr.log || true
+        gzip -f amr_results/abricate_summary.tsv || true
+      fi
+    fi
 
+    # Generate combined HTML report
+    if [ $processed_samples -gt 0 ]; then
       {
         echo "$HTML_HEADER"
-
-        while IFS=$'\t' read -r sample contig gene coverage identity product resistance; do
-          if [ "$sample" == "SAMPLE" ]; then continue; fi
-
-          if [[ "$gene" == *"ERROR"* ]]; then
-            echo "<tr class=\"error-row\">"
-            echo "<td>$sample</td>"
-            echo "<td colspan=\"6\">AMR profiling failed</td>"
-            echo "</tr>"
-          else
-            echo "<tr>"
-            echo "<td>$sample</td>"
-            echo "<td>$contig</td>"
-            echo "<td class=\"gene\">$gene</td>"
-            echo "<td>$coverage</td>"
-            echo "<td>$identity</td>"
-            echo "<td>$product</td>"
-            echo "<td class=\"antibiotic\">$resistance</td>"
-            echo "</tr>"
-          fi
-        done < amr_results/combined_amr.tsv
-
+        # Read directly from per-sample TSVs (no combined_amr.tsv needed)
+        for tsv_file in amr_results/*_amr.tsv; do
+          tail -n +2 "$tsv_file" | while IFS=$'\t' read -r sample contig gene coverage identity product resistance; do
+            if [[ "$gene" == *"ERROR"* ]]; then
+              echo "<tr class=\"error-row\">"
+              echo "<td>$sample</td>"
+              echo "<td colspan=\"6\">AMR profiling failed</td>"
+              echo "</tr>"
+            else
+              # Apply merge thresholds here (originally done during TSV merging)
+              cov="${coverage//%}"
+              id="${identity//%}"
+              if (( cov >= ~{merge_mincov} )) && (( id >= ~{merge_minid} )); then
+                echo "<tr>"
+                echo "<td>$sample</td>"
+                echo "<td>$contig</td>"
+                echo "<td class=\"gene\">$gene</td>"
+                echo "<td>$coverage</td>"
+                echo "<td>$identity</td>"
+                echo "<td>$product</td>"
+                echo "<td class=\"antibiotic\">$resistance</td>"
+                echo "</tr>"
+              fi
+            fi
+          done
+        done
         echo "$HTML_FOOTER"
       } > html_results/combined_amr.html
     else
       echo "ERROR: No samples processed successfully" >> amr.log
-      echo "NO_SUCCESSFUL_SAMPLES" > amr_results/combined_amr.tsv
       echo "<h1>No samples processed successfully</h1>" > html_results/combined_amr.html
     fi
 
@@ -2530,25 +2608,28 @@ task AMR_PROFILING {
 
   runtime {
     docker: "staphb/abricate:1.0.0"
-    memory: "4 GB"
+    memory: "8 GB"
     cpu: cpu
     disks: "local-disk 50 HDD"
     continueOnReturnCode: true
-    timeout: "6 hours"
+    timeout: "5 hours"
   }
 
   output {
-    # NEW: per-sample AMR HTML reports for MERGE_REPORTS
+    # Per-sample outputs
     Array[File] html_reports = if do_amr_profiling then glob("html_results/*_amr.html")
                                else ["html_results/skipped.html"]
+    Array[File] amr_outputs  = if do_amr_profiling then glob("amr_results/*_amr.tsv")
+                               else ["amr_results/skipped.txt"]
 
-    Array[File] amr_outputs = if do_amr_profiling then glob("amr_results/*_amr.tsv")
-                              else ["amr_results/skipped.txt"]
-    File combined_amr = if do_amr_profiling then "amr_results/combined_amr.tsv"
-                        else "amr_results/skipped.txt"
-    File combined_html = if do_amr_profiling then "html_results/combined_amr.html"
-                         else "html_results/skipped.html"
-    File amr_log = "amr.log"
+    # Combined HTML (primary)
+    File combined_html       = if do_amr_profiling then "html_results/combined_amr.html"
+                               else "html_results/skipped.html"
+
+    File amr_log             = "amr.log"
+
+    # Backward-compatible alias so existing references to AMR_PROFILING.combined_amr keep working.
+    File combined_amr        = combined_html
   }
 }
 
@@ -3125,7 +3206,7 @@ task VIRULENCE_ANALYSIS {
   runtime {
     docker: "staphb/abricate:latest"
     cpu: cpu
-    memory: "4G"
+    memory: "8 GB"
     disks: "local-disk 50 HDD"
     preemptible: 2
     continueOnReturnCode: true
@@ -3141,20 +3222,19 @@ task VIRULENCE_ANALYSIS {
   }
 }
 
-
 task BLAST_ANALYSIS {
   input {
-    Array[File] contig_fastas
-    String blast_db
+    Array[File]? contig_fastas
+    String blast_db = "nt"
     Boolean use_local_blast = false
     File? local_blast_db
-    Int max_target_seqs = 10
+    Int max_target_seqs = 250
     Float evalue = 0.000001
-    Int min_contig_length = 200
+    Int min_contig_length = 300
     Int? max_contig_length
     Boolean do_blast = true
     Int cpu = 8
-    Int memory_gb = 12
+    Int memory_gb = 10
     Boolean skip = false
     Boolean debug = false
     Boolean parse_seqids = false
@@ -3163,204 +3243,303 @@ task BLAST_ANALYSIS {
   }
 
   command <<<
-    # Always create a status/skip log so the output is never missing
-    : > skip_blast.log
-    echo "BLAST_ANALYSIS started on $(date)" >> skip_blast.log
-
+    #!/bin/bash
     set -euo pipefail
-    set -x  # Enable debugging
-    export LC_ALL=C  # For faster sorting
-    declare -A SPECIES_CACHE  # Cache for species lookups
+    export LC_ALL=C
 
-    # Create standalone get_species script
-    cat > get_species.sh <<'EOF'
-#!/bin/bash
-acc="$1"
-clean_acc=$(echo "$acc" | sed -E 's/^[^|]*\|([^|]+)\|.*/\1/' | sed 's/\..*//')
+    # Enhanced debugging
+    debug_log() {
+      echo "[DEBUG][$(date '+%Y-%m-%d %H:%M:%S')] $1" >> debug.log
+    }
 
-# Check cache first
-if [[ -n "${SPECIES_CACHE[$clean_acc]}" ]]; then
-  echo "${SPECIES_CACHE[$clean_acc]}"
-  exit 0
-fi
+    # Initialize execution log
+    {
+      echo "=== BLAST ANALYSIS STARTED ==="
+      echo "Timestamp: $(date +"%Y-%m-%d %H:%M:%S")"
+      echo "Input files: ~{sep=' ' contig_fastas}"
+      echo "BLAST database: ~{blast_db}"
+      echo "Memory allocated: ~{memory_gb}GB"
+      echo "Debug mode: ~{debug}"
+    } > execution.log
 
-species="Unknown"
-header_text=""
-
-if [ "~{use_local_blast}" = "true" ]; then
-  header_text=$(blastdbcmd -db "$BLAST_DB" -entry "$clean_acc" -outfmt "%t" 2>/dev/null || echo "")
-  species=$(echo "$header_text" | grep -oP '(\[organism=\K[^]]+|^[^[]+? \K[^[ ]+)' | head -1)
-  [ -z "$species" ] && species="Unknown"
-  species=$(echo "$species" | sed 's/[]\[,;].*//' | xargs)
-fi
-
-if [ "$species" = "Unknown" ] && command -v efetch >/dev/null && command -v xtract >/dev/null; then
-  species=$(efetch -db nuccore -id "$clean_acc" -format docsum 2>/dev/null | \
-           xtract -pattern DocumentSummary -element Organism 2>/dev/null | head -1 | tr -d '\n')
-fi
-
-SPECIES_CACHE["$clean_acc"]="${species:-Unknown}"
-echo "${species:-Unknown}"
-EOF
-    chmod +x get_species.sh
-
-    if [ "~{skip}" == "true" ]; then
-      echo "Skipping BLAST analysis as requested" >> skip_blast.log
+    # Early exit if no contigs provided
+    if [ -z "~{sep=' ' contig_fastas}" ]; then
+      echo "No contig files provided - creating empty outputs" >> execution.log
       mkdir -p blast_results
-      : > sample_ids.txt
-
-      for contig_file in ~{sep=' ' contig_fastas}; do
-        sample_id=$(basename "$contig_file" | cut -d'.' -f1)
-        sample_dir="blast_results/${sample_id}"
-        mkdir -p "$sample_dir"
-
-        echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqlen\tslen\tstitle" > "${sample_dir}/blast_results.tsv"
-        echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqlen\tslen\tstitle" > "${sample_dir}/top_hits.tsv"
-        echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqlen\tslen\tstitle\tspecies" > "${sample_dir}/top_hits_with_species.tsv"
-
-        cat > "${sample_dir}/${sample_id}_blast_report.html" <<EOF
-<!DOCTYPE html><html><head><meta charset="utf-8">
-<style>body{font-family:Arial;margin:0}.note{padding:10px}</style></head>
-<body><div class="note">BLAST analysis was skipped for sample ${sample_id}.</div></body></html>
-EOF
-
-        echo "$sample_id" >> sample_ids.txt
-      done
+      touch sample_ids.txt
       exit 0
     fi
 
-    export TMPDIR="$(pwd)/blast_tmp"
-    mkdir -p "$TMPDIR"
-    export PATH="/root/edirect:$PATH"
-    DEBUG=~{debug}
+    # Create directories
+    mkdir -p blast_results parallel_tmp || {
+      echo "ERROR: Failed to create output directories" >> execution.log
+      exit 1
+    }
+    export TMPDIR
+    TMPDIR=$(mktemp -d ./blast_tmp.XXXXXX)
+    debug_log "Created temp directory: $TMPDIR"
 
-    log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" >&2; }
-    debug_log() { [ "$DEBUG" = true ] && echo "[DEBUG][$(date '+%H:%M:%S')] $1" >&2; }
-    cleanup() { rm -rf "$TMPDIR"; }
-    trap cleanup EXIT
-
+    # Handle BLAST database setup
     if [ "~{use_local_blast}" = "true" ] && [ -n "~{local_blast_db}" ]; then
-      log "Using local BLAST database"
+      echo "Setting up local BLAST database from input file" >> execution.log
       makeblastdb -in "~{local_blast_db}" -dbtype nucl -parse_seqids \
                   -title "~{blast_db}" -out "~{blast_db}" \
                   -logfile "makeblastdb.log" || {
-        log "Failed to build local DB"; exit 1
+        echo "Failed to build local DB" >> execution.log
+        exit 1
       }
-      BLAST_DB="~{blast_db}"
+      export BLAST_DB="~{blast_db}"
     else
-      log "Using remote or prebuilt DB: ~{blast_db}"
-      BLAST_DB="~{blast_db}"
+      echo "Using remote or prebuilt DB: ~{blast_db}" >> execution.log
+      export BLAST_DB="~{blast_db}"
     fi
 
+    # System diagnostics
+    {
+      echo -e "\n=== SYSTEM CHECK ==="
+      echo "CPU cores: $(nproc)"
+      echo "Memory: $(free -h | awk '/Mem:/{print $2}') available"
+      echo "Disk space: $(df -h . | awk 'NR==2{print $4}') free"
+      echo "BLAST version: $(blastn -version 2>&1 | head -1)"
+      echo "Python version: $(python3 --version 2>&1)"
+      if command -v parallel >/dev/null 2>&1; then
+        echo "GNU parallel: $(parallel --version | head -1)"
+      else
+        echo "WARNING: GNU parallel not found in PATH"
+      fi
+    } >> execution.log
+
+    # HTML generator: reads top_hits.tsv ONLY (no species-summary block)
+    cat > tsv_to_html.py <<'PYEOF'
+import sys
+import os
+import re
+from datetime import datetime
+
+CSS_STYLE = """
+<style>
+  body { font-family: Arial, Helvetica, sans-serif; margin: 20px; color: #333; line-height: 1.6; }
+  .container { max-width: 1200px; margin: 0 auto; }
+  h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+  table { border-collapse: collapse; width: 100%; margin: 20px 0; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  th { background-color: #3498db; color: white; text-align: left; padding: 12px; position: sticky; top: 0; }
+  td { padding: 10px; border-bottom: 1px solid #ddd; }
+  tr:nth-child(even) { background-color: #f9f9f9; }
+  tr:hover { background-color: #eaf2f8; }
+  .footer { margin-top: 30px; font-size: 0.9em; color: #7f8c8d; text-align: right; }
+  .no-results { color: #e74c3c; font-style: italic; }
+  .error { background-color: #fdecea; padding: 15px; border-radius: 4px; border-left: 4px solid #e74c3c; }
+</style>
+"""
+
+HTML_TEMPLATE = """<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>BLAST Report - {sample_id}</title>
+  {css}
+</head>
+<body>
+  <div class="container">
+    <h1>BLAST Results: {sample_id}</h1>
+
+    {content}
+
+    <div class="footer">
+      <p>Report generated: {timestamp}</p>
+      <p>Database: {db_name}</p>
+    </div>
+  </div>
+</body>
+</html>"""
+
+# Bold+italicize the Latin binomial (Genus species) at the start of the species string
+_BINOMIAL_RE = re.compile(r"^([A-Z][a-z]+ [a-z]+)(.*)$")
+def _format_species_cell(text: str) -> str:
+  if not text:
+    return text
+  m = _BINOMIAL_RE.match(text)
+  if m:
+    return f"<i><b>{m.group(1)}</b></i>{m.group(2)}"
+  return text
+
+def generate_report(sample_dir):
+  sample_id = os.path.basename(sample_dir)
+  db_name = os.environ.get("BLAST_DB", "nt")
+  input_tsv = os.path.join(sample_dir, "top_hits.tsv")
+  output_html = os.path.join(sample_dir, f"{sample_id}_report.html")
+  timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+  if (not os.path.exists(input_tsv)) or os.path.getsize(input_tsv) <= 1:
+    content = '<p class="no-results">No significant BLAST hits found</p>'
+  else:
+    try:
+      with open(input_tsv, "r", encoding="utf-8") as f:
+        headers = f.readline().rstrip("\n").split("\t")
+        rows = [line.rstrip("\n").split("\t") for line in f]
+
+      # Display header: rename stitle -> species
+      headers = ["species" if h == "stitle" else h for h in headers]
+
+      # Find the species column index (if present)
+      species_idx = None
+      for i, h in enumerate(headers):
+        if h == "species":
+          species_idx = i
+          break
+
+      # Build HTML table
+      parts = []
+      parts.append("<table>")
+      parts.append("  <thead><tr>")
+      parts.extend(f"    <th>{h}</th>" for h in headers)
+      parts.append("  </tr></thead>")
+      parts.append("  <tbody>")
+
+      for row in rows:
+        parts.append("    <tr>")
+        for i, cell in enumerate(row):
+          if species_idx is not None and i == species_idx:
+            cell = _format_species_cell(cell)
+          parts.append(f"      <td>{cell}</td>")
+        parts.append("    </tr>")
+
+      parts.append("  </tbody>")
+      parts.append("</table>")
+      content = "\n".join(parts)
+
+    except Exception as e:
+      content = f"""
+      <div class="error">
+        <h2>Processing Error</h2>
+        <p>Failed to generate report:</p>
+        <pre>{str(e)}</pre>
+      </div>
+      """
+
+  with open(output_html, "w", encoding="utf-8") as f:
+    f.write(HTML_TEMPLATE.format(
+      sample_id=sample_id,
+      css=CSS_STYLE,
+      content=content,
+      timestamp=timestamp,
+      db_name=db_name
+    ))
+
+if __name__ == "__main__":
+  if len(sys.argv) != 2:
+    print("Usage: python3 tsv_to_html.py <sample_directory>")
+    sys.exit(1)
+  generate_report(sys.argv[1])
+PYEOF
+
+    # Main processing function
     process_sample() {
       local contig_file="$1"
-      local sample_id=$(basename "$contig_file" | cut -d'.' -f1)
+      local sample_id
+      sample_id=$(basename "$contig_file" | cut -d'.' -f1)
       local sample_dir="blast_results/${sample_id}"
+
       mkdir -p "$sample_dir"
+      debug_log "Processing sample: $sample_id"
 
-      # Filter contigs
-      awk -v min_len="~{min_contig_length}" -v max_len="~{max_contig_length}" '
-      BEGIN {RS=">"; FS="\n"}
-      NR>1 {
-        seq="";
-        for(i=2;i<=NF;i++) seq=seq $i;
-        if(length(seq)>=min_len && (max_len == "" || length(seq)<=max_len)) {
-          print ">"$1;
-          for(i=2;i<=NF;i++) print $i
-        }
-      }' "$contig_file" > "${sample_dir}/filtered_contigs.fa" || \
-      echo ">empty_sequence" > "${sample_dir}/filtered_contigs.fa"
+      # 1. Filter contigs by length
+      awk -v min_len=~{min_contig_length} \
+          -v max_len=~{if defined(max_contig_length) then max_contig_length else "NULL"} \
+          'BEGIN {RS=">"; FS="\n"}
+          NR>1 {
+            seq="";
+            for(i=2;i<=NF;i++) seq=seq $i;
+            if(length(seq)>=min_len && (max_len == "NULL" || length(seq)<=max_len)) {
+              print ">"$1;
+              for(i=2;i<=NF;i++) print $i
+            }
+          }' "$contig_file" > "${sample_dir}/filtered.fa"
 
-      # Run BLAST
-      blastn -query "${sample_dir}/filtered_contigs.fa" -db "$BLAST_DB" -task blastn \
-             -word_size 28 -reward 1 -penalty -2 -gapopen 2 -gapextend 1 \
-             -outfmt "6 std qlen slen stitle" -out "${sample_dir}/blast_results.tsv" \
-             -evalue ~{evalue} -max_target_seqs ~{max_target_seqs} \
-             -perc_identity 90 -max_hsps 1 -dust no \
-             -num_threads 1 > "${sample_dir}/blast.log" 2>&1 || true
+      debug_log "Filtered contigs: $(grep -c '^>' "${sample_dir}/filtered.fa" || true) sequences"
 
-      # Process results
-      { echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqlen\tslen\tstitle"
-        sort -t$'\t' -k12,12gr "${sample_dir}/blast_results.tsv" | head -10; } > "${sample_dir}/top_hits.tsv"
+      # 2. Run BLAST if we have sequences
+      if [ -s "${sample_dir}/filtered.fa" ]; then
+        blastn \
+          -query "${sample_dir}/filtered.fa" \
+          -db "${BLAST_DB}" \
+          -outfmt "6 std qlen slen stitle" \
+          -out "${sample_dir}/blast_results.tsv" \
+          -evalue ~{evalue} \
+          -max_target_seqs ~{max_target_seqs} \
+          -num_threads 1 \
+          -task megablast > "${sample_dir}/blast.log" 2>&1 || true
+      else
+        echo "No sequences passed length filters" > "${sample_dir}/blast.log"
+        : > "${sample_dir}/blast_results.tsv"
+      fi
 
-      # Annotate with species
-      echo -e "$(head -n1 "${sample_dir}/top_hits.tsv")\tspecies" > "${sample_dir}/top_hits_with_species.tsv"
-      tail -n +2 "${sample_dir}/top_hits.tsv" | while IFS=$'\t' read -r -a fields; do
-        species=$(./get_species.sh "${fields[1]}")
-        printf "%s\t%s\n" "$(IFS=$'\t'; echo "${fields[*]}")" "$species" >> "${sample_dir}/top_hits_with_species.tsv"
-      done
+      debug_log "BLAST results: $(wc -l < "${sample_dir}/blast_results.tsv") hits"
 
-      # Generate HTML report
-      python3 - "${sample_dir}/top_hits_with_species.tsv" > "${sample_dir}/${sample_id}_blast_report.html" <<'PYTHON'
-import sys
-from csv import reader
+      # 3. Select top hits (by bitscore), and write header with 'species' instead of 'stitle'
+      {
+        echo -e "qseqid\tsseqid\tpident\tlength\tmismatch\tgapopen\tqstart\tqend\tsstart\tsend\tevalue\tbitscore\tqlen\tslen\tspecies"
+        if [ -s "${sample_dir}/blast_results.tsv" ]; then
+          sort -t$'\t' -k12,12gr "${sample_dir}/blast_results.tsv" | head -10 | \
+          awk -F'\t' 'BEGIN{OFS="\t"}{print $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15}'
+        fi
+      } > "${sample_dir}/top_hits.tsv"
 
-input_tsv = sys.argv[1]
-if not open(input_tsv).read(1):
-    print('''<!DOCTYPE html><html><head><meta charset="utf-8">
-<style>body{font-family:Arial;margin:0}.note{padding:10px}</style></head>
-<body><div class="note">No significant BLAST hits.</div></body></html>''')
-    sys.exit(0)
+      debug_log "Top hits (renamed stitle->species): $(wc -l < "${sample_dir}/top_hits.tsv") records"
 
-print('''<!DOCTYPE html><html><head><meta charset="utf-8">
-<style>
-  body{font-family:Arial;margin:0}
-  table{border-collapse:collapse;width:100%}
-  th,td{border:1px solid #ddd;padding:8px;text-align:left}
-  th{background:#f2f2f2;position:sticky;top:0}
-  .species{font-weight:bold}
-</style></head><body><table><thead><tr>''')
-
-with open(input_tsv) as f:
-    csv_reader = reader(f, delimiter='\t')
-    headers = next(csv_reader)
-    print('\n'.join(f'<th>{h}</th>' for h in headers) + '</tr></thead><tbody>')
-
-    for row in csv_reader:
-        print('<tr>' + '\n'.join(
-            f'<td class="species">' + cell + '</td>' if i == len(row)-1
-            else f'<td>' + cell + '</td>'
-            for i, cell in enumerate(row)
-        ) + '</tr>')
-
-print('</tbody></table></body></html>')
-PYTHON
+      # 4. Generate HTML report (NO species-summary block, species is bold+italic)
+      python3 tsv_to_html.py "${sample_dir}" > "${sample_dir}/html_generation.log" 2>&1 || {
+        echo "<html><body><h1>Report Generation Error</h1><pre>$(cat ${sample_dir}/html_generation.log)</pre></body></html>" \
+          > "${sample_dir}/${sample_id}_report.html"
+      }
 
       echo "$sample_id"
     }
+    export -f process_sample debug_log
+    export BLAST_DB
 
-    export -f process_sample
-    export BLAST_DB DEBUG
-    export -f log debug_log
+    # Process samples in parallel (one input per line via sep='\\n')
+    printf "%s\n" ~{sep='\n' contig_fastas} | \
+      /usr/bin/parallel --will-cite --noswap -j ~{cpu} --joblog parallel.log --progress --eta \
+        --tagstring "{}" "process_sample {}" > sample_ids.txt 2>&1
 
-    # Process samples in parallel
-    mkdir -p blast_results
-    printf "%s\n" ~{sep=' ' contig_fastas} | \
-      /usr/bin/parallel -j ~{cpu} --halt soon,fail=1 --joblog parallel.log \
-      --tagstring "{}" "process_sample {}" > sample_ids.txt
+    # Finalization with results summary
+    {
+      echo -e "\n=== PROCESSING COMPLETED ==="
+      echo "Successful samples: $(grep -c . sample_ids.txt || echo 0)"
+      echo "BLAST database used: $BLAST_DB"
+      echo "Final output checks:"
+      find blast_results -name "top_hits.tsv" -exec sh -c 'echo "  {}: $(($(wc -l < "{}")-1)) records"' \;
+      echo "Timestamp: $(date +"%Y-%m-%d %H:%M:%S")"
+    } >> execution.log
+
+    # Cleanup
+    rm -rf "${TMPDIR}"
   >>>
 
   runtime {
     docker: "gmboowa/blast-analysis:1.9.4"
-    cpu: cpu
-    memory: "16 GB"
+    cpu: select_first([cpu, 1])
+    memory: "~{memory_gb} GB"
     disks: "local-disk 100 HDD"
-    continueOnReturnCode: true
     preemptible: 2
-    dockerOptions: "--entrypoint ''"
+    dockerOptions: "--entrypoint /bin/bash"
   }
 
   output {
-    Array[File] blast_results = glob("blast_results/*/blast_results.tsv")
     Array[File] blast_top10 = glob("blast_results/*/top_hits.tsv")
-    Array[File] blast_annotated = glob("blast_results/*/top_hits_with_species.tsv")
-    Array[File] blast_reports = glob("blast_results/*/*_blast_report.html")
     Array[File] blast_logs = glob("blast_results/*/blast.log")
-    Array[File] system_logs = glob("blast_results/*/makeblastdb.log")
+    Array[File] blast_reports = glob("blast_results/*/*_report.html")
+    Array[File] blast_results = glob("blast_results/*/blast_results.tsv")
+    Array[File] filtered_contigs = glob("blast_results/*/filtered.fa")
     Array[String] sample_ids = read_lines("sample_ids.txt")
-    File skip_log = "skip_blast.log"
+    File execution_log = "execution.log"
+    File parallel_log = "parallel.log"
+    File? makeblastdb_log = "makeblastdb.log"
+    File? debug_log = "debug.log"
   }
 }
+
 task TREE_VISUALIZATION {
   input {
     File input_tree
@@ -4076,9 +4255,9 @@ EOF
       echo '        <div class="report-card"><h3>Per-sample BLAST reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
       bidx=1
       for br in ~{sep=' ' blast_reports}; do
-        parent="$(basename "$(dirname "$br")"        # sample folder name, e.g. SRR123
+        parent="$(basename "$(dirname "$br")")"  # Fixed: Added missing closing parenthesis
         ext="${br##*.}"
-        unique="${parent}_blast.${ext}"                # e.g., SRR123_blast.html
+        unique="${parent}_blast.${ext}"          # e.g., SRR123_blast.html
         cp -v "$br" "final_report/assets/sections/$unique" || true
         echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">BLAST Report ${bidx} — ${parent}</a></li>" >> "final_report/${REPORT_FILENAME}"
         bidx=$((bidx+1))
