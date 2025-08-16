@@ -126,7 +126,7 @@ Validate your JSON at: 'https://jsonlint.com/'
     "~/A55727_2.fastq.gz"
  ],
   "rMAP.adapters": "~/adapters.fa",
-  "rMAP.reference_genome": "~/GCA_000016305.1.gbk",
+  "rMAP.reference_genome": "~/genbank_reference.gbk",
   "rMAP.do_trimming": true,
   "rMAP.do_quality_control": true,
   "rMAP.do_assembly": true,
