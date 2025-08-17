@@ -31,11 +31,12 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 ---
 
-## Requirements
+## Prerequisites
+- [**Java 17 or newer (Oracle JDK)**](https://www.oracle.com/java/technologies/downloads/#java17)
 - [**Cromwell** (v84 or newer)](https://github.com/broadinstitute/cromwell/releases)
-- [**Docker**](https://www.docker.com/) installed & running
+- [**Docker**](https://www.docker.com/) (installed & running)
 - Input data: Paired-end FASTQ files
-- Reference genome (FASTA)
+- Reference genome (FASTA) or (GenBank)
 - Adapter sequence file (FASTA or TXT)
 
 ---
