@@ -52,7 +52,7 @@ workflow rMAP {
   }
 
   meta {
-    workflow_timeout: "168 hours"
+    workflow_timeout: "48 hours"
     workflow_heartbeat_interval: "10 minutes"
     workflow_heartbeat_ttl: "30 minutes"
     allowNestedInputs: true
@@ -527,11 +527,6 @@ EOF
         .warning { color: #f39c12; }
         .bad { color: #e74c3c; }
         .stats-table { margin-top: 30px; }
-        .tab { overflow: hidden; border: 1px solid #ccc; background-color: #f1f1f1; }
-        .tab button { background-color: inherit; float: left; border: none; outline: none; cursor: pointer; padding: 14px 16px; transition: 0.3s; }
-        .tab button:hover { background-color: #ddd; }
-        .tab button.active { background-color: #3498db; color: white; }
-        .tabcontent { display: none; padding: 6px 12px; border: 1px solid #ccc; border-top: none; }
     </style>
 </head>
 <body>
@@ -545,26 +540,20 @@ EOF
         </ul>
     </div>
 
-    <div class="tab">
-        <button class="tablinks active" onclick="openTab(event, 'trimming')">Trimming Stats</button>
-        <button class="tablinks" onclick="openTab(event, 'readstats')">Read Statistics</button>
-    </div>
-
-    <div id="trimming" class="tabcontent" style="display: block;">
-        <h2>Trimming Statistics</h2>
-        <table>
-            <thead>
-                <tr>
-                    <th>Sample</th>
-                    <th>Input Pairs</th>
-                    <th>Both Surviving</th>
-                    <th>Forward Only</th>
-                    <th>Reverse Only</th>
-                    <th>Dropped (%)</th>
-                    <th>Survival Rate (%)</th>
-                </tr>
-            </thead>
-            <tbody>
+    <h2>Trimming Statistics</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Input Pairs</th>
+                <th>Both Surviving</th>
+                <th>Forward Only</th>
+                <th>Reverse Only</th>
+                <th>Dropped (%)</th>
+                <th>Survival Rate (%)</th>
+            </tr>
+        </thead>
+        <tbody>
 EOF
 
       while IFS=',' read -r sample input both forward reverse dropped; do
@@ -601,67 +590,8 @@ EOF
       done < trimming_stats.csv
 
       cat >> trimming_report.html <<EOF
-            </tbody>
-        </table>
-    </div>
-
-    <div id="readstats" class="tabcontent">
-        <h2>Read Statistics</h2>
-EOF
-
-      for stats_file in read_stats/*_stats.csv; do
-        if [ -f "$stats_file" ]; then
-          sample_name=$(basename "$stats_file" _stats.csv)
-          echo "<h3>Sample: $sample_name</h3>" >> trimming_report.html
-          echo "<table>" >> trimming_report.html
-          echo "<tr><th>Metric</th><th>R1</th><th>R2</th></tr>" >> trimming_report.html
-
-          declare -A r1_values
-          declare -A r2_values
-          current_section=""
-
-          while IFS=',' read -r key value; do
-            if [[ "$key" == "Metric" ]]; then
-              current_section="$value"
-              continue
-            fi
-            if [[ "$current_section" == "R1" ]]; then
-              r1_values["$key"]="$value"
-            elif [[ "$current_section" == "R2" ]]; then
-              r2_values["$key"]="$value"
-            fi
-          done < "$stats_file"
-
-          for metric in "Number of reads" "Average length" "GC content"; do
-            echo "<tr>" >> trimming_report.html
-            echo "<td>${metric}_${sample_name}</td>" >> trimming_report.html
-            echo "<td>${r1_values[$metric]:-N/A}</td>" >> trimming_report.html
-            echo "<td>${r2_values[$metric]:-N/A}</td>" >> trimming_report.html
-            echo "</tr>" >> trimming_report.html
-          done
-
-          echo "</table>" >> trimming_report.html
-        fi
-      done
-
-      cat >> trimming_report.html <<EOF
-    </div>
-
-    <script>
-        function openTab(evt, tabName) {
-            var i, tabcontent, tablinks;
-            tabcontent = document.getElementsByClassName("tabcontent");
-            for (i = 0; i < tabcontent.length; i++) {
-                tabcontent[i].style.display = "none";
-            }
-            tablinks = document.getElementsByClassName("tablinks");
-            for (i = 0; i < tablinks.length; i++) {
-                tablinks[i].className = tablinks[i].className.replace(" active", "");
-            }
-            document.getElementById(tabName).style.display = "block";
-            evt.currentTarget.className += " active";
-        }
-    </script>
+        </tbody>
+    </table>
 </body>
 </html>
 EOF
@@ -697,7 +627,6 @@ EOF
     File? skip_log = "trimming_skipped.log"
   }
 }
-
 task QUALITY_CONTROL {
   input {
     Array[File]+ input_reads
@@ -774,7 +703,7 @@ EOF
       fastqc -o qc_reports -t ~{cpu} ~{sep=' ' input_reads} 2>> qc.log
       set -e
 
-      # Generate individual report links file
+      # Generate individual report links file with consistent naming
       cat > qc_reports/individual_reports.html <<EOF
 <!DOCTYPE html>
 <html>
@@ -801,15 +730,21 @@ EOF
         <tbody>
 EOF
 
-      # Add entries for each FastQC report
+      # Add entries for each FastQC report with consistent naming
+      idx=1
       for f in qc_reports/*_fastqc.html; do
         sample=$(basename "$f" | sed 's/_fastqc\.html//')
+        report_name="QC_Report_${idx}_${sample}.html"
+        cp "$f" "qc_reports/${report_name}"
         echo "            <tr>" >> qc_reports/individual_reports.html
-        echo "                <td>$sample</td>" >> qc_reports/individual_reports.html
-        echo "                <td><a href=\"$(basename "$f")\">View Report</a></td>" >> qc_reports/individual_reports.html
+        echo "                <td>${sample}</td>" >> qc_reports/individual_reports.html
+        echo "                <td><a href=\"${report_name}\">QC Report ${idx} — ${sample}</a></td>" >> qc_reports/individual_reports.html
         zip_file="${f%.html}.zip"
-        echo "                <td><a href=\"$(basename "$zip_file")\">Download Data</a></td>" >> qc_reports/individual_reports.html
+        new_zip_name="QC_Data_${idx}_${sample}.zip"
+        cp "$zip_file" "qc_reports/${new_zip_name}"
+        echo "                <td><a href=\"${new_zip_name}\">Download Data</a></td>" >> qc_reports/individual_reports.html
         echo "            </tr>" >> qc_reports/individual_reports.html
+        idx=$((idx+1))
       done
 
       cat >> qc_reports/individual_reports.html <<EOF
@@ -848,12 +783,13 @@ EOF
 EOF
 
           # Try to extract some basic metrics from FastQC data
+          idx=1
           for f in qc_reports/*_fastqc/fastqc_data.txt; do
             if [ -f "$f" ]; then
               sample=$(basename "$f" | sed 's/_fastqc\.fastqc_data\.txt//')
               basic_stats=$(awk '/>>Basic Statistics/,/>>END_MODULE/' "$f" | grep -v '>>')
 
-              echo "<h3>$sample</h3>" >> qc_reports/fastqc_summary.html
+              echo "<h3>QC Report ${idx} — ${sample}</h3>" >> qc_reports/fastqc_summary.html
               echo "<table>" >> qc_reports/fastqc_summary.html
               echo "$basic_stats" | while read -r line; do
                 if [[ "$line" != "" ]]; then
@@ -863,6 +799,7 @@ EOF
                 fi
               done
               echo "</table>" >> qc_reports/fastqc_summary.html
+              idx=$((idx+1))
             fi
           done
 
@@ -924,7 +861,7 @@ EOF
   }
 
   output {
-    Array[File] quality_reports = if do_quality_control then glob("qc_reports/*_fastqc.html") else ["qc_reports/skipped.txt"]
+    Array[File] quality_reports = if do_quality_control then glob("qc_reports/QC_Report_*.html") else ["qc_reports/skipped.txt"]
     File individual_reports = if do_quality_control then "qc_reports/individual_reports.html" else "qc_reports/skipped.txt"
     File? qc_log = if do_quality_control then "qc.log" else "qc_reports/skipped.txt"
     File fastqc_summary_html = if do_quality_control then "qc_reports/summary.html" else "qc_reports/skipped.txt"
@@ -1101,7 +1038,7 @@ EOF
   }
 
   output {
-    Array[File] assembly_output = if do_assembly then glob("~{output_dir}/*.fa") else []  # Changed pattern
+    Array[File] assembly_output = if do_assembly then glob("~{output_dir}/*.fa") else []
     File assembly_stats = if do_assembly then "~{output_dir}/assembly_stats.html" else "~{output_dir}/skipped.txt"
     String assembly_dir_out = "~{output_dir}"
     File? assembly_log = if do_assembly then "assembly.log" else "~{output_dir}/skipped.txt"
@@ -1248,7 +1185,7 @@ task PANGENOME {
   command <<<
     set -euo pipefail
 
-    # Always provision output dir and the files Cromwell expects
+    # Always provision output dir & the files Cromwell expects
     mkdir -p final_output
     : > final_output/gene_presence_absence.csv
     : > final_output/summary_statistics.txt
@@ -1335,12 +1272,12 @@ EOF
         cp -f "$outdir"/number_of_new_genes.Rtab                final_output/ 2>/dev/null || true
         cp -f "$outdir"/number_of_conserved_genes.Rtab          final_output/ 2>/dev/null || true
 
-        # Improved heatmap generation with better error handling and memory optimization
+        # Improved heatmap generation with better error handling & memory optimization
         if command -v Rscript >/dev/null 2>&1; then
           cat > final_output/generate_visualizations.R <<'RS'
-# Enhanced heatmap generation with validation and memory optimization
+# Enhanced heatmap generation with validation & memory optimization
 tryCatch({
-  # Set memory limits and force garbage collection
+  # Set memory limits & force garbage collection
   options(future.globals.maxSize = ~{memory_gb} * 1024^3)
   gc()
 
@@ -1388,7 +1325,7 @@ tryCatch({
     mat <- mat[sample(1:nrow(mat), 10000), ]
   }
 
-  # Only plot if we have at least 2 samples and 2 genes
+  # Only plot if we have at least 2 samples & 2 genes
   if (ncol(mat) >= 2 && nrow(mat) >= 2) {
     # Use sparse matrices if available
     if (requireNamespace("Matrix", quietly = TRUE)) {
@@ -2135,7 +2072,7 @@ EOF
       SNP_COUNT=0
       INDEL_COUNT=0
       TOTAL=0
-      STATUS="failed"  # Default to failed unless proven otherwise
+      STATUS="failed"
       ATTEMPTS=0
       MAX_ATTEMPTS=~{max_retries}
 
@@ -2289,8 +2226,8 @@ task AMR_PROFILING {
     Int cpu = 2
     Boolean abricate_nopath = true
     Boolean abricate_make_summary = false
-    Int merge_minid = 95  # Retained (used in per-sample filtering)
-    Int merge_mincov = 90  # Retained (used in per-sample filtering)
+    Int merge_minid = 95
+    Int merge_mincov = 90
   }
 
   command <<<
@@ -2313,7 +2250,7 @@ task AMR_PROFILING {
     echo "- merge_mincov: ~{merge_mincov}" >> amr.log
     echo "===================================" >> amr.log
 
-    # HTML template (unchanged)
+    # HTML template
     HTML_HEADER='<!DOCTYPE html>
 <html>
 <head>
@@ -2370,7 +2307,7 @@ task AMR_PROFILING {
 </body>
 </html>'
 
-    # Skip conditions (unchanged)
+    # Skip conditions
     if [ "~{do_amr_profiling}" != "true" ]; then
       echo "AMR profiling disabled by user parameter" >> amr.log
       echo "AMR profiling skipped by user request" > amr_results/skipped.txt
@@ -2385,7 +2322,7 @@ task AMR_PROFILING {
       exit 0
     fi
 
-    # Verify input files (unchanged)
+    # Verify input files
     echo "Input files verification:" >> amr.log
     valid_files=0
     for f in ~{sep=' ' assembly_output}; do
@@ -2409,7 +2346,7 @@ task AMR_PROFILING {
       exit 0
     fi
 
-    # Database setup (unchanged)
+    # Database setup
     db_to_use="resfinder"
     if [ "~{use_local_db}" == "true" ]; then
       if [ ! -f "~{local_db}" ]; then
@@ -2440,13 +2377,13 @@ task AMR_PROFILING {
       }
     fi
 
-    # Process samples (unchanged except for combined file removal)
+    # Process samples
     processed_samples=0
     for asm_file in ~{sep=' ' assembly_output}; do
       [ ! -f "$asm_file" ] && continue
       [ ! -s "$asm_file" ] && continue
 
-      sample_name=$(basename "$asm_file" | sed 's/\.[^.]*$//')
+      sample_name=$(basename "$asm_file" | sed -E 's/\.(fa|fasta|fna|fsa|contigs|scaffolds)(\.(gz|bz2))?$//i')
       output_file="amr_results/${sample_name}_amr.tsv"
       html_file="html_results/${sample_name}_amr.html"
       raw_csv="amr_results/raw_csv/${sample_name}.csv"
@@ -2477,7 +2414,7 @@ task AMR_PROFILING {
           continue
         }
 
-      # Save raw CSV (unchanged)
+      # Save raw CSV
       cp -f "${output_file}.tmp" "$raw_csv" || true
 
       # Convert CSV -> TSV (unchanged)
@@ -2507,7 +2444,7 @@ task AMR_PROFILING {
         print sample, contig, gene, pcov, pid, prod, res
       }' "${output_file}.tmp" > "$output_file"
 
-      # Best-hit filtering (unchanged)
+      # Best-hit filtering
       awk -F'\t' '
         NR==1 { header=$0; next }
         {
@@ -2528,7 +2465,7 @@ task AMR_PROFILING {
       ' "$output_file" | sort -t$'\t' -k1,1 -k3,3 > "${output_file}.best"
       mv -f "${output_file}.best" "$output_file"
 
-      # Generate per-sample HTML (unchanged)
+      # Generate per-sample HTML
       {
         echo "$HTML_HEADER"
         tail -n +2 "$output_file" | while IFS=$'\t' read -r sample contig gene coverage identity product resistance; do
@@ -2641,6 +2578,10 @@ task MGE_ANALYSIS {
     Int cpu = 4
   }
 
+  # Normalize optional input to a concrete (possibly empty) array
+  Array[File] asm_list = select_first([assembly_output, []])
+  Int asm_count = length(asm_list)
+
   command <<<
     set -euo pipefail
     set -x
@@ -2664,7 +2605,7 @@ task MGE_ANALYSIS {
     fi
 
     # Skip condition 2: No input files provided
-    if [ -z "~{sep=' ' assembly_output}" ]; then
+    if [ ~{asm_count} -eq 0 ]; then
       echo "ERROR: No assembly files provided for MGE analysis" >> mge.log
       echo "NO_INPUT_FILES" > mge_results/skipped.txt
       echo "<h1>MGE analysis skipped - no input files provided</h1>" > html_results/skipped.html
@@ -2674,7 +2615,7 @@ task MGE_ANALYSIS {
     # Verify input files
     echo "Input files verification:" >> mge.log
     valid_files=0
-    for f in ~{sep=' ' assembly_output}; do
+    for f in ~{sep=' ' asm_list}; do
       if [ ! -f "$f" ]; then
         echo "WARNING: Input file not found: $f" >> mge.log
       else
@@ -2804,11 +2745,11 @@ task MGE_ANALYSIS {
 
     # Process each assembly file
     processed_samples=0
-    for asm_file in ~{sep=' ' assembly_output}; do
+    for asm_file in ~{sep=' ' asm_list}; do
       [ ! -f "$asm_file" ] && continue
       [ ! -s "$asm_file" ] && continue
 
-      sample_name=$(basename "$asm_file" | sed 's/\..*//')
+      sample_name=$(basename "$asm_file" | sed -E 's/\.(fa|fasta|fna|fsa|contigs|scaffolds)(\.(gz|bz2))?$//i')
       output_tsv="mge_results/${sample_name}_mge.tsv"
       output_html="html_results/${sample_name}_mge.html"
 
@@ -2926,13 +2867,14 @@ task MGE_ANALYSIS {
   }
 
   output {
-  Array[File] html_reports   = if do_mge_analysis then glob("html_results/*_mge.html") else ["html_results/skipped.html"]
-  Array[File] sample_reports = if do_mge_analysis then glob("mge_results/*_mge.tsv")  else ["mge_results/skipped.txt"]
-  File        plasmid_report = if do_mge_analysis then "mge_results/combined_mge.tsv" else "mge_results/skipped.txt"
-  File        combined_html  = if do_mge_analysis then "html_results/combined_mge.html" else "html_results/skipped.html"
-  File        mge_log        = "mge.log"
+    Array[File] html_reports   = if do_mge_analysis then glob("html_results/*_mge.html") else ["html_results/skipped.html"]
+    Array[File] sample_reports = if do_mge_analysis then glob("mge_results/*_mge.tsv")  else ["mge_results/skipped.txt"]
+    File        plasmid_report = if do_mge_analysis then "mge_results/combined_mge.tsv" else "mge_results/skipped.txt"
+    File        combined_html  = if do_mge_analysis then "html_results/combined_mge.html" else "html_results/skipped.html"
+    File        mge_log        = "mge.log"
   }
 }
+
 task VIRULENCE_ANALYSIS {
   input {
     Array[File]+ assembly_output
@@ -2967,7 +2909,7 @@ task VIRULENCE_ANALYSIS {
       if [ ! -f "$f" ]; then
         echo "ERROR: Input file not found: $f" >> virulence.log
         exit 1
-      end
+      fi
       echo "- $f ($(wc -c < "$f") bytes)" >> virulence.log
     done
 
@@ -3064,16 +3006,18 @@ task VIRULENCE_ANALYSIS {
       db_to_use="~{db_name}"
     fi
 
+    idx=1
     for asm_file in ~{sep=' ' assembly_output}; do
       sample_name=$(basename "$asm_file" | sed 's/\.[^.]*$//')
-      output_tsv="virulence_results/${sample_name}_virulence.tsv"
-      output_html="html_results/${sample_name}_virulence.html"
+      report_prefix="Virulence_Report_${idx}_${sample_name}"
+      output_tsv="virulence_results/${report_prefix}.tsv"
+      output_html="html_results/${report_prefix}.html"
 
-      echo "Processing $sample_name" >> virulence.log
+      echo "Processing $sample_name (Report $idx)" >> virulence.log
 
       # Run virulence analysis
       abricate \
-        --db $db_to_use \
+        --db "$db_to_use" \
         --mincov ~{min_coverage} \
         --minid ~{min_identity} \
         --nopath \
@@ -3093,6 +3037,7 @@ task VIRULENCE_ANALYSIS {
             print "</tr>"
           }
           END { print footer }' /dev/null > "$output_html"
+          idx=$((idx+1))
           continue
         }
 
@@ -3104,17 +3049,20 @@ task VIRULENCE_ANALYSIS {
       }
       NR==1 { next } # Skip header
       {
-        # Determine risk level
-        risk = "Low";
-        if ($9 >= 90 && $10 >= 90) risk = "High";
-        else if ($9 >= 70 && $10 >= 70) risk = "Medium";
+        # Abricate columns: 6=GENE, 10=%COVERAGE, 11=%IDENTITY, 14=PRODUCT
+        cov = $10 + 0.0;
+        idn = $11 + 0.0;
 
-        print sample, $5, $13, $9, $10, risk;
+        risk = "Low";
+        if (cov >= 90 && idn >= 90)      risk = "High";
+        else if (cov >= 70 && idn >= 70) risk = "Medium";
+
+        print sample, $6, $14, cov, idn, risk;
       }' "${output_tsv}.tmp" > "$output_tsv"
       rm "${output_tsv}.tmp"
 
       # Generate HTML version
-      awk -v header="$HTML_HEADER" -v footer="$HTML_FOOTER" '
+      awk -v header="$HTML_HEADER" -v footer="$HTML_FOOTER" -v idx="$idx" -v sample="$sample_name" '
       BEGIN {
         print header;
       }
@@ -3125,7 +3073,7 @@ task VIRULENCE_ANALYSIS {
         else if ($6 == "Medium") risk_class = "risk-medium";
 
         printf "<tr>";
-        printf "<td>%s</td>", $1;  # Sample
+        printf "<td>Virulence Report %d — %s</td>", idx, sample;
         printf "<td class=\"virulence\">%s</td>", $2;  # Virulence Factor
         printf "<td>%s</td>", $3;  # Product
         printf "<td>%.1f</td>", $4; # %Coverage
@@ -3136,6 +3084,8 @@ task VIRULENCE_ANALYSIS {
       END {
         print footer;
       }' "$output_tsv" > "$output_html"
+
+      idx=$((idx+1))
     done
 
     echo "Virulence analysis completed at $(date)" >> virulence.log
@@ -3146,20 +3096,19 @@ task VIRULENCE_ANALYSIS {
   runtime {
     docker: "staphb/abricate:latest"
     cpu: cpu
-    memory: "8 GB"
+    memory: "6 GB"
     disks: "local-disk 50 HDD"
     preemptible: 2
     continueOnReturnCode: true
-    timeout: "12 hours"
+    timeout: "8 hours"
   }
 
   output {
-    Array[File] virulence_reports = glob("virulence_results/*_virulence.tsv")
-    Array[File] html_reports      = glob("html_results/*_virulence.html")
+    Array[File] virulence_reports = glob("virulence_results/Virulence_Report_*.tsv")
+    Array[File] html_reports      = glob("html_results/Virulence_Report_*.html")
     File        virulence_log     = "virulence.log"
   }
 }
-
 
 task BLAST_ANALYSIS {
   input {
@@ -3306,7 +3255,7 @@ def generate_report(sample_dir):
   sample_id = os.path.basename(sample_dir)
   db_name = os.environ.get("BLAST_DB", "nt")
   input_tsv = os.path.join(sample_dir, "top_hits.tsv")
-  output_html = os.path.join(sample_dir, f"{sample_id}_report.html")
+  output_html = os.path.join(sample_dir, f"BLAST_Report_{sample_id}.html")
   timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
   if (not os.path.exists(input_tsv)) or os.path.getsize(input_tsv) <= 1:
@@ -3375,12 +3324,14 @@ PYEOF
     # Prepare safe working copies of contig FASTAs (avoid writing to read-only inputs)
     work_list="work_list.txt"
     : > "$work_list"
+    idx=1
     for fa in ~{sep=' ' contig_fastas}; do
       bn="$(basename "$fa")"
       wf="$TMPDIR/${bn}"
       cp -f -- "$fa" "$wf"
       chmod u+rw -- "$wf" || true
       echo "$wf" >> "$work_list"
+      idx=$((idx+1))
     done
 
     # Main processing function
@@ -3440,7 +3391,7 @@ PYEOF
       # 4. Generate HTML report (NO species-summary block, species is bold+italic)
       python3 tsv_to_html.py "${sample_dir}" > "${sample_dir}/html_generation.log" 2>&1 || {
         echo "<html><body><h1>Report Generation Error</h1><pre>$(cat ${sample_dir}/html_generation.log)</pre></body></html>" \
-          > "${sample_dir}/${sample_id}_report.html"
+          > "${sample_dir}/BLAST_Report_${sample_id}.html"
       }
 
       echo "$sample_id"
@@ -3479,7 +3430,7 @@ PYEOF
   output {
     Array[File] blast_top10 = glob("blast_results/*/top_hits.tsv")
     Array[File] blast_logs = glob("blast_results/*/blast.log")
-    Array[File] blast_reports = glob("blast_results/*/*_report.html")
+    Array[File] blast_reports = glob("blast_results/*/BLAST_Report_*.html")
     Array[File] blast_results = glob("blast_results/*/blast_results.tsv")
     Array[File] filtered_contigs = glob("blast_results/*/filtered.fa")
     Array[String] sample_ids = read_lines("sample_ids.txt")
@@ -3489,7 +3440,6 @@ PYEOF
     File? debug_log = "debug.log"
   }
 }
-
 task TREE_VISUALIZATION {
   input {
     File input_tree
@@ -4191,7 +4141,7 @@ EOF
       <div id="virulence" class="section"><h2>Virulence</h2>
 EOF
     if (( ~{length(virulence_reports)} )); then
-      echo '        <div class="report-card"><h3>Per-sample virulence reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
+      echo '        <div class="report-card"><h3>Per-sample Virulence reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
       vidx=1
       for vf in ~{sep=' ' virulence_reports}; do
         parent="$(basename "$(dirname "$vf")")"
@@ -4213,7 +4163,7 @@ EOF
       echo '        <div class="report-card"><h3>Per-sample BLAST reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
       bidx=1
       for br in ~{sep=' ' blast_reports}; do
-        parent="$(basename "$(dirname "$br")")"  # Fixed: Added missing closing parenthesis
+        parent="$(basename "$(dirname "$br")")"
         ext="${br##*.}"
         unique="${parent}_blast.${ext}"          # e.g., SRR123_blast.html
         cp -v "$br" "final_report/assets/sections/$unique" || true
