@@ -35,6 +35,11 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 - [**Java 17 or newer (Oracle JDK)**](https://www.oracle.com/java/technologies/downloads/#java17)
 - [**Cromwell** (v84 or newer)](https://github.com/broadinstitute/cromwell/releases)
 - [**Docker**](https://www.docker.com/) (installed & running)
+- **BLAST+ (for indexing local databases)**  
+  Needed for building & searching local AMR, plasmid, or virulence factor databases.  
+  Install via Conda:  
+  ```bash
+  conda install -c bioconda blast
 - Input data: Paired-end FASTQ files
 - Reference genome (FASTA) or (GenBank)
 - Adapter sequence file (FASTA or TXT)
