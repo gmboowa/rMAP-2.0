@@ -286,7 +286,6 @@ workflow rMAP {
     Array[File] blast_top10   = BLAST_ANALYSIS.blast_top10
     Array[File] blast_logs    = BLAST_ANALYSIS.blast_logs
     Array[File]? virulence_reports         = VIRULENCE_ANALYSIS.virulence_reports
-    File?        combined_virulence_report = VIRULENCE_ANALYSIS.combined_report
     File? final_report_html = MERGE_REPORTS.final_report_html
     File? final_report_tgz  = MERGE_REPORTS.final_report_tgz
   }
@@ -2952,30 +2951,12 @@ task VIRULENCE_ANALYSIS {
 
     if [ "~{skip}" == "true" ]; then
       echo "Skipping virulence analysis as requested" > virulence.log
-      echo "Creating empty output files for portability" >> virulence.log
+      echo "Creating empty output directories for portability" >> virulence.log
 
       mkdir -p virulence_results
       mkdir -p html_results
 
-      # Create empty output files
-      touch virulence_results/combined_virulence.tsv
-      touch html_results/combined_virulence.html
-
-      # Create minimal TSV header
-      echo -e "Sample\tVirulence_Factor\tProduct\t%Coverage\t%Identity\tRisk_Level" > virulence_results/combined_virulence.tsv
-
-      # Create minimal HTML
-      echo '<!DOCTYPE html>
-<html>
-<head>
-    <title>Virulence Factor Analysis</title>
-</head>
-<body>
-    <h1>Analysis Skipped</h1>
-    <p>Virulence analysis was skipped as requested in the workflow parameters.</p>
-</body>
-</html>' > html_results/combined_virulence.html
-
+      # No combined outputs; per-sample files intentionally not created.
       echo "Skipping completed at $(date)" >> virulence.log
       exit 0
     fi
@@ -2986,7 +2967,7 @@ task VIRULENCE_ANALYSIS {
       if [ ! -f "$f" ]; then
         echo "ERROR: Input file not found: $f" >> virulence.log
         exit 1
-      fi
+      end
       echo "- $f ($(wc -c < "$f") bytes)" >> virulence.log
     done
 
@@ -3103,6 +3084,15 @@ task VIRULENCE_ANALYSIS {
           # Create minimal result file for failed samples
           echo -e "Sample\tVirulence_Factor\tProduct\t%Coverage\t%Identity\tRisk_Level" > "$output_tsv"
           echo -e "$sample_name\tERROR\tERROR\tERROR\tERROR\tERROR" >> "$output_tsv"
+          # Still create a minimal HTML to keep downstream stable
+          awk -v header="$HTML_HEADER" -v footer="$HTML_FOOTER" -v s="$sample_name" '
+          BEGIN { print header }
+          {
+            print "<tr style='\''background-color: #ffdddd'\''>"
+            print "<td>" s "</td><td colspan='\''5'\''>Virulence analysis failed</td>"
+            print "</tr>"
+          }
+          END { print footer }' /dev/null > "$output_html"
           continue
         }
 
@@ -3148,56 +3138,6 @@ task VIRULENCE_ANALYSIS {
       }' "$output_tsv" > "$output_html"
     done
 
-    # Generate combined report
-    echo "Generating combined report..." >> virulence.log
-
-    # Create combined TSV
-    echo -e "Sample\tVirulence_Factor\tProduct\t%Coverage\t%Identity\tRisk_Level" > virulence_results/combined_virulence.tsv
-
-    # Process all individual TSV files (skip header line from each)
-    for tsv_file in virulence_results/*_virulence.tsv; do
-      tail -n +2 "$tsv_file" >> virulence_results/combined_virulence.tsv
-    done
-
-    # Generate combined HTML
-    {
-      echo "$HTML_HEADER"
-
-      # Process combined TSV
-      while IFS=$'\t' read -r sample vf product coverage identity risk; do
-        # Skip header line
-        if [ "$sample" == "Sample" ]; then
-          continue
-        fi
-
-        # Determine if this is an error row
-        if [[ "$vf" == *"ERROR"* ]]; then
-          echo "<tr style='background-color: #ffdddd'>"
-          echo "<td>$sample</td>"
-          echo "<td colspan='5'>Virulence analysis failed</td>"
-          echo "</tr>"
-        else
-          risk_class="risk-low"
-          if [ "$risk" == "High" ]; then
-            risk_class="risk-high"
-          elif [ "$risk" == "Medium" ]; then
-            risk_class="risk-medium"
-          fi
-
-          echo "<tr>"
-          echo "<td>$sample</td>"
-          echo "<td class=\"virulence\">$vf</td>"
-          echo "<td>$product</td>"
-          echo "<td>$coverage</td>"
-          echo "<td>$identity</td>"
-          echo "<td class=\"$risk_class\">$risk</td>"
-          echo "</tr>"
-        fi
-      done < virulence_results/combined_virulence.tsv
-
-      echo "$HTML_FOOTER"
-    } > html_results/combined_virulence.html
-
     echo "Virulence analysis completed at $(date)" >> virulence.log
     echo "Output files:" >> virulence.log
     ls -lh virulence_results/* html_results/* >> virulence.log 2>&1 || true
@@ -3214,13 +3154,12 @@ task VIRULENCE_ANALYSIS {
   }
 
   output {
-  Array[File] virulence_reports = glob("virulence_results/*_virulence.tsv")
-  Array[File] html_reports      = glob("html_results/*_virulence.html")
-  File        combined_report   = "virulence_results/combined_virulence.tsv"
-  File        combined_html     = "html_results/combined_virulence.html"
-  File        virulence_log     = "virulence.log"
+    Array[File] virulence_reports = glob("virulence_results/*_virulence.tsv")
+    Array[File] html_reports      = glob("html_results/*_virulence.html")
+    File        virulence_log     = "virulence.log"
   }
 }
+
 
 task BLAST_ANALYSIS {
   input {
@@ -4337,7 +4276,7 @@ EOF
   runtime {
     docker: "ubuntu:20.04"
     cpu: 4
-    memory: "8 GB"
+    memory: "16 GB"
     disks: "local-disk 100 HDD"
     dockerVolumeMode: "delegated"
     continueOnReturnCode: true
