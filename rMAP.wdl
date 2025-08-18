@@ -349,9 +349,9 @@ task TRIMMING {
         return
       fi
 
-      local num_reads=$(zcat "$file" | awk 'END {print NR/4}')
-      local avg_length=$(zcat "$file" | awk 'NR%4==2 {sum+=length($0)} END {print sum/(NR/4)}')
-      local gc_content=$(zcat "$file" | awk 'NR%4==2 {gc+=gsub(/[GC]/, ""); at+=gsub(/[AT]/, "")} END {print (gc/(gc+at))*100}')
+      local num_reads=$(gzip -cd -- "$file" | awk 'END {print NR/4}')
+      local avg_length=$(gzip -cd -- "$file" | awk 'NR%4==2 {sum+=length($0)} END {print sum/(NR/4)}')
+      local gc_content=$(gzip -cd -- "$file" | awk 'NR%4==2 {gc+=gsub(/[GC]/, ""); at+=gsub(/[AT]/, "")} END {print (gc/(gc+at))*100}')
 
       echo "Metric,${read_end}" >> "$stats_file"
       echo "Number of reads,$num_reads" >> "$stats_file"
@@ -3234,7 +3234,7 @@ task BLAST_ANALYSIS {
     Int? max_contig_length
     Boolean do_blast = true
     Int cpu = 8
-    Int memory_gb = 12
+    Int memory_gb = 10
     Boolean skip = false
     Boolean debug = false
     Boolean parse_seqids = false
@@ -3246,13 +3246,6 @@ task BLAST_ANALYSIS {
     #!/bin/bash
     set -euo pipefail
     export LC_ALL=C
-
-    # --- Full-access preamble ---
-    umask 000
-    chmod -R a+rwX . || true
-    if [ -d "./inputs" ]; then
-      chmod -R a+rwX ./inputs || true
-    fi
 
     # Enhanced debugging
     debug_log() {
@@ -3273,7 +3266,7 @@ task BLAST_ANALYSIS {
     if [ -z "~{sep=' ' contig_fastas}" ]; then
       echo "No contig files provided - creating empty outputs" >> execution.log
       mkdir -p blast_results
-      : > sample_ids.txt
+      touch sample_ids.txt
       exit 0
     fi
 
@@ -3285,9 +3278,6 @@ task BLAST_ANALYSIS {
     export TMPDIR
     TMPDIR=$(mktemp -d ./blast_tmp.XXXXXX)
     debug_log "Created temp directory: $TMPDIR"
-
-    # Ensure created dirs are fully accessible
-    chmod -R a+rwX blast_results parallel_tmp "$TMPDIR" || true
 
     # Handle BLAST database setup
     if [ "~{use_local_blast}" = "true" ] && [ -n "~{local_blast_db}" ]; then
@@ -3307,8 +3297,8 @@ task BLAST_ANALYSIS {
     # System diagnostics
     {
       echo -e "\n=== SYSTEM CHECK ==="
-      if command -v nproc >/dev/null 2>&1; then echo "CPU cores: $(nproc)"; fi
-      if command -v free >/dev/null 2>&1;  then echo "Memory: $(free -h | awk '/Mem:/{print $2}') available"; fi
+      echo "CPU cores: $(nproc)"
+      echo "Memory: $(free -h | awk '/Mem:/{print $2}') available"
       echo "Disk space: $(df -h . | awk 'NR==2{print $4}') free"
       echo "BLAST version: $(blastn -version 2>&1 | head -1)"
       echo "Python version: $(python3 --version 2>&1)"
@@ -3385,8 +3375,8 @@ def generate_report(sample_dir):
   else:
     try:
       with open(input_tsv, "r", encoding="utf-8") as f:
-        headers = f.readline().rstrip("\\n").split("\\t")
-        rows = [line.rstrip("\\n").split("\\t") for line in f]
+        headers = f.readline().rstrip("\n").split("\t")
+        rows = [line.rstrip("\n").split("\t") for line in f]
 
       # Display header: rename stitle -> species (safety even if upstream already renamed)
       headers = ["species" if h == "stitle" else h for h in headers]
@@ -3416,16 +3406,16 @@ def generate_report(sample_dir):
 
       parts.append("  </tbody>")
       parts.append("</table>")
-      content = "\\n".join(parts)
+      content = "\n".join(parts)
 
     except Exception as e:
-      content = f"""
+      content = """
       <div class="error">
         <h2>Processing Error</h2>
         <p>Failed to generate report:</p>
-        <pre>{str(e)}</pre>
+        <pre>{}</pre>
       </div>
-      """
+      """.format(str(e))
 
   with open(output_html, "w", encoding="utf-8") as f:
     f.write(HTML_TEMPLATE.format(
@@ -3443,6 +3433,17 @@ if __name__ == "__main__":
   generate_report(sys.argv[1])
 PYEOF
 
+    # Prepare safe working copies of contig FASTAs (avoid writing to read-only inputs)
+    work_list="work_list.txt"
+    : > "$work_list"
+    for fa in ~{sep=' ' contig_fastas}; do
+      bn="$(basename "$fa")"
+      wf="$TMPDIR/${bn}"
+      cp -f -- "$fa" "$wf"
+      chmod u+rw -- "$wf" || true
+      echo "$wf" >> "$work_list"
+    done
+
     # Main processing function
     process_sample() {
       local contig_file="$1"
@@ -3453,24 +3454,9 @@ PYEOF
       mkdir -p "$sample_dir"
       debug_log "Processing sample: $sample_id"
 
-      # Ensure readability of input contig; then work from a local copy with permissive perms
-      if [ ! -r "$contig_file" ]; then
-        debug_log "Input not readable, trying chmod a+r: $contig_file"
-        chmod a+r "$contig_file" 2>/dev/null || true
-      fi
-      if ! head -c 1 "$contig_file" >/dev/null 2>&1; then
-        echo "ERROR: Cannot read input contig: $contig_file" >> execution.log
-        echo "$sample_id (unreadable)" >> sample_ids.txt
-        return 0
-      fi
-
-      cp -f "$contig_file" "${sample_dir}/source.fa"
-      chmod 666 "${sample_dir}/source.fa" || true
-      local work_fa="${sample_dir}/source.fa"
-
       # 1. Filter contigs by length
       awk -v min_len=~{min_contig_length} \
-          -v max_len=~{if defined(max_contig_length) then max_contig_length else "NULL"} \
+      -v max_len="~{if defined(max_contig_length) then max_contig_length else "NULL"}" \
           'BEGIN {RS=">"; FS="\n"}
           NR>1 {
             seq="";
@@ -3479,7 +3465,7 @@ PYEOF
               print ">"$1;
               for(i=2;i<=NF;i++) print $i
             }
-          }' "$work_fa" > "${sample_dir}/filtered.fa"
+          }' "$contig_file" > "${sample_dir}/filtered.fa"
 
       debug_log "Filtered contigs: $(grep -c '^>' "${sample_dir}/filtered.fa" || true) sequences"
 
@@ -3523,10 +3509,11 @@ PYEOF
     export -f process_sample debug_log
     export BLAST_DB
 
-    # Process samples in parallel (one input per line via sep='\n')
-    printf "%s\n" ~{sep='\n' contig_fastas} | \
-      /usr/bin/parallel --will-cite --noswap -j ~{cpu} --joblog parallel.log --progress --eta \
-        --tagstring "{}" "process_sample {}" > sample_ids.txt 2>&1
+    # Process samples in parallel from the working-copy list
+    /usr/bin/parallel --will-cite --noswap -j ~{cpu} --joblog parallel.log \
+      --progress --eta --tagstring "{}" "process_sample {}" :::: "$work_list" \
+      1> sample_ids.txt
+
 
     # Finalization with results summary
     {
@@ -3538,20 +3525,16 @@ PYEOF
       echo "Timestamp: $(date +"%Y-%m-%d %H:%M:%S")"
     } >> execution.log
 
-    # Make all outputs world-readable/writable so Cromwell/host can collect them
-    chmod -R a+rwX blast_results *.log parallel.log makeblastdb.log 2>/dev/null || true
-
     # Cleanup
     rm -rf "${TMPDIR}"
   >>>
-
   runtime {
     docker: "gmboowa/blast-analysis:1.9.4"
     cpu: select_first([cpu, 1])
     memory: "~{memory_gb} GB"
     disks: "local-disk 100 HDD"
     preemptible: 2
-    dockerOptions: "--user 0:0 --privileged --entrypoint /bin/bash"
+    dockerOptions: "--entrypoint /bin/bash --user 0:0"
   }
 
   output {
@@ -4167,9 +4150,11 @@ EOF
       echo '        <div class="report-card"><h3>Per-sample QC reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
       idx=1
       for qf in ~{sep=' ' quality_reports}; do
-        qb="$(basename "$qf")"
-        cp -v "$qf" "final_report/assets/sections/$qb" || true
-        echo "          <li><a href=\"assets/sections/$qb\" target=\"_blank\">QC Report ${idx} — $qb</a></li>" >> "final_report/${REPORT_FILENAME}"
+        parent="$(basename "$(dirname "$qf")")"
+        ext="${qf##*.}"
+        unique="${parent}_qc.${ext}"
+        cp -v "$qf" "final_report/assets/sections/$unique" || true
+        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">QC Report ${idx} — ${parent}</a></li>" >> "final_report/${REPORT_FILENAME}"
         idx=$((idx+1))
       done
       echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
@@ -4232,9 +4217,11 @@ EOF
       echo '        <div class="report-card"><h3>Per-sample AMR reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
       aidx=1
       for ar in ~{sep=' ' amr_reports}; do
-        ab="$(basename "$ar")"
-        cp -v "$ar" "final_report/assets/sections/$ab" || true
-        echo "          <li><a href=\"assets/sections/$ab\" target=\"_blank\">AMR Report ${aidx} — $ab</a></li>" >> "final_report/${REPORT_FILENAME}"
+        parent="$(basename "$(dirname "$ar")")"
+        ext="${ar##*.}"
+        unique="${parent}_amr.${ext}"
+        cp -v "$ar" "final_report/assets/sections/$unique" || true
+        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">AMR Report ${aidx} — ${parent}</a></li>" >> "final_report/${REPORT_FILENAME}"
         aidx=$((aidx+1))
       done
       echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
@@ -4249,9 +4236,11 @@ EOF
       echo '        <div class="report-card"><h3>Per-sample MGE reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
       midx=1
       for mr in ~{sep=' ' mge_reports}; do
-        mb="$(basename "$mr")"
-        cp -v "$mr" "final_report/assets/sections/$mb" || true
-        echo "          <li><a href=\"assets/sections/$mb\" target=\"_blank\">MGE Report ${midx} — $mb</a></li>" >> "final_report/${REPORT_FILENAME}"
+        parent="$(basename "$(dirname "$mr")")"
+        ext="${mr##*.}"
+        unique="${parent}_mge.${ext}"
+        cp -v "$mr" "final_report/assets/sections/$unique" || true
+        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">MGE Report ${midx} — ${parent}</a></li>" >> "final_report/${REPORT_FILENAME}"
         midx=$((midx+1))
       done
       echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
@@ -4266,9 +4255,11 @@ EOF
       echo '        <div class="report-card"><h3>Per-sample virulence reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
       vidx=1
       for vf in ~{sep=' ' virulence_reports}; do
-        vb="$(basename "$vf")"
-        cp -v "$vf" "final_report/assets/sections/$vb" || true
-        echo "          <li><a href=\"assets/sections/$vb\" target=\"_blank\">Virulence Report ${vidx} — $vb</a></li>" >> "final_report/${REPORT_FILENAME}"
+        parent="$(basename "$(dirname "$vf")")"
+        ext="${vf##*.}"
+        unique="${parent}_virulence.${ext}"
+        cp -v "$vf" "final_report/assets/sections/$unique" || true
+        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">Virulence Report ${vidx} — ${parent}</a></li>" >> "final_report/${REPORT_FILENAME}"
         vidx=$((vidx+1))
       done
       echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
