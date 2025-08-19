@@ -52,7 +52,7 @@ workflow rMAP {
   }
 
   meta {
-    workflow_timeout: "48 hours"
+    workflow_timeout: "168 hours"
     workflow_heartbeat_interval: "10 minutes"
     workflow_heartbeat_ttl: "30 minutes"
     allowNestedInputs: true
@@ -1038,7 +1038,7 @@ EOF
   }
 
   output {
-    Array[File] assembly_output = if do_assembly then glob("~{output_dir}/*.fa") else []
+    Array[File] assembly_output = if do_assembly then glob("~{output_dir}/*.fa") else []  # Changed pattern
     File assembly_stats = if do_assembly then "~{output_dir}/assembly_stats.html" else "~{output_dir}/skipped.txt"
     String assembly_dir_out = "~{output_dir}"
     File? assembly_log = if do_assembly then "assembly.log" else "~{output_dir}/skipped.txt"
@@ -1185,7 +1185,7 @@ task PANGENOME {
   command <<<
     set -euo pipefail
 
-    # Always provision output dir & the files Cromwell expects
+    # Always provision output dir and the files Cromwell expects
     mkdir -p final_output
     : > final_output/gene_presence_absence.csv
     : > final_output/summary_statistics.txt
@@ -1272,12 +1272,12 @@ EOF
         cp -f "$outdir"/number_of_new_genes.Rtab                final_output/ 2>/dev/null || true
         cp -f "$outdir"/number_of_conserved_genes.Rtab          final_output/ 2>/dev/null || true
 
-        # Improved heatmap generation with better error handling & memory optimization
+        # Improved heatmap generation with better error handling and memory optimization
         if command -v Rscript >/dev/null 2>&1; then
           cat > final_output/generate_visualizations.R <<'RS'
-# Enhanced heatmap generation with validation & memory optimization
+# Enhanced heatmap generation with validation and memory optimization
 tryCatch({
-  # Set memory limits & force garbage collection
+  # Set memory limits and force garbage collection
   options(future.globals.maxSize = ~{memory_gb} * 1024^3)
   gc()
 
@@ -1325,7 +1325,7 @@ tryCatch({
     mat <- mat[sample(1:nrow(mat), 10000), ]
   }
 
-  # Only plot if we have at least 2 samples & 2 genes
+  # Only plot if we have at least 2 samples and 2 genes
   if (ncol(mat) >= 2 && nrow(mat) >= 2) {
     # Use sparse matrices if available
     if (requireNamespace("Matrix", quietly = TRUE)) {
@@ -2072,7 +2072,7 @@ EOF
       SNP_COUNT=0
       INDEL_COUNT=0
       TOTAL=0
-      STATUS="failed"
+      STATUS="failed"  # Default to failed unless proven otherwise
       ATTEMPTS=0
       MAX_ATTEMPTS=~{max_retries}
 
@@ -2226,8 +2226,8 @@ task AMR_PROFILING {
     Int cpu = 2
     Boolean abricate_nopath = true
     Boolean abricate_make_summary = false
-    Int merge_minid = 95
-    Int merge_mincov = 90
+    Int merge_minid = 95  # Retained (used in per-sample filtering)
+    Int merge_mincov = 90  # Retained (used in per-sample filtering)
   }
 
   command <<<
@@ -2250,7 +2250,7 @@ task AMR_PROFILING {
     echo "- merge_mincov: ~{merge_mincov}" >> amr.log
     echo "===================================" >> amr.log
 
-    # HTML template
+    # HTML template (unchanged)
     HTML_HEADER='<!DOCTYPE html>
 <html>
 <head>
@@ -2307,7 +2307,7 @@ task AMR_PROFILING {
 </body>
 </html>'
 
-    # Skip conditions
+    # Skip conditions (unchanged)
     if [ "~{do_amr_profiling}" != "true" ]; then
       echo "AMR profiling disabled by user parameter" >> amr.log
       echo "AMR profiling skipped by user request" > amr_results/skipped.txt
@@ -2322,7 +2322,7 @@ task AMR_PROFILING {
       exit 0
     fi
 
-    # Verify input files
+    # Verify input files (unchanged)
     echo "Input files verification:" >> amr.log
     valid_files=0
     for f in ~{sep=' ' assembly_output}; do
@@ -2346,7 +2346,7 @@ task AMR_PROFILING {
       exit 0
     fi
 
-    # Database setup
+    # Database setup (unchanged)
     db_to_use="resfinder"
     if [ "~{use_local_db}" == "true" ]; then
       if [ ! -f "~{local_db}" ]; then
@@ -2377,7 +2377,7 @@ task AMR_PROFILING {
       }
     fi
 
-    # Process samples
+    # Process samples (modified for consistent naming)
     processed_samples=0
     for asm_file in ~{sep=' ' assembly_output}; do
       [ ! -f "$asm_file" ] && continue
@@ -2414,7 +2414,7 @@ task AMR_PROFILING {
           continue
         }
 
-      # Save raw CSV
+      # Save raw CSV (unchanged)
       cp -f "${output_file}.tmp" "$raw_csv" || true
 
       # Convert CSV -> TSV (unchanged)
@@ -2444,7 +2444,7 @@ task AMR_PROFILING {
         print sample, contig, gene, pcov, pid, prod, res
       }' "${output_file}.tmp" > "$output_file"
 
-      # Best-hit filtering
+      # Best-hit filtering (unchanged)
       awk -F'\t' '
         NR==1 { header=$0; next }
         {
@@ -2465,7 +2465,7 @@ task AMR_PROFILING {
       ' "$output_file" | sort -t$'\t' -k1,1 -k3,3 > "${output_file}.best"
       mv -f "${output_file}.best" "$output_file"
 
-      # Generate per-sample HTML
+      # Generate per-sample HTML (unchanged)
       {
         echo "$HTML_HEADER"
         tail -n +2 "$output_file" | while IFS=$'\t' read -r sample contig gene coverage identity product resistance; do
@@ -3073,7 +3073,7 @@ task VIRULENCE_ANALYSIS {
         else if ($6 == "Medium") risk_class = "risk-medium";
 
         printf "<tr>";
-        printf "<td>Virulence Report %d — %s</td>", idx, sample;
+        printf "<td>Virulence Report %d — %s</td>", idx, sample;  # Sample with consistent naming
         printf "<td class=\"virulence\">%s</td>", $2;  # Virulence Factor
         printf "<td>%s</td>", $3;  # Product
         printf "<td>%.1f</td>", $4; # %Coverage
@@ -3918,6 +3918,67 @@ EOF
       cp -v "${src}" "${dst}" || { echo "Copy failed: ${src}" >&2; return 1; }
     }
 
+    # ----------------------------- ROBUST sample ID extraction -----------------------------
+    extract_sample_id() {
+      local path="$1"
+      local fname="$(basename "$path")"
+      local stem="${fname%.*}"
+
+      # 1) Prefer an accession anywhere in the full path
+      local acc
+      acc="$(printf '%s\n' "$path" | grep -Eo '(SRR|ERR|DRR)[0-9]+' | head -n1 || true)"
+      if [[ -n "${acc:-}" ]]; then
+        echo "$acc"
+        return 0
+      fi
+
+      # 2) Prefer tokens like A55870 / KPN123 etc. (letters+digits)
+      local alnum
+      alnum="$(printf '%s\n' "$path" | grep -Eo '[A-Za-z][A-Za-z0-9]*[0-9]{2,}' | tail -n1 || true)"
+      if [[ -n "${alnum:-}" && ! "${alnum,,}" =~ ^(report|blast|virulence|amr|mge)$ ]]; then
+        echo "$alnum"
+        return 0
+      fi
+
+      # 3) Walk up directories and filename stem; clean and try again
+      local d1="$(basename "$(dirname "$path")")"
+      local d2="$(basename "$(dirname "$(dirname "$path")")")"
+      local d3="$(basename "$(dirname "$(dirname "$(dirname "$path")")")")"
+
+      is_bad_token() {
+        local t="$1"
+        [[ -z "$t" || "$t" =~ ^-?[0-9]+$ || "$t" =~ ^(execution|inputs|attempt-[0-9]+|shard-[0-9]+|glob-.*|tmp.*|call-[^/]+|combined)$ ]]
+      }
+
+      clean_token() {
+        echo "$1" | sed -E '
+          s/\.(html?|txt)$//;
+          s/(^|[_-])(amr|mge|virulence|blast|report)([_-]|$)/_/Ig;
+          s/^(shard-|scatter-|attempt-|call-)?[0-9]+[_-]+//I;
+          s/[_-]+$//;
+        '
+      }
+
+      local cand acc2
+      for raw in "$d1" "$d2" "$d3" "$stem"; do
+        cand="$(clean_token "$raw")"
+        acc2="$(printf '%s\n' "$cand" | grep -Eo '(SRR|ERR|DRR)[0-9]+' | head -n1 || true)"
+        if [[ -n "${acc2:-}" ]]; then
+          echo "$acc2"; return 0
+        fi
+        alnum="$(printf '%s\n' "$cand" | grep -Eo '[A-Za-z][A-Za-z0-9]*[0-9]{2,}' | tail -n1 || true)"
+        if [[ -n "${alnum:-}" && ! "${alnum,,}" =~ ^(report|blast|virulence|amr|mge)$ ]]; then
+          echo "$alnum"; return 0
+        fi
+        if ! is_bad_token "$cand"; then
+          echo "$cand"; return 0
+        fi
+      done
+
+      echo "${stem:-sample}"
+    }
+    # --------------------------------------------------------------------------------------
+
     embed_html() {
       local label="$1"; local file="$2"; local out="$3"
       {
@@ -3940,7 +4001,6 @@ EOF
 
     # --- Modified Heatmap Handling with Explicit Precedence ---
     GH_BASENAME=""
-    # Explicit precedence: gene_heatmap takes priority over gene_heatmap_png
     if [[ -n "~{gene_heatmap}" && -f "~{gene_heatmap}" ]]; then
       echo "[heatmap] Using primary gene_heatmap input"
       if safe_copy "~{gene_heatmap}" "final_report/assets/images/$(basename "~{gene_heatmap}")"; then
@@ -3953,7 +4013,6 @@ EOF
       fi
     fi
 
-    # Warn if both were provided but we're choosing one
     if [[ -n "~{gene_heatmap}" && -f "~{gene_heatmap}" && -n "~{gene_heatmap_png}" && -f "~{gene_heatmap_png}" ]]; then
       echo "WARNING: Both gene_heatmap and gene_heatmap_png provided - using gene_heatmap" >&2
     fi
@@ -4039,11 +4098,13 @@ EOF
       echo '        <div class="report-card"><h3>Per-sample QC reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
       idx=1
       for qf in ~{sep=' ' quality_reports}; do
-        parent="$(basename "$(dirname "$qf")")"
+        base="$(basename "$qf")"
+        if [[ "${base,,}" == *combined* ]]; then continue; fi
+        sid="$(extract_sample_id "$qf")"
         ext="${qf##*.}"
-        unique="${parent}_qc.${ext}"
+        unique="${sid}_qc.${ext}"
         cp -v "$qf" "final_report/assets/sections/$unique" || true
-        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">QC Report ${idx} — ${parent}</a></li>" >> "final_report/${REPORT_FILENAME}"
+        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">QC Report ${idx} — ${sid}</a></li>" >> "final_report/${REPORT_FILENAME}"
         idx=$((idx+1))
       done
       echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
@@ -4098,7 +4159,7 @@ EOF
     embed_html "Variant summary" "~{variant_summary_html}" "final_report/${REPORT_FILENAME}"
     echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
-    # AMR — per-sample links only
+    # AMR — per-sample links (skip "combined")
     cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
       <div id="amr" class="section"><h2>Antimicrobial Resistance</h2>
 EOF
@@ -4106,18 +4167,20 @@ EOF
       echo '        <div class="report-card"><h3>Per-sample AMR reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
       aidx=1
       for ar in ~{sep=' ' amr_reports}; do
-        parent="$(basename "$(dirname "$ar")")"
+        base="$(basename "$ar")"
+        if [[ "${base,,}" == *combined* ]]; then continue; fi
+        sid="$(extract_sample_id "$ar")"
         ext="${ar##*.}"
-        unique="${parent}_amr.${ext}"
+        unique="${sid}_amr.${ext}"
         cp -v "$ar" "final_report/assets/sections/$unique" || true
-        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">AMR Report ${aidx} — ${parent}</a></li>" >> "final_report/${REPORT_FILENAME}"
+        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">AMR Report ${aidx} — ${sid}</a></li>" >> "final_report/${REPORT_FILENAME}"
         aidx=$((aidx+1))
       done
       echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
     fi
     echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
-    # MGE — per-sample links only
+    # MGE — per-sample links (skip "combined")
     cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
       <div id="mge" class="section"><h2>Mobile Genetic Elements</h2>
 EOF
@@ -4125,18 +4188,20 @@ EOF
       echo '        <div class="report-card"><h3>Per-sample MGE reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
       midx=1
       for mr in ~{sep=' ' mge_reports}; do
-        parent="$(basename "$(dirname "$mr")")"
+        base="$(basename "$mr")"
+        if [[ "${base,,}" == *combined* ]]; then continue; fi
+        sid="$(extract_sample_id "$mr")"
         ext="${mr##*.}"
-        unique="${parent}_mge.${ext}"
+        unique="${sid}_mge.${ext}"
         cp -v "$mr" "final_report/assets/sections/$unique" || true
-        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">MGE Report ${midx} — ${parent}</a></li>" >> "final_report/${REPORT_FILENAME}"
+        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">MGE Report ${midx} — ${sid}</a></li>" >> "final_report/${REPORT_FILENAME}"
         midx=$((midx+1))
       done
       echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
     fi
     echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
-    # VIRULENCE — per-sample links only
+    # VIRULENCE — per-sample links (skip "combined")
     cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
       <div id="virulence" class="section"><h2>Virulence</h2>
 EOF
@@ -4144,18 +4209,20 @@ EOF
       echo '        <div class="report-card"><h3>Per-sample Virulence reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
       vidx=1
       for vf in ~{sep=' ' virulence_reports}; do
-        parent="$(basename "$(dirname "$vf")")"
+        base="$(basename "$vf")"
+        if [[ "${base,,}" == *combined* ]]; then continue; fi
+        sid="$(extract_sample_id "$vf")"
         ext="${vf##*.}"
-        unique="${parent}_virulence.${ext}"
+        unique="${sid}_virulence.${ext}"
         cp -v "$vf" "final_report/assets/sections/$unique" || true
-        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">Virulence Report ${vidx} — ${parent}</a></li>" >> "final_report/${REPORT_FILENAME}"
+        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">Virulence Report ${vidx} — ${sid}</a></li>" >> "final_report/${REPORT_FILENAME}"
         vidx=$((vidx+1))
       done
       echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
     fi
     echo "      </div>" >> "final_report/${REPORT_FILENAME}"
 
-    # BLAST — per-sample links only (unique names by sample folder)
+    # BLAST — per-sample links (skip "combined")
     cat >> "final_report/${REPORT_FILENAME}" <<'EOF'
       <div id="blast" class="section"><h2>BLAST</h2>
 EOF
@@ -4163,11 +4230,13 @@ EOF
       echo '        <div class="report-card"><h3>Per-sample BLAST reports</h3><ul>' >> "final_report/${REPORT_FILENAME}"
       bidx=1
       for br in ~{sep=' ' blast_reports}; do
-        parent="$(basename "$(dirname "$br")")"
+        base="$(basename "$br")"
+        if [[ "${base,,}" == *combined* ]]; then continue; fi
+        sid="$(extract_sample_id "$br")"
         ext="${br##*.}"
-        unique="${parent}_blast.${ext}"          # e.g., SRR123_blast.html
+        unique="${sid}_blast.${ext}"
         cp -v "$br" "final_report/assets/sections/$unique" || true
-        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">BLAST Report ${bidx} — ${parent}</a></li>" >> "final_report/${REPORT_FILENAME}"
+        echo "          <li><a href=\"assets/sections/$unique\" target=\"_blank\">BLAST Report ${bidx} — ${sid}</a></li>" >> "final_report/${REPORT_FILENAME}"
         bidx=$((bidx+1))
       done
       echo '        </ul></div>' >> "final_report/${REPORT_FILENAME}"
@@ -4203,7 +4272,6 @@ EOF
 EOF
 
     # Extra safety: if any literal ${RUN_DATE} survived (e.g., someone re-quoted a heredoc),
-    # replace it now with the actual timestamp.
     perl -0777 -pe 's/\$\{RUN_DATE\}/$ENV{RUN_DATE}/g' -i "final_report/${REPORT_FILENAME}" || true
 
     FS="~{footer_sentence}"
