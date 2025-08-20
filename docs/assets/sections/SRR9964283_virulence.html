@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Virulence Factor Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #3498db; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .virulence { font-weight: bold; color: #e74c3c; }
+        .coverage-high { background-color: #e6ffe6; }
+        .coverage-medium { background-color: #fff9e6; }
+        .coverage-low { background-color: #ffe6e6; }
+        .risk-high { color: #d63031; }
+        .risk-medium { color: #f39c12; }
+        .risk-low { color: #27ae60; }
+        .summary-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Virulence Factor Analysis Report</h1>
+    <div class="summary-card">
+        <p><strong>Analysis Date:</strong> <span id="analysis-date"></span></p>
+        <p><strong>Database Used:</strong> vfdb</p>
+        <p><strong>Parameters:</strong> Min Coverage: 60%, Min Identity: 80.0%</p>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Virulence Factor</th>
+                <th>Product</th>
+                <th>% Coverage</th>
+                <th>% Identity</th>
+                <th>Risk Level</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">papI</td><td>(papI)</td><td>100.0</td><td>94.9</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">papB</td><td>regulatory</td><td>99.7</td><td>98.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">gspC</td><td>(gspC)</td><td>100.0</td><td>95.1</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">gspD</td><td>(gspD)</td><td>100.0</td><td>96.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">gspE</td><td>(gspE)</td><td>100.0</td><td>95.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">gspF</td><td>(gspF)</td><td>100.0</td><td>95.1</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">gspG</td><td>(gspG)</td><td>100.0</td><td>96.3</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">gspH</td><td>(gspH)</td><td>100.0</td><td>95.7</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">gspI</td><td>(gspI)</td><td>100.0</td><td>96.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">gspJ</td><td>(gspJ)</td><td>100.0</td><td>95.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">gspK</td><td>(gspK)</td><td>100.0</td><td>96.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">gspL</td><td>(gspL)</td><td>100.0</td><td>95.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">gspM</td><td>(gspM)</td><td>96.9</td><td>93.9</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">kpsM</td><td>(kpsM)</td><td>100.0</td><td>95.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">kpsD</td><td>(kpsD)</td><td>100.0</td><td>98.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">iucA</td><td>(iucA)</td><td>100.0</td><td>99.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">iucB</td><td>(iucB)</td><td>100.0</td><td>99.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">iucC</td><td>(iucC)</td><td>100.0</td><td>98.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">iucD</td><td>(iucD)</td><td>98.8</td><td>96.3</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">iutA</td><td>(iutA)</td><td>100.0</td><td>88.4</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">sat</td><td>(sat)</td><td>100.0</td><td>99.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">papX</td><td>(papX)</td><td>100.0</td><td>97.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">chuV</td><td>(chuV)</td><td>100.0</td><td>99.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">chuU</td><td>(chuU)</td><td>100.0</td><td>99.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">chuY</td><td>(chuY)</td><td>100.0</td><td>98.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">chuX</td><td>(chuX)</td><td>100.0</td><td>100.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">chuW</td><td>(chuW)</td><td>100.0</td><td>98.9</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">chuT</td><td>(chuT)</td><td>100.0</td><td>99.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">chuA</td><td>(chuA)</td><td>100.0</td><td>99.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">chuS</td><td>(chuS)</td><td>100.0</td><td>99.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">ompA</td><td>(ompA)</td><td>100.0</td><td>95.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">entD</td><td>(entD)</td><td>85.9</td><td>96.7</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fepA</td><td>(fepA)</td><td>100.0</td><td>98.9</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fes</td><td>(fes)</td><td>100.0</td><td>99.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">entF</td><td>(entF)</td><td>100.0</td><td>98.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fepC</td><td>(fepC)</td><td>100.0</td><td>99.1</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fepG</td><td>(fepG)</td><td>100.0</td><td>97.9</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fepD</td><td>(fepD)</td><td>100.0</td><td>97.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">entS</td><td>(entS)</td><td>100.0</td><td>97.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fepB</td><td>(fepB)</td><td>100.0</td><td>98.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">entC</td><td>(entC)</td><td>100.0</td><td>98.7</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">entE</td><td>(entE)</td><td>100.0</td><td>98.9</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">entB</td><td>(entB)</td><td>100.0</td><td>99.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">entA</td><td>(entA)</td><td>100.0</td><td>98.1</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">yagV/ecpE</td><td>(yagV/ecpE)</td><td>99.7</td><td>98.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">yagW/ecpD</td><td>(yagW/ecpD)</td><td>100.0</td><td>99.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">yagX/ecpC</td><td>(yagX/ecpC)</td><td>100.0</td><td>97.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">yagY/ecpB</td><td>(yagY/ecpB)</td><td>100.0</td><td>98.1</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">yagZ/ecpA</td><td>(yagZ/ecpA)</td><td>100.0</td><td>98.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">ykgK/ecpR</td><td>(ykgK/ecpR)</td><td>100.0</td><td>99.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fdeC</td><td>(fdeC)</td><td>99.9</td><td>97.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">aslA</td><td>(aslA)</td><td>100.0</td><td>98.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">daaF</td><td>(daaF)</td><td>100.0</td><td>98.7</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">afaA</td><td>(afaA)</td><td>100.0</td><td>100.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">ybtS</td><td>(ybtS)</td><td>100.0</td><td>99.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">ybtX</td><td>(ybtX)</td><td>100.0</td><td>99.7</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">ybtQ</td><td>(ybtQ)</td><td>100.0</td><td>99.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">ybtP</td><td>(ybtP)</td><td>100.0</td><td>99.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">ybtA</td><td>(ybtA)</td><td>100.0</td><td>99.3</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">irp2</td><td>(irp2)</td><td>100.0</td><td>99.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">irp1</td><td>(irp1)</td><td>100.0</td><td>99.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">ybtU</td><td>(ybtU)</td><td>100.0</td><td>99.7</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">ybtT</td><td>(ybtT)</td><td>100.0</td><td>99.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">ybtE</td><td>(ybtE)</td><td>100.0</td><td>99.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fyuA</td><td>(fyuA)</td><td>100.0</td><td>99.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">afaB-I</td><td>(afaB-I)</td><td>100.0</td><td>99.1</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">afaC-I</td><td>(afaC-I)</td><td>100.0</td><td>98.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">afaD</td><td>(afaD)</td><td>100.0</td><td>94.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">draP</td><td>(draP)</td><td>100.0</td><td>98.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fimB</td><td>(fimB)</td><td>67.7</td><td>98.0</td><td class="risk-low">Low</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fimE</td><td>(fimE)</td><td>100.0</td><td>98.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fimA</td><td>(fimA)</td><td>99.8</td><td>90.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fimI</td><td>(fimI)</td><td>100.0</td><td>98.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fimC</td><td>(fimC)</td><td>100.0</td><td>98.9</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fimD</td><td>(fimD)</td><td>100.0</td><td>98.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fimF</td><td>(fimF)</td><td>100.0</td><td>96.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fimG</td><td>(fimG)</td><td>100.0</td><td>98.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">fimH</td><td>(fimH)</td><td>100.0</td><td>97.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">csgG</td><td>(csgG)</td><td>100.0</td><td>83.2</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">csgF</td><td>(csgF)</td><td>99.0</td><td>80.8</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">csgD</td><td>(csgD)</td><td>100.0</td><td>81.6</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 20 — SRR9964283</td><td class="virulence">csgB</td><td>(csgB)</td><td>99.8</td><td>83.8</td><td class="risk-medium">Medium</td></tr>
+        </tbody>
+    </table>
+    <script>
+        document.getElementById("analysis-date").textContent = new Date().toLocaleString();
+
+        // Add coverage highlighting
+        const coverageCells = document.querySelectorAll("td:nth-child(4)");
+        coverageCells.forEach(cell => {
+            const coverage = parseFloat(cell.textContent);
+            if (coverage >= 90) cell.classList.add("coverage-high");
+            else if (coverage >= 70) cell.classList.add("coverage-medium");
+            else cell.classList.add("coverage-low");
+        });
+    </script>
+</body>
+</html>

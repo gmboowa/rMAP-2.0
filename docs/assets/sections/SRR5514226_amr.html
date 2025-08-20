@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AMR Profiling Results</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #3498db; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .gene { font-weight: bold; color: #e74c3c; }
+        .antibiotic { font-style: italic; color: #27ae60; }
+        .coverage-high { background-color: #e6ffe6; }
+        .coverage-medium { background-color: #fff9e6; }
+        .coverage-low { background-color: #ffe6e6; }
+        .summary-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error-row { background-color: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>Antimicrobial Resistance Profiling Results</h1>
+    <div class="summary-card">
+        <p><strong>Analysis Date:</strong> Wed Aug 20 11:02:04 UTC 2025</p>
+        <p><strong>Database Used:</strong> Custom</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li>Minimum Identity: 90%</li>
+            <li>Minimum Coverage: 80%</li>
+            <li>Threads: 2</li>
+        </ul>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Contig</th>
+                <th>Gene</th>
+                <th>%Coverage</th>
+                <th>%Identity</th>
+                <th>Product</th>
+                <th>Resistance</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr>
+<td>SRR5514226</td>
+<td>k77_501</td>
+<td class="gene">aac(3)-IIa_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>aac(3)-IIa</td>
+<td class="antibiotic">Gentamicin;Tobramycin</td>
+</tr>
+<tr>
+<td>SRR5514226</td>
+<td>k77_295</td>
+<td class="gene">aph(3'')-Ib_5</td>
+<td>100.00</td>
+<td>99.88</td>
+<td>aph(3'')-Ib</td>
+<td class="antibiotic">Streptomycin</td>
+</tr>
+<tr>
+<td>SRR5514226</td>
+<td>k77_295</td>
+<td class="gene">aph(6)-Id_1</td>
+<td>100.00</td>
+<td>99.88</td>
+<td>aph(6)-Id</td>
+<td class="antibiotic">Streptomycin</td>
+</tr>
+<tr>
+<td>SRR5514226</td>
+<td>k77_501</td>
+<td class="gene">blaCTX-M-15_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>blaCTX-M-15</td>
+<td class="antibiotic">Amoxicillin;Ampicillin;Aztreonam;Cefepime;Cefotaxime;Ceftazidime;Ceftriaxone;Piperacillin;Ticarcillin</td>
+</tr>
+<tr>
+<td>SRR5514226</td>
+<td>k77_323</td>
+<td class="gene">blaSHV-187_1</td>
+<td>100.00</td>
+<td>99.54</td>
+<td>blaSHV-187</td>
+<td class="antibiotic"></td>
+</tr>
+<tr>
+<td>SRR5514226</td>
+<td>k77_501</td>
+<td class="gene">blaTEM-1B_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>blaTEM-1B</td>
+<td class="antibiotic">Amoxicillin;Ampicillin;Cephalothin;Piperacillin;Ticarcillin</td>
+</tr>
+<tr>
+<td>SRR5514226</td>
+<td>k77_574</td>
+<td class="gene">catA2_1</td>
+<td>100.00</td>
+<td>96.11</td>
+<td>catA2</td>
+<td class="antibiotic">Chloramphenicol</td>
+</tr>
+<tr>
+<td>SRR5514226</td>
+<td>k77_350</td>
+<td class="gene">dfrA14_5</td>
+<td>100.00</td>
+<td>99.59</td>
+<td>dfrA14</td>
+<td class="antibiotic">Trimethoprim</td>
+</tr>
+<tr>
+<td>SRR5514226</td>
+<td>k77_156</td>
+<td class="gene">fosA_5</td>
+<td>100.00</td>
+<td>97.86</td>
+<td>fosA</td>
+<td class="antibiotic">Fosfomycin</td>
+</tr>
+<tr>
+<td>SRR5514226</td>
+<td>k77_168</td>
+<td class="gene">oqxA_1</td>
+<td>100.00</td>
+<td>99.75</td>
+<td>oqxA</td>
+<td class="antibiotic">Nalidixic_acid;Ciprofloxacin</td>
+</tr>
+<tr>
+<td>SRR5514226</td>
+<td>k77_168</td>
+<td class="gene">oqxB_1</td>
+<td>100.00</td>
+<td>98.92</td>
+<td>oqxB</td>
+<td class="antibiotic">Nalidixic_acid;Ciprofloxacin</td>
+</tr>
+<tr>
+<td>SRR5514226</td>
+<td>k77_295</td>
+<td class="gene">sul2_2</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>sul2</td>
+<td class="antibiotic">Sulfamethoxazole</td>
+</tr>
+<tr>
+<td>SRR5514226</td>
+<td>k77_599</td>
+<td class="gene">tet(D)_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>tet(D)</td>
+<td class="antibiotic">Doxycycline;Tetracycline</td>
+</tr>
+        </tbody>
+    </table>
+</body>
+</html>

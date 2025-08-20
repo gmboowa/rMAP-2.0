@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AMR Profiling Results</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #3498db; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .gene { font-weight: bold; color: #e74c3c; }
+        .antibiotic { font-style: italic; color: #27ae60; }
+        .coverage-high { background-color: #e6ffe6; }
+        .coverage-medium { background-color: #fff9e6; }
+        .coverage-low { background-color: #ffe6e6; }
+        .summary-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error-row { background-color: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>Antimicrobial Resistance Profiling Results</h1>
+    <div class="summary-card">
+        <p><strong>Analysis Date:</strong> Wed Aug 20 11:02:04 UTC 2025</p>
+        <p><strong>Database Used:</strong> Custom</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li>Minimum Identity: 90%</li>
+            <li>Minimum Coverage: 80%</li>
+            <li>Threads: 2</li>
+        </ul>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Contig</th>
+                <th>Gene</th>
+                <th>%Coverage</th>
+                <th>%Identity</th>
+                <th>Product</th>
+                <th>Resistance</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr>
+<td>SRR6208323</td>
+<td>k77_27</td>
+<td class="gene">aac(6')-Ib_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>aac(6')-Ib</td>
+<td class="antibiotic">Amikacin;Tobramycin</td>
+</tr>
+<tr>
+<td>SRR6208323</td>
+<td>k77_27</td>
+<td class="gene">ant(3'')-Ia_1</td>
+<td>82.51</td>
+<td>99.25</td>
+<td>ant(3'')-Ia</td>
+<td class="antibiotic">Streptomycin</td>
+</tr>
+<tr>
+<td>SRR6208323</td>
+<td>k77_26</td>
+<td class="gene">blaKPC-2_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>blaKPC-2</td>
+<td class="antibiotic">Amoxicillin;Amoxicillin+Clavulanic_acid;Ampicillin;Ampicillin+Clavulanic_acid;Aztreonam;Cefepime;Cefotaxime;Cefoxitin;Ceftazidime;Ertapenem;Imipenem;Meropenem;Piperacillin;Piperacillin+Tazobactam;Ticarcillin;Ticarcillin+Clavulanic_acid</td>
+</tr>
+<tr>
+<td>SRR6208323</td>
+<td>k77_27</td>
+<td class="gene">blaOXA-9_1</td>
+<td>100.00</td>
+<td>99.88</td>
+<td>blaOXA-9</td>
+<td class="antibiotic">Amoxicillin;Ampicillin</td>
+</tr>
+<tr>
+<td>SRR6208323</td>
+<td>k77_211</td>
+<td class="gene">blaSHV-12_1</td>
+<td>99.07</td>
+<td>100.00</td>
+<td>blaSHV-12</td>
+<td class="antibiotic">Amoxicillin;Ampicillin;Aztreonam;Cefepime;Cefotaxime;Ceftazidime;Ceftriaxone;Piperacillin;Ticarcillin</td>
+</tr>
+<tr>
+<td>SRR6208323</td>
+<td>k77_591</td>
+<td class="gene">dfrA23_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>dfrA23</td>
+<td class="antibiotic"></td>
+</tr>
+<tr>
+<td>SRR6208323</td>
+<td>k77_405</td>
+<td class="gene">fosA6_1</td>
+<td>97.00</td>
+<td>99.76</td>
+<td>fosA6</td>
+<td class="antibiotic">Fosfomycin</td>
+</tr>
+<tr>
+<td>SRR6208323</td>
+<td>k77_930</td>
+<td class="gene">mph(A)_2</td>
+<td>100.00</td>
+<td>99.57</td>
+<td>mph(A)</td>
+<td class="antibiotic">Erythromycin;Azithromycin;Spiramycin;Telithromycin</td>
+</tr>
+<tr>
+<td>SRR6208323</td>
+<td>k77_823</td>
+<td class="gene">oqxA_1</td>
+<td>100.00</td>
+<td>99.23</td>
+<td>oqxA</td>
+<td class="antibiotic">Nalidixic_acid;Ciprofloxacin</td>
+</tr>
+<tr>
+<td>SRR6208323</td>
+<td>k77_823</td>
+<td class="gene">oqxB_1</td>
+<td>100.00</td>
+<td>98.86</td>
+<td>oqxB</td>
+<td class="antibiotic">Nalidixic_acid;Ciprofloxacin</td>
+</tr>
+        </tbody>
+    </table>
+</body>
+</html>

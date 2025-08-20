@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Mobile Genetic Element Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #3498db; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .mge { font-weight: bold; color: #e74c3c; }
+        .coverage-high { background-color: #e6ffe6; }
+        .coverage-medium { background-color: #fff9e6; }
+        .coverage-low { background-color: #ffe6e6; }
+        .summary-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error-row { background-color: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>Mobile Genetic Element Analysis Report</h1>
+    <div class="summary-card">
+        <p><strong>Analysis Date:</strong> <span id="analysis-date"></span></p>
+        <p><strong>Database Used:</strong> <span id="database-used"></span></p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li>Minimum Coverage: 80%</li>
+            <li>Minimum Identity: 90%</li>
+            <li>Threads: 4</li>
+        </ul>
+        <p><strong>Samples Processed:</strong> <span id="samples-processed"></span></p>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>MGE Type</th>
+                <th>Gene</th>
+                <th>Product</th>
+                <th>% Coverage</th>
+                <th>% Identity</th>
+                <th>Accession</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr>
+<td>ERR2397427</td>
+<td>Plasmid</td>
+<td class="mge">Col440I_1</td>
+<td>Col440I_1__CP023920.1</td>
+<td>100.00</td>
+<td>92.11</td>
+<td>CP023920.1</td>
+</tr>
+<tr>
+<td>ERR2397427</td>
+<td>Plasmid</td>
+<td class="mge">IncFII(pMET)_1_pMET1</td>
+<td>IncFII(pMET)_1_pMET1_EU383016</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>EU383016</td>
+</tr>
+<tr>
+<td>ERR2397427</td>
+<td>Plasmid</td>
+<td class="mge">IncFIB(K)_1_Kpn3</td>
+<td>IncFIB(K)_1_Kpn3_JN233704</td>
+<td>100.00</td>
+<td>98.75</td>
+<td>JN233704</td>
+</tr>
+<tr>
+<td>ERR2397427</td>
+<td>Plasmid</td>
+<td class="mge">Col156_1</td>
+<td>Col156_1__NC_009781</td>
+<td>100.00</td>
+<td>94.81</td>
+<td>NC_009781</td>
+</tr>
+<tr>
+<td>ERR2397427</td>
+<td>Plasmid</td>
+<td class="mge">IncQ1_1</td>
+<td>IncQ1_1__M28829.1</td>
+<td>95.73</td>
+<td>91.74</td>
+<td>M28829.1</td>
+</tr>
+<tr>
+<td>ERR2397427</td>
+<td>Plasmid</td>
+<td class="mge">ColRNAI_1</td>
+<td>ColRNAI_1__DQ298019</td>
+<td>100.00</td>
+<td>99.23</td>
+<td>DQ298019</td>
+</tr>
+<tr>
+<td>ERR2397427</td>
+<td>Plasmid</td>
+<td class="mge">Col440I_1</td>
+<td>Col440I_1__CP023920.1</td>
+<td>96.49</td>
+<td>90.00</td>
+<td>CP023920.1</td>
+</tr>
+<tr>
+<td>ERR2397427</td>
+<td>Plasmid</td>
+<td class="mge">IncFIB(pKPHS1)_1_pKPHS1</td>
+<td>IncFIB(pKPHS1)_1_pKPHS1_CP003223</td>
+<td>100.00</td>
+<td>95.54</td>
+<td>CP003223</td>
+</tr>
+        </tbody>
+    </table>
+    <script>
+        document.getElementById("analysis-date").textContent = new Date().toLocaleString();
+        document.getElementById("database-used").textContent = "Custom Local Database";
+        document.getElementById("samples-processed").textContent = "1";
+
+        // Add coverage highlighting
+        document.querySelectorAll("td:nth-child(5)").forEach(cell => {
+            const coverage = parseFloat(cell.textContent);
+            if (coverage >= 90) cell.classList.add("coverage-high");
+            else if (coverage >= 70) cell.classList.add("coverage-medium");
+            else cell.classList.add("coverage-low");
+        });
+    </script>
+</body>
+</html>

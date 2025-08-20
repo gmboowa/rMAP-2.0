@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AMR Profiling Results</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #3498db; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .gene { font-weight: bold; color: #e74c3c; }
+        .antibiotic { font-style: italic; color: #27ae60; }
+        .coverage-high { background-color: #e6ffe6; }
+        .coverage-medium { background-color: #fff9e6; }
+        .coverage-low { background-color: #ffe6e6; }
+        .summary-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error-row { background-color: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>Antimicrobial Resistance Profiling Results</h1>
+    <div class="summary-card">
+        <p><strong>Analysis Date:</strong> Wed Aug 20 11:02:04 UTC 2025</p>
+        <p><strong>Database Used:</strong> Custom</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li>Minimum Identity: 90%</li>
+            <li>Minimum Coverage: 80%</li>
+            <li>Threads: 2</li>
+        </ul>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Contig</th>
+                <th>Gene</th>
+                <th>%Coverage</th>
+                <th>%Identity</th>
+                <th>Product</th>
+                <th>Resistance</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr>
+<td>SRR9703249</td>
+<td>k77_320</td>
+<td class="gene">ARR-3_4</td>
+<td>90.24</td>
+<td>99.39</td>
+<td>ARR-3</td>
+<td class="antibiotic"></td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_320</td>
+<td class="gene">aac(6')-Ib-cr_1</td>
+<td>100.00</td>
+<td>99.83</td>
+<td>aac(6')-Ib-cr</td>
+<td class="antibiotic">Ciprofloxacin</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_323</td>
+<td class="gene">aph(3'')-Ib_5</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>aph(3'')-Ib</td>
+<td class="antibiotic">Streptomycin</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_171</td>
+<td class="gene">aph(3')-Ia_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>aph(3')-Ia</td>
+<td class="antibiotic"></td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_323</td>
+<td class="gene">aph(6)-Id_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>aph(6)-Id</td>
+<td class="antibiotic">Streptomycin</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_53</td>
+<td class="gene">blaACT-16_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>blaACT-16</td>
+<td class="antibiotic"></td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_333</td>
+<td class="gene">blaDHA-1_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>blaDHA-1</td>
+<td class="antibiotic">Amoxicillin;Amoxicillin+Clavulanic_acid;Ampicillin;Ampicillin+Clavulanic_acid;Cefotaxime;Cefoxitin;Ceftazidime;Piperacillin;Piperacillin+Tazobactam;Ticarcillin;Ticarcillin+Clavulanic_acid</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_46</td>
+<td class="gene">blaNDM-1_1</td>
+<td>100.00</td>
+<td>99.88</td>
+<td>blaNDM-1</td>
+<td class="antibiotic">Amoxicillin;Amoxicillin+Clavulanic_acid;Ampicillin;Ampicillin+Clavulanic_acid;Cefepime;Cefixime;Cefotaxime;Cefoxitin;Ceftazidime;Ertapenem;Imipenem;Meropenem;Piperacillin;Piperacillin+Tazobactam</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_320</td>
+<td class="gene">blaOXA-1_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>blaOXA-1</td>
+<td class="antibiotic">Amoxicillin;Amoxicillin+Clavulanic_acid;Ampicillin;Ampicillin+Clavulanic_acid;Cefepime;Piperacillin;Piperacillin+Tazobactam</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_596</td>
+<td class="gene">blaTEM-1B_1</td>
+<td>100.00</td>
+<td>99.88</td>
+<td>blaTEM-1B</td>
+<td class="antibiotic">Amoxicillin;Ampicillin;Cephalothin;Piperacillin;Ticarcillin</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_8</td>
+<td class="gene">catA2_1</td>
+<td>100.00</td>
+<td>95.95</td>
+<td>catA2</td>
+<td class="antibiotic">Chloramphenicol</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_320</td>
+<td class="gene">catB3_2</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>catB3</td>
+<td class="antibiotic">Chloramphenicol</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_983</td>
+<td class="gene">dfrA14_5</td>
+<td>100.00</td>
+<td>99.59</td>
+<td>dfrA14</td>
+<td class="antibiotic">Trimethoprim</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_109</td>
+<td class="gene">fosA_7</td>
+<td>100.00</td>
+<td>96.48</td>
+<td>fosA</td>
+<td class="antibiotic">Fosfomycin</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_435</td>
+<td class="gene">mph(A)_2</td>
+<td>100.00</td>
+<td>99.67</td>
+<td>mph(A)</td>
+<td class="antibiotic">Erythromycin;Azithromycin;Spiramycin;Telithromycin</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_333</td>
+<td class="gene">qnrB4_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>qnrB4</td>
+<td class="antibiotic">Ciprofloxacin</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_37</td>
+<td class="gene">rmtC_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>rmtC</td>
+<td class="antibiotic">Amikacin;Gentamicin;Tobramycin</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_28</td>
+<td class="gene">sul1_5</td>
+<td>100.00</td>
+<td>99.89</td>
+<td>sul1</td>
+<td class="antibiotic">Sulfamethoxazole</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_323</td>
+<td class="gene">sul2_2</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>sul2</td>
+<td class="antibiotic">Sulfamethoxazole</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_443</td>
+<td class="gene">tet(A)_6</td>
+<td>97.80</td>
+<td>100.00</td>
+<td>tet(A)</td>
+<td class="antibiotic">Doxycycline;Tetracycline</td>
+</tr>
+<tr>
+<td>SRR9703249</td>
+<td>k77_908</td>
+<td class="gene">tet(D)_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>tet(D)</td>
+<td class="antibiotic">Doxycycline;Tetracycline</td>
+</tr>
+        </tbody>
+    </table>
+</body>
+</html>
