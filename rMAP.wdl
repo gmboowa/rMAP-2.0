@@ -138,13 +138,16 @@ workflow rMAP {
       cpu = cpu_2
   }
 
-  call MGE_ANALYSIS {
-    input:
-      assembly_output = ASSEMBLY.assembly_output,
-      do_mge_analysis = do_mge_analysis,
-      local_db = local_mge_db,
-      use_local_db = use_local_blast,
-      cpu = cpu_4
+  # >>> REPLACE subworkflow call with a direct scatter over the MGE task <<<
+  scatter (asm in ASSEMBLY.assembly_output) {
+    call MGE {
+      input:
+        assembly        = asm,
+        do_mge_analysis = do_mge_analysis,
+        local_db        = local_mge_db,
+        use_local_db    = use_local_blast,
+        cpu             = cpu_4
+    }
   }
 
   if (do_virulence) {
@@ -239,7 +242,7 @@ workflow rMAP {
 
         # Per-sample sections
         amr_reports              = AMR_PROFILING.html_reports,
-        mge_reports              = MGE_ANALYSIS.html_reports,
+        mge_reports              = MGE.html_out,
         virulence_reports        = if do_virulence then VIRULENCE_ANALYSIS.html_reports else empty_files,
 
         # BLAST per-sample HTMLs
@@ -280,8 +283,8 @@ workflow rMAP {
     File? accessory_tree_render_log = ACCESSORY_TREE.render_log
     Array[File] amr_output   = AMR_PROFILING.amr_outputs
     File        combined_amr = AMR_PROFILING.combined_amr
-    File        plasmid_report  = MGE_ANALYSIS.plasmid_report
-    Array[File] plasmid_results = MGE_ANALYSIS.sample_reports
+    Array[File] plasmid_results       = MGE.tsv_out
+    Array[File] plasmid_html_reports  = MGE.html_out
     Array[File] blast_results = BLAST_ANALYSIS.blast_results
     Array[File] blast_top10   = BLAST_ANALYSIS.blast_top10
     Array[File] blast_logs    = BLAST_ANALYSIS.blast_logs
@@ -2569,18 +2572,14 @@ task AMR_PROFILING {
   }
 }
 
-task MGE_ANALYSIS {
+task MGE {
   input {
-    Array[File]? assembly_output
+    File assembly
     Boolean do_mge_analysis = true
     File? local_db
     Boolean use_local_db = false
     Int cpu = 4
   }
-
-  # Normalize optional input to a concrete (possibly empty) array
-  Array[File] asm_list = select_first([assembly_output, []])
-  Int asm_count = length(asm_list)
 
   command <<<
     set -euo pipefail
@@ -2596,7 +2595,7 @@ task MGE_ANALYSIS {
     echo "- cpu: ~{cpu}" >> mge.log
     echo "===========================================" >> mge.log
 
-    # Skip condition 1: User explicitly disabled MGE analysis
+    # Skip condition: User explicitly disabled MGE analysis
     if [ "~{do_mge_analysis}" != "true" ]; then
       echo "MGE analysis disabled by user parameter" >> mge.log
       echo "MGE analysis skipped by user request" > mge_results/skipped.txt
@@ -2604,40 +2603,29 @@ task MGE_ANALYSIS {
       exit 0
     fi
 
-    # Skip condition 2: No input files provided
-    if [ ~{asm_count} -eq 0 ]; then
-      echo "ERROR: No assembly files provided for MGE analysis" >> mge.log
-      echo "NO_INPUT_FILES" > mge_results/skipped.txt
-      echo "<h1>MGE analysis skipped - no input files provided</h1>" > html_results/skipped.html
-      exit 0
-    fi
-
-    # Verify input files
-    echo "Input files verification:" >> mge.log
+    # Verify input file
     valid_files=0
-    for f in ~{sep=' ' asm_list}; do
-      if [ ! -f "$f" ]; then
-        echo "WARNING: Input file not found: $f" >> mge.log
+    if [ ! -f "~{assembly}" ]; then
+      echo "WARNING: Input file not found: ~{assembly}" >> mge.log
+    else
+      size=$(wc -c < "~{assembly}")
+      if [ $size -gt 0 ]; then
+        echo "- Valid input file: ~{assembly} ($size bytes)" >> mge.log
+        valid_files=$((valid_files + 1))
       else
-        size=$(wc -c < "$f")
-        if [ $size -gt 0 ]; then
-          echo "- Valid input file: $f ($size bytes)" >> mge.log
-          valid_files=$((valid_files + 1))
-        else
-          echo "WARNING: Empty input file: $f" >> mge.log
-        fi
+        echo "WARNING: Empty input file: ~{assembly}" >> mge.log
       fi
-    done
+    fi
 
-    # Skip condition 3: No valid input files
+    # Skip condition: No valid input file
     if [ $valid_files -eq 0 ]; then
-      echo "ERROR: No valid input files available" >> mge.log
+      echo "ERROR: No valid input file available" >> mge.log
       echo "NO_VALID_INPUTS" > mge_results/skipped.txt
-      echo "<h1>MGE analysis skipped - no valid input files</h1>" > html_results/skipped.html
+      echo "<h1>MGE analysis skipped - no valid input file</h1>" > html_results/skipped.html
       exit 0
     fi
 
-    # HTML template components
+    # HTML template components (unchanged)
     HTML_HEADER='<!DOCTYPE html>
 <html>
 <head>
@@ -2694,7 +2682,7 @@ task MGE_ANALYSIS {
     <script>
         document.getElementById("analysis-date").textContent = new Date().toLocaleString();
         document.getElementById("database-used").textContent = "~{if use_local_db then "Custom Local Database" else "Standard PlasmidFinder Database"}";
-        document.getElementById("samples-processed").textContent = "'$valid_files'";
+        document.getElementById("samples-processed").textContent = "1";
 
         // Add coverage highlighting
         document.querySelectorAll("td:nth-child(5)").forEach(cell => {
@@ -2732,6 +2720,9 @@ task MGE_ANALYSIS {
         echo "<h1>MGE analysis skipped - database setup failed</h1>" > html_results/skipped.html
         exit 0
       fi
+
+      # Confirmation in log that the run will use the local plasmidfinder
+      echo "Database in use: plasmidfinder (LOCAL, from ~{local_db})" >> mge.log
     else
       if ! abricate --list | grep -q "plasmidfinder"; then
         if ! abricate --setupdb --db plasmidfinder >> mge.log 2>&1; then
@@ -2741,118 +2732,77 @@ task MGE_ANALYSIS {
           exit 0
         fi
       fi
+      echo "Database in use: plasmidfinder (STANDARD)" >> mge.log
     fi
 
-    # Process each assembly file
-    processed_samples=0
-    for asm_file in ~{sep=' ' asm_list}; do
-      [ ! -f "$asm_file" ] && continue
-      [ ! -s "$asm_file" ] && continue
+    # Derive sample name and outputs (per-sample only)
+    sample_name=$(basename "~{assembly}" | sed -E 's/\.(fa|fasta|fna|fsa|contigs|scaffolds)(\.(gz|bz2))?$//i')
+    output_tsv="mge_results/${sample_name}_mge.tsv"
+    output_html="html_results/${sample_name}_mge.html"
 
-      sample_name=$(basename "$asm_file" | sed -E 's/\.(fa|fasta|fna|fsa|contigs|scaffolds)(\.(gz|bz2))?$//i')
-      output_tsv="mge_results/${sample_name}_mge.tsv"
-      output_html="html_results/${sample_name}_mge.html"
+    echo "Processing ${sample_name}" >> mge.log
 
-      echo "Processing $sample_name" >> mge.log
+    # Run MGE analysis with error handling
+    set +e
+    abricate \
+      --db $db_to_use \
+      --mincov 80 \
+      --minid 90 \
+      --threads ~{cpu} \
+      --nopath \
+      "~{assembly}" > "${output_tsv}.tmp" 2>> mge.log
+    status=$?
+    set -e
 
-      # Run MGE analysis with error handling
-      set +e
-      abricate \
-        --db $db_to_use \
-        --mincov 80 \
-        --minid 90 \
-        --threads ~{cpu} \
-        --nopath \
-        "$asm_file" > "${output_tsv}.tmp" 2>> mge.log
-      status=$?
-      set -e
-
-      if [ $status -ne 0 ] || [ ! -s "${output_tsv}.tmp" ]; then
-        echo "WARNING: MGE analysis failed for $sample_name" >> mge.log
-        echo -e "Sample\tMGE_Type\tGene\tProduct\t%Coverage\t%Identity\tAccession" > "$output_tsv"
-        echo -e "$sample_name\tERROR\tERROR\tERROR\tERROR\tERROR\tERROR" >> "$output_tsv"
-      else
-        # Process successful output
-        awk -v sample="$sample_name" '
+    if [ $status -ne 0 ] || [ ! -s "${output_tsv}.tmp" ]; then
+      echo "WARNING: MGE analysis failed for ${sample_name}" >> mge.log
+      echo -e "Sample\tMGE_Type\tGene\tProduct\t%Coverage\t%Identity\tAccession" > "$output_tsv"
+      echo -e "${sample_name}\tERROR\tERROR\tERROR\tERROR\tERROR\tERROR" >> "$output_tsv"
+    else
+      # Process successful output (FIXED AWK: robust header skip + correct column mapping)
+      awk -v sample="${sample_name}" '
         BEGIN {
           OFS="\t";
           print "Sample\tMGE_Type\tGene\tProduct\t%Coverage\t%Identity\tAccession";
         }
-        NR==1 { next }
+        NR==1 || $0 ~ /^#/ { next }
         {
-          print sample, "Plasmid", $5, $13, $9, $10, $12;
+          gene=$6;          # correct gene column
+          product=$14;      # correct product column
+          pcov=$10;         # % coverage
+          pid=$11;          # % identity
+          accession=$13;    # accession
+          print sample, "Plasmid", gene, product, pcov, pid, accession;
         }' "${output_tsv}.tmp" > "$output_tsv"
-        processed_samples=$((processed_samples + 1))
-      fi
-      rm -f "${output_tsv}.tmp"
-
-      # Generate HTML report for this sample
-      {
-        echo "$HTML_HEADER"
-
-        if grep -q "ERROR" "$output_tsv"; then
-          echo "<tr class=\"error-row\">"
-          echo "<td colspan=\"7\">MGE analysis failed for $sample_name</td>"
-          echo "</tr>"
-        else
-          tail -n +2 "$output_tsv" | while IFS=$'\t' read -r _ mge_type gene product coverage identity accession; do
-            echo "<tr>"
-            echo "<td>$sample_name</td>"
-            echo "<td>$mge_type</td>"
-            echo "<td class=\"mge\">$gene</td>"
-            echo "<td>$product</td>"
-            echo "<td>$coverage</td>"
-            echo "<td>$identity</td>"
-            echo "<td>$accession</td>"
-            echo "</tr>"
-          done
-        fi
-
-        echo "$HTML_FOOTER"
-      } > "$output_html"
-    done
-
-    # Generate combined reports if we processed any samples
-    if [ $processed_samples -gt 0 ]; then
-      echo -e "Sample\tMGE_Type\tGene\tProduct\t%Coverage\t%Identity\tAccession" > mge_results/combined_mge.tsv
-      for tsv_file in mge_results/*_mge.tsv; do
-        tail -n +2 "$tsv_file" >> mge_results/combined_mge.tsv
-      done
-
-      {
-        echo "$HTML_HEADER"
-
-        while IFS=$'\t' read -r sample mge_type gene product coverage identity accession; do
-          if [ "$sample" == "Sample" ]; then continue; fi
-
-          if [[ "$gene" == *"ERROR"* ]]; then
-            echo "<tr class=\"error-row\">"
-            echo "<td>$sample</td>"
-            echo "<td colspan=\"6\">MGE analysis failed</td>"
-            echo "</tr>"
-          else
-            echo "<tr>"
-            echo "<td>$sample</td>"
-            echo "<td>$mge_type</td>"
-            echo "<td class=\"mge\">$gene</td>"
-            echo "<td>$product</td>"
-            echo "<td>$coverage</td>"
-            echo "<td>$identity</td>"
-            echo "<td>$accession</td>"
-            echo "</tr>"
-          fi
-        done < mge_results/combined_mge.tsv
-
-        echo "$HTML_FOOTER"
-      } > html_results/combined_mge.html
-    else
-      echo "ERROR: No samples processed successfully" >> mge.log
-      echo "NO_SUCCESSFUL_SAMPLES" > mge_results/combined_mge.tsv
-      echo "<h1>No samples processed successfully</h1>" > html_results/combined_mge.html
     fi
+    rm -f "${output_tsv}.tmp"
+
+    # Generate HTML report for this sample (template preserved)
+    {
+      echo "$HTML_HEADER"
+
+      if grep -q "ERROR" "$output_tsv"; then
+        echo "<tr class=\"error-row\">"
+        echo "<td colspan=\"7\">MGE analysis failed for ${sample_name}</td>"
+        echo "</tr>"
+      else
+        tail -n +2 "$output_tsv" | while IFS=$'\t' read -r _ mge_type gene product coverage identity accession; do
+          echo "<tr>"
+          echo "<td>${sample_name}</td>"
+          echo "<td>${mge_type}</td>"
+          echo "<td class=\"mge\">${gene}</td>"
+          echo "<td>${product}</td>"
+          echo "<td>${coverage}</td>"
+          echo "<td>${identity}</td>"
+          echo "<td>${accession}</td>"
+          echo "</tr>"
+        done
+      fi
+
+      echo "$HTML_FOOTER"
+    } > "$output_html"
 
     echo "MGE analysis completed at $(date)" >> mge.log
-    echo "Processed $processed_samples samples successfully" >> mge.log
     echo "Output files:" >> mge.log
     ls -lh mge_results/* html_results/* >> mge.log 2>&1 || true
   >>>
@@ -2863,15 +2813,13 @@ task MGE_ANALYSIS {
     cpu: cpu
     disks: "local-disk 75 HDD"
     continueOnReturnCode: true
-    timeout: "12 hours"
+    timeout: "8 hours"
   }
 
   output {
-    Array[File] html_reports   = if do_mge_analysis then glob("html_results/*_mge.html") else ["html_results/skipped.html"]
-    Array[File] sample_reports = if do_mge_analysis then glob("mge_results/*_mge.tsv")  else ["mge_results/skipped.txt"]
-    File        plasmid_report = if do_mge_analysis then "mge_results/combined_mge.tsv" else "mge_results/skipped.txt"
-    File        combined_html  = if do_mge_analysis then "html_results/combined_mge.html" else "html_results/skipped.html"
-    File        mge_log        = "mge.log"
+    File tsv_out  = if do_mge_analysis then glob("mge_results/*_mge.tsv")[0]  else "mge_results/skipped.txt"
+    File html_out = if do_mge_analysis then glob("html_results/*_mge.html")[0] else "html_results/skipped.html"
+    File mge_log  = "mge.log"
   }
 }
 
