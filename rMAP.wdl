@@ -2229,8 +2229,8 @@ task AMR_PROFILING {
     Int cpu = 2
     Boolean abricate_nopath = true
     Boolean abricate_make_summary = false
-    Int merge_minid = 95  # Retained (used in per-sample filtering)
-    Int merge_mincov = 90  # Retained (used in per-sample filtering)
+    Int merge_minid = 95
+    Int merge_mincov = 90  
   }
 
   command <<<
@@ -2253,7 +2253,7 @@ task AMR_PROFILING {
     echo "- merge_mincov: ~{merge_mincov}" >> amr.log
     echo "===================================" >> amr.log
 
-    # HTML template (unchanged)
+    # HTML template
     HTML_HEADER='<!DOCTYPE html>
 <html>
 <head>
@@ -2310,7 +2310,7 @@ task AMR_PROFILING {
 </body>
 </html>'
 
-    # Skip conditions (unchanged)
+    # Skip conditions
     if [ "~{do_amr_profiling}" != "true" ]; then
       echo "AMR profiling disabled by user parameter" >> amr.log
       echo "AMR profiling skipped by user request" > amr_results/skipped.txt
@@ -2325,7 +2325,7 @@ task AMR_PROFILING {
       exit 0
     fi
 
-    # Verify input files (unchanged)
+    # Verify input files
     echo "Input files verification:" >> amr.log
     valid_files=0
     for f in ~{sep=' ' assembly_output}; do
@@ -2349,7 +2349,7 @@ task AMR_PROFILING {
       exit 0
     fi
 
-    # Database setup (unchanged)
+    # Database setup
     db_to_use="resfinder"
     if [ "~{use_local_db}" == "true" ]; then
       if [ ! -f "~{local_db}" ]; then
@@ -2447,9 +2447,15 @@ task AMR_PROFILING {
         print sample, contig, gene, pcov, pid, prod, res
       }' "${output_file}.tmp" > "$output_file"
 
-      # Best-hit filtering (unchanged)
+      # --- FIX A: Normalize per-sample TSV to remove leading blanks / duplicate header ---
+      sed -i '1{/^$/d;}' "$output_file"
+      awk 'NR==1{print; h=$0; next} $0!=h{print}' "$output_file" > "${output_file}.clean" && mv "${output_file}.clean" "$output_file"
+      # -------------------------------------------------------------------------------
+
+      # Best-hit filtering (patched to guard against header-as-row)
       awk -F'\t' '
         NR==1 { header=$0; next }
+        $1=="SAMPLE" && $3=="GENE" { next }  # FIX B: drop accidental header row
         {
           g=$3
           cov=$4; sub(/%$/,"",cov); if (cov=="") cov=0
@@ -2468,10 +2474,14 @@ task AMR_PROFILING {
       ' "$output_file" | sort -t$'\t' -k1,1 -k3,3 > "${output_file}.best"
       mv -f "${output_file}.best" "$output_file"
 
-      # Generate per-sample HTML (unchanged)
+      # Generate per-sample HTML
       {
         echo "$HTML_HEADER"
         tail -n +2 "$output_file" | while IFS=$'\t' read -r sample contig gene coverage identity product resistance; do
+          # FIX C: skip if a stray header row sneaks through
+          if [[ "$sample" == "SAMPLE" && "$gene" == "GENE" ]]; then
+            continue
+          fi
           if [[ "$gene" == *"ERROR"* ]]; then
             echo "<tr class=\"error-row\">"
             echo "<td>$sample</td>"
@@ -2504,20 +2514,24 @@ task AMR_PROFILING {
       fi
     fi
 
-    # Generate combined HTML report (modified to skip TSV generation)
+    # Generate combined HTML report
     if [ $processed_samples -gt 0 ]; then
       {
         echo "$HTML_HEADER"
         # Read directly from per-sample TSVs (no combined_amr.tsv needed)
         for tsv_file in amr_results/*_amr.tsv; do
           tail -n +2 "$tsv_file" | while IFS=$'\t' read -r sample contig gene coverage identity product resistance; do
+            # FIX C (also applied here): skip stray header rows
+            if [[ "$sample" == "SAMPLE" && "$gene" == "GENE" ]]; then
+              continue
+            fi
             if [[ "$gene" == *"ERROR"* ]]; then
               echo "<tr class=\"error-row\">"
               echo "<td>$sample</td>"
               echo "<td colspan=\"6\">AMR profiling failed</td>"
               echo "</tr>"
             else
-              # Apply merge thresholds here (originally done during TSV merging)
+              # Apply merge thresholds here
               cov="${coverage//%}"
               id="${identity//%}"
               if (( cov >= ~{merge_mincov} )) && (( id >= ~{merge_minid} )); then
@@ -2561,7 +2575,7 @@ task AMR_PROFILING {
     Array[File] amr_outputs  = if do_amr_profiling then glob("amr_results/*_amr.tsv")
                                else ["amr_results/skipped.txt"]
 
-    # Combined HTML (primary)
+    # Combined HTML
     File combined_html       = if do_amr_profiling then "html_results/combined_amr.html"
                                else "html_results/skipped.html"
 
