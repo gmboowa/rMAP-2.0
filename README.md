@@ -196,22 +196,23 @@ After successful execution of the `rMAP` pipeline using WDL + Cromwell + Docker,
 ```bash
 
 rMAP_outputs/
-├── call-CONFIGURATION/
-├── call-TRIMMING/
+├── call-MERGE_REPORTS/
+├── call-BLAST_ANALYSIS/
+├── call-CORE_TREE/
+├── call-ACCESSORY_TREE/
+├── call-CORE_PHYLOGENY/
+├── call-ACCESSORY_PHYLOGENY/
+├── call-PANGENOME/
+├── call-AMR_PROFILING/
+├── call-ANNOTATION/
+├── call-MGE/
+├── call-VIRULENCE_ANALYSIS/
+├── call-MLST/
 ├── call-QUALITY_CONTROL/
 ├── call-ASSEMBLY/
 ├── call-VARIANT_CALLING/
-├── call-AMR_PROFILING/
-├── call-MLST/
-├── call-MGE_ANALYSIS/
-├── call-VIRULENCE_ANALYSIS/
-├── call-ANNOTATION/
-├── call-BLAST_ANALYSIS/
-├── call-PANGENOME/
-├── call-ACCESSORY_PHYLOGENY/
-├── call-CORE_PHYLOGENY/
-├── call-TREE_VISUALIZATION/
-├── call-MERGE_REPORTS/ 
+├── call-TRIMMING/
+└── call-CONFIGURATION/
 ```
 Each `call-*` directory contains:
 - `execution/` – Shell scripts & logs for the task.
