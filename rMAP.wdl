@@ -1041,7 +1041,7 @@ EOF
   }
 
   output {
-    Array[File] assembly_output = if do_assembly then glob("~{output_dir}/*.fa") else []  # Changed pattern
+    Array[File] assembly_output = if do_assembly then glob("~{output_dir}/*.fa") else []  
     File assembly_stats = if do_assembly then "~{output_dir}/assembly_stats.html" else "~{output_dir}/skipped.txt"
     String assembly_dir_out = "~{output_dir}"
     File? assembly_log = if do_assembly then "assembly.log" else "~{output_dir}/skipped.txt"
@@ -1426,7 +1426,7 @@ task CORE_PHYLOGENY {
       echo "(PHYLOGENY_DISABLED);" > "phylogeny_results/core_~{tree_prefix}.nwk"
       echo "Analysis skipped by user request" > "phylogeny_results/core_~{tree_prefix}.log"
       echo "System Info:" >> phylogeny.log
-      free -h >> phylogeny.log
+      free -h >> phylogeny.log || true
       exit 0
     fi
 
@@ -1436,7 +1436,7 @@ task CORE_PHYLOGENY {
       echo "(MISSING_ALIGNMENT);" > "phylogeny_results/core_~{tree_prefix}.nwk"
       echo "Alignment file missing" > "phylogeny_results/core_~{tree_prefix}.log"
       echo "System Info:" >> phylogeny.log
-      free -h >> phylogeny.log
+      free -h >> phylogeny.log || true
       exit 0
     fi
 
@@ -1446,7 +1446,7 @@ task CORE_PHYLOGENY {
       echo "(EMPTY_ALIGNMENT);" > "phylogeny_results/core_~{tree_prefix}.nwk"
       echo "Alignment file empty" > "phylogeny_results/core_~{tree_prefix}.log"
       echo "System Info:" >> phylogeny.log
-      free -h >> phylogeny.log
+      free -h >> phylogeny.log || true
       exit 0
     fi
 
@@ -1461,62 +1461,130 @@ task CORE_PHYLOGENY {
       echo "(INSUFFICIENT_SEQUENCES_$seq_count);" > "phylogeny_results/core_~{tree_prefix}.nwk"
       echo "Only $seq_count sequences found" > "phylogeny_results/core_~{tree_prefix}.log"
       echo "System Info:" >> phylogeny.log
-      free -h >> phylogeny.log
+      free -h >> phylogeny.log || true
       exit 0
     fi
 
-    # Run phylogenetic analysis
+    # System memory info and adaptive bootstrap planning
     echo "Starting phylogenetic analysis with FastTree..." >> phylogeny.log
     echo "System memory information:" >> phylogeny.log
-    free -h >> phylogeny.log
+    free -h >> phylogeny.log || true
 
-    set +e
-    ulimit -v $((~{memory_gb} * 1024 * 1024))
+    # Determine available memory (GB) using /proc/meminfo if possible
+    avail_kb=$(awk '/MemAvailable:/ {print $2}' /proc/meminfo 2>/dev/null || echo 0)
+    if [ "$avail_kb" -gt 0 ]; then
+      avail_gb=$(awk -v kb="$avail_kb" 'BEGIN { printf "%.1f", kb/1024/1024 }')
+    else
+      # Fallback: use "free -m" if MemAvailable absent
+      avail_gb=$(free -m 2>/dev/null | awk '/Mem:/ {printf "%.1f", $7/1024}')
+      : "${avail_gb:=0.0}"
+    fi
+    echo "Detected MemAvailable ≈ ${avail_gb} GB" >> phylogeny.log
 
-    echo "Command: FastTree ~{model} -gamma -quiet -boot ~{bootstrap_replicates} \\" >> phylogeny.log
-    echo "  -log phylogeny_results/core_~{tree_prefix}.log \\" >> phylogeny.log
-    echo "  < ~{alignment} > phylogeny_results/core_~{tree_prefix}.nwk" >> phylogeny.log
+    # Heuristic tiers to avoid OOM:
+    # - Very low RAM (<2 GB): 0 bootstraps
+    # - Medium RAM (< requested GB): 50 bootstraps (≈ half)
+    # - High RAM (>= requested GB): keep requested
+    req="~{memory_gb}"
+    adj_boot="~{bootstrap_replicates}"
 
-    FastTree ~{model} \
-      -gamma \
-      -quiet \
-      -boot ~{bootstrap_replicates} \
-      -log "phylogeny_results/core_~{tree_prefix}.log" \
-      < "~{alignment}" > "phylogeny_results/core_~{tree_prefix}.nwk" 2>> phylogeny.log
-    exit_code=$?
-    set -e
-
-    # Handle FastTree failure
-    if [ $exit_code -ne 0 ]; then
-      echo "WARNING: FastTree exited with code $exit_code" >> phylogeny.log
-
-      # Attempt reduced bootstrap replicates if memory issue
-      if grep -qi "oom" phylogeny.log || grep -qi "killed" phylogeny.log; then
-        echo "Attempting with reduced bootstrap replicates (50)..." >> phylogeny.log
-        FastTree ~{model} \
-          -gamma \
-          -quiet \
-          -boot 50 \
-          -log "phylogeny_results/core_~{tree_prefix}_reduced.log" \
-          < "~{alignment}" > "phylogeny_results/core_~{tree_prefix}.nwk" 2>> phylogeny.log || {
-            echo "Fallback failed, generating minimal tree" >> phylogeny.log
-            echo "(FASTTREE_FAILED);" > "phylogeny_results/core_~{tree_prefix}.nwk"
-          }
-      else
-        echo "Generating minimal tree after failure" >> phylogeny.log
-        echo "(FASTTREE_FAILED);" > "phylogeny_results/core_~{tree_prefix}.nwk"
+    if awk -v a="$avail_gb" 'BEGIN{exit !(a < 2.0)}'; then
+      adj_boot="0"
+    elif awk -v a="$avail_gb" -v r="$req" 'BEGIN{exit !(a < r)}'; then
+      # Only reduce if requested > 50; otherwise keep requested small values
+      if [ "~{bootstrap_replicates}" -gt 50 ] 2>/dev/null; then
+        adj_boot="50"
       fi
+    fi
+    echo "Adjusted bootstrap replicates based on available RAM: $adj_boot" >> phylogeny.log
+
+    # Apply a virtual memory ceiling to help earlier fail-fast instead of hard OOM-kill
+    # (value in KiB)
+    ulimit -v $((~{memory_gb} * 1024 * 1024)) || true
+
+    # Helper: run FastTree with conditional -boot and optional -gamma
+    run_fasttree () {
+      local boots="$1"
+      local use_gamma="$2"
+      local gamma_flag=""
+      if [ "$use_gamma" = "1" ]; then gamma_flag="-gamma"; fi
+
+      # Build command string with conditional -boot
+      local cmd="FastTree ~{model} ${gamma_flag} -quiet"
+      if [ "$boots" != "0" ]; then
+        cmd="${cmd} -boot ${boots} -log phylogeny_results/core_~{tree_prefix}.log"
+      else
+        # If not bootstrapping, still create/append a log for consistency
+        : > phylogeny_results/core_~{tree_prefix}.log || true
+      fi
+
+      echo "Command: ${cmd} < ~{alignment} > phylogeny_results/core_~{tree_prefix}.nwk" >> phylogeny.log
+
+      set +e
+      bash -c "${cmd} < '~{alignment}' > 'phylogeny_results/core_~{tree_prefix}.nwk' 2>> phylogeny.log"
+      local rc=$?
+      set -e
+
+      # Return code plus textual signs of OOM
+      if [ $rc -eq 137 ] || grep -qiE "killed|out of memory|oom" phylogeny.log; then
+        echo "Detected possible OOM or kill (rc=$rc)." >> phylogeny.log
+        cat <<'EOF' >> phylogeny.log
+Attempting next fallback strategy...
+EOF
+        return 137
+      fi
+      return $rc
+    }
+
+    status=1
+
+    # Attempt 1: adjusted bootstraps with -gamma
+    if run_fasttree "$adj_boot" "1"; then
+      status=0
+    else
+      # Attempt 2: 50 with -gamma (if not already <=50)
+      if [ "$adj_boot" -gt 50 ] 2>/dev/null; then
+        if run_fasttree "50" "1"; then
+          status=0
+        fi
+      fi
+    fi
+
+    # Attempt 3: 25 with -gamma
+    if [ $status -ne 0 ]; then
+      if run_fasttree "25" "1"; then
+        status=0
+      fi
+    fi
+
+    # Attempt 4: 0 with -gamma
+    if [ $status -ne 0 ]; then
+      if run_fasttree "0" "1"; then
+        status=0
+      fi
+    fi
+
+    # Attempt 5: 0 without -gamma (cheapest)
+    if [ $status -ne 0 ]; then
+      if run_fasttree "0" "0"; then
+        status=0
+      fi
+    fi
+
+    if [ $status -ne 0 ]; then
+      echo "WARNING: All FastTree strategies failed; generating minimal tree" >> phylogeny.log
+      echo "(FASTTREE_FAILED);" > "phylogeny_results/core_~{tree_prefix}.nwk"
     fi
 
     # Final validation of output
     if [ ! -s "phylogeny_results/core_~{tree_prefix}.nwk" ]; then
-      echo "ERROR: Tree file is empty, generating minimal tree" >> phylogeny.log
+      echo "ERROR: Tree file is empty after attempts, writing minimal tree" >> phylogeny.log
       echo "(EMPTY_OUTPUT);" > "phylogeny_results/core_~{tree_prefix}.nwk"
     fi
 
     echo "Phylogenetic analysis completed at $(date)" >> phylogeny.log
     echo "Final output files:" >> phylogeny.log
-    ls -lh phylogeny_results/* >> phylogeny.log
+    ls -lh phylogeny_results/* >> phylogeny.log || true
   >>>
 
   runtime {
@@ -1530,15 +1598,13 @@ task CORE_PHYLOGENY {
   }
 
   output {
-    File phylogeny_tree = if (defined("phylogeny_results/core_~{tree_prefix}.nwk") &&
-                           size("phylogeny_results/core_~{tree_prefix}.nwk") > 0)
-                         then "phylogeny_results/core_~{tree_prefix}.nwk"
-                         else write_lines(["();"])
+    File phylogeny_tree = "phylogeny_results/core_~{tree_prefix}.nwk"
     File? phylogeny_log_reduced = "phylogeny_results/core_~{tree_prefix}_reduced.log"
     File? phylogeny_log = "phylogeny_results/core_~{tree_prefix}.log"
     File execution_log = "phylogeny.log"
   }
 }
+
 task ACCESSORY_PHYLOGENY {
   input {
     File? alignment
@@ -1990,6 +2056,18 @@ task VARIANT_CALLING {
 </html>
 EOF
         fi
+      elif [ "$status" == "running" ]; then
+        cat > variants/variant_summary.html <<EOF
+<!DOCTYPE html>
+<html>
+<head><title>Variant Calling Summary (placeholder)</title></head>
+<body>
+  <h1>Variant Calling Summary</h1>
+  <p>Analysis is running. This is a placeholder report to satisfy downstream output mapping.</p>
+  <p>Final report will overwrite this placeholder when processing completes.</p>
+</body>
+</html>
+EOF
       else
         cat > variants/variant_summary.html <<EOF
 <!DOCTYPE html>
@@ -2186,17 +2264,19 @@ EOF
 </html>
 EOF
 
+    # Exit with error if any samples failed (check before removing temp file)
+    if grep -q $'\tfailed\t' "$RESULTS_TEMP"; then
+      echo "WARNING: Some samples failed processing" >> variant.log
+      # Do not exit non-zero if you want workflow to continue; with continueOnReturnCode=true Cromwell won't fail.
+      # Still return 1 to reflect partial failure while preserving outputs.
+      exit 1
+    fi
+
     # Final cleanup
     rm -f "$RESULTS_TEMP"
     echo "Variant calling completed at $(date)" >> variant.log
     echo "Output files:" >> variant.log
     find variants -type f -exec ls -lh {} \; >> variant.log 2>/dev/null || true
-
-    # Exit with error if any samples failed
-    if grep -q "failed" "$RESULTS_TEMP"; then
-      echo "WARNING: Some samples failed processing" >> variant.log
-      exit 1
-    fi
   >>>
 
   runtime {
@@ -2218,6 +2298,7 @@ EOF
     String      variants_dir     = "variants"
   }
 }
+
 task AMR_PROFILING {
   input {
     Array[File]? assembly_output
@@ -2230,7 +2311,7 @@ task AMR_PROFILING {
     Boolean abricate_nopath = true
     Boolean abricate_make_summary = false
     Int merge_minid = 95
-    Int merge_mincov = 90  
+    Int merge_mincov = 90
   }
 
   command <<<
@@ -3414,7 +3495,7 @@ task TREE_VISUALIZATION {
     String layout = "rectangular"
     Boolean show_branch_lengths = false
     Boolean show_scale = true
-    Float branch_thickness = 3.0
+    Float branch_thickness = 1.5
     String color_scheme = "standard"
     Int label_font_size = 14
     Int? font_size
@@ -3429,6 +3510,9 @@ task TREE_VISUALIZATION {
     String line_cap = "round"
     Boolean autoscale_with_thickness = true
     Boolean bootstrap_tools = false
+    Boolean scale_outside = true
+    Int scale_strip_px = 90
+    Boolean show_bootstrap = true
   }
 
   command <<<
@@ -3438,14 +3522,22 @@ task TREE_VISUALIZATION {
     if [ "~{force_offscreen}" = "true" ]; then
       export QT_QPA_PLATFORM=offscreen
       export MPLBACKEND=Agg
+      if [ -z "${XDG_RUNTIME_DIR:-}" ]; then
+        export XDG_RUNTIME_DIR="$PWD/.xdg_runtime"
+        mkdir -p "$XDG_RUNTIME_DIR"
+        chmod 700 "$XDG_RUNTIME_DIR" || true
+        echo "[INFO] XDG_RUNTIME_DIR set to $XDG_RUNTIME_DIR" | tee -a debug.log
+      fi
       echo "[INFO] Offscreen rendering enabled" | tee -a debug.log
     fi
+
     mkdir -p output
     TREE_BASE="$(basename "~{input_tree}" .nwk)"
     OUT_IMG="output/${TREE_BASE}.~{image_format}"
     OUT_LOG="output/${TREE_BASE}.log"
     ERR_LOG="output/${TREE_BASE}_error.log"
     echo "[INFO] Input tree: ~{input_tree} ($(wc -c < "~{input_tree}") bytes)" | tee -a debug.log
+
     if [ "~{bootstrap_tools}" = "true" ]; then
       echo "[BOOTSTRAP] starting…" | tee -a debug.log
       mkdir -p .mamba
@@ -3473,33 +3565,38 @@ task TREE_VISUALIZATION {
         fi
       fi
     fi
+
     if [ $(wc -c < "~{input_tree}") -le 10 ]; then
       echo "[ERROR] Input tree appears empty; writing placeholder" | tee -a debug.log
       python3 - <<'PY'
 from PIL import Image, ImageDraw
 w,h=~{width},~{height}
 img=Image.new('RGB',(w,h),'white')
-ImageDraw.Draw(img).text((20,20),"Empty tree input",fill='black')
+d=ImageDraw.Draw(img)
+d.text((20,20),"Empty tree input",fill='black')
 img.save("output/~{basename(input_tree, '.nwk')}.~{image_format}")
 PY
       echo "Empty/invalid tree" > "${ERR_LOG}"
       echo "Rendered placeholder at $(date)" > "${OUT_LOG}"
       exit 0
     fi
+
     set +e
     python3 - <<'PY'
-import colorsys, random
+import colorsys, random, math
 from datetime import datetime
 try:
-    from ete3 import Tree, TreeStyle, TextFace
+    from ete3 import Tree, TreeStyle, TextFace, faces
 except Exception as e:
     open("output/~{basename(input_tree, '.nwk')}_error.log","a").write(f"[ete3 import error] {e}\n")
     raise SystemExit(20)
+
 tree_path  = "~{input_tree}"
 title      = "~{tree_title}" if "~{tree_title}" != "None" else ""
 layout     = "~{layout}".lower()
 show_bl    = ~{if show_branch_lengths then "True" else "False"}
-show_scale = ~{if show_scale then "True" else "False"}
+show_scale_internal = (~{if show_scale then "True" else "False"}) and (not ~{if scale_outside then "True" else "False"})
+show_boot  = ~{if show_bootstrap then "True" else "False"}
 bg         = "~{background_color}"
 margins    = ~{margins_px}
 thick      = float(~{branch_thickness})
@@ -3512,40 +3609,91 @@ base_tip_size   = int(~{tip_size})
 tip_fill        = "~{tip_fill_color}"
 tip_border      = "~{tip_border_color}"
 autoscale       = ~{if autoscale_with_thickness then "True" else "False"}
-if autoscale:
-    tip_size = max(5, min(22, int(round(thick * 2.5))))
-    label_size = max(12, min(28, int(round(10 + thick * 1.6))))
-else:
-    tip_size = base_tip_size
-    label_size = base_label_size
+scale_strip_px  = int(~{scale_strip_px})
+
+def nice_step(x):
+    if x <= 0: return 0.0
+    exp = math.floor(math.log10(x))
+    frac = x / (10**exp)
+    if frac < 1.5: nice = 1
+    elif frac < 3: nice = 2
+    elif frac < 7: nice = 5
+    else: nice = 10
+    return nice * (10**exp)
+
+# Load tree
 try:
     t = Tree(tree_path)
 except Exception as e:
     open("output/~{basename(input_tree, '.nwk')}_error.log","a").write(f"[ete3 load error] {e}\n")
     raise SystemExit(21)
+
+# Degenerate tree detection
+leaves = t.get_leaves()
+root = t.get_tree_root()
+max_depth = max((lf.get_distance(root) for lf in leaves), default=0.0)
+is_fasttree_failed = any(("FASTTREE_FAILED" in (lf.name or "")) for lf in leaves)
+if len(leaves) < 2 or max_depth <= 1e-12 or is_fasttree_failed:
+    from PIL import Image, ImageDraw
+    W,H = ~{width},~{height}
+    img = Image.new("RGB",(W,H),bg)
+    d = ImageDraw.Draw(img)
+    title_txt = "~{tree_title}" if "~{tree_title}" != "None" else "Phylogenetic Tree"
+    d.text((W*0.32, 20), title_txt, fill="#111111")
+    msg = "Tree build failed"
+    if is_fasttree_failed:
+        sub = "Reason: FASTTREE failed to infer a tree."
+    elif len(leaves) < 2:
+        sub = f"Reason: degenerate Newick (only {len(leaves)} tip)."
+    else:
+        sub = "Reason: zero total branch length."
+    d.text((W*0.08, H*0.55), msg, fill="#000000")
+    d.text((W*0.08, H*0.55+34), sub, fill="#333333")
+    img.save("output/~{basename(input_tree, '.nwk')}.~{image_format}")
+    open("output/~{basename(input_tree, '.nwk')}_error.log","a").write(f"[degenerate tree] {sub}\n")
+    open("output/~{basename(input_tree, '.nwk')}.log","w").write("Rendered diagnostic image for degenerate tree\\n")
+    raise SystemExit(0)
+
+# Dynamic branch thickness scaling (more leaves => thinner lines)
+num_leaves = max(1, len(leaves))
+scale_factor = max(0.3, min(1.0, 200.0 / float(num_leaves)))  # 200 leaves -> 1.0 ..  >~666 leaves -> 0.3
+dynamic_thick = thick * scale_factor
+
+# Tip/label autoscaling (based on dynamic_thick)
+if autoscale:
+    tip_size = max(5, min(22, int(round(dynamic_thick * 2.5))))
+    label_size = max(12, min(28, int(round(10 + dynamic_thick * 1.6))))
+else:
+    tip_size = base_tip_size
+    label_size = base_label_size
+
+# TreeStyle
 ts = TreeStyle()
 ts.show_leaf_name = False
 ts.show_branch_length = show_bl
-ts.show_scale = show_scale
+ts.show_scale = show_scale_internal
 ts.branch_vertical_margin = 14
 ts.scale = max(1.0, ~{width} / 6.0)
 ts.margin_left = margins
 ts.margin_right = margins
 ts.margin_top = margins
 ts.margin_bottom = margins
-ts.bgcolor = bg
+
 if title:
     ts.title.add_face(TextFace(title, fsize=~{title_font_size}, bold=True), column=0)
+
 if layout == "circular":
     ts.mode = "c"; ts.arc_start = 0; ts.arc_span = 360
 elif layout == "fan":
     ts.mode = "c"; ts.arc_start = -180; ts.arc_span = 240
 else:
     ts.mode = "r"; ts.root_opening_factor = 1.0
+
+# Colors
 if color_mode == "gradient":
-    max_dist = max([n.dist for n in t.traverse()], default=1.0) or 1.0
+    max_dist_node = max([n.dist for n in t.traverse()], default=1.0) or 1.0
     def color_for(n):
-        ratio = 0.0 if max_dist==0 else min(max(n.dist/max_dist,0.0),1.0)
+        ratio = 0.0 if max_dist_node==0 else min(max(n.dist/max_dist_node,0.0),1.0)
         r,g,b = colorsys.hsv_to_rgb(0.66*(1-ratio), 0.65, 0.92)
         return f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
 elif color_mode == "categorical":
@@ -3559,80 +3707,302 @@ elif color_mode == "categorical":
         return f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
 else:
     def color_for(n): return "#000000"
+
+# Style nodes + labels
 for n in t.traverse():
     col = color_for(n)
-    n.img_style["hz_line_width"] = thick
-    n.img_style["vt_line_width"] = thick
+    n.img_style["hz_line_width"] = dynamic_thick
+    n.img_style["vt_line_width"] = dynamic_thick
     n.img_style["hz_line_color"] = col
     n.img_style["vt_line_color"] = col
+
     if n.is_leaf():
-        n.img_style["size"] = max(1, tip_size)
-        n.img_style["shape"] = "circle"
-        n.img_style["fgcolor"] = tip_border
-        n.img_style["bgcolor"] = tip_fill
-        tf_main = TextFace(n.name, fsize=label_size, fgcolor=label_color, bold=label_bold)
-        if label_heavy:
-            tf_shadow = TextFace(n.name, fsize=label_size, fgcolor=label_color, bold=True)
-            n.add_face(tf_shadow, column=0, position="aligned")
-        n.add_face(tf_main, column=0, position="aligned")
-    else:
         n.img_style["size"] = 0
+        face_fill = tip_fill if color_mode == "standard" else col
+        face_edge = tip_border if color_mode == "standard" else col
+        radius = max(2, int(round(tip_size)))
+        try:
+            bubble = faces.CircleFace(radius=radius, color=face_fill, style="circle")
+            try:
+                bubble.border.width = 1
+                bubble.border.color = face_edge
+            except Exception:
+                pass
+            n.add_face(bubble, column=0, position="branch-right")
+        except Exception:
+            n.img_style["size"] = max(3, tip_size)
+            n.img_style["shape"] = "circle"
+            n.img_style["fgcolor"] = face_edge
+            n.img_style["bgcolor"] = face_fill
+
+        tf_main = TextFace(n.name, fsize=label_size, fgcolor=label_color, bold=label_bold)
+        if ~{if label_heavy then "True" else "False"}:
+            tf_shadow = TextFace(n.name, fsize=label_size, fgcolor=label_color, bold=True)
+            n.add_face(tf_shadow, column=1, position="aligned")
+        n.add_face(tf_main, column=1, position="aligned")
+    else:
+        # Bootstrap labels on internal nodes
+        if show_boot:
+            bs = None
+            try:
+                if hasattr(n, "support") and n.support is not None:
+                    bs = n.support
+            except Exception:
+                bs = None
+            if bs is None:
+                try:
+                    bs = float(n.name)
+                except Exception:
+                    bs = None
+            if bs is not None:
+                try:
+                    n.add_face(TextFace(f"{int(round(float(bs)))}", fsize=max(8, label_size-2), fgcolor="#333333", bold=True),
+                               column=0, position="branch-top")
+                except Exception:
+                    pass
+
+# Render (ETE3)
 out_img = "output/~{basename(input_tree, '.nwk')}.~{image_format}"
 try:
     t.render(out_img, w=~{width}, h=~{height}, units="px", tree_style=ts, dpi=300)
-    open("output/~{basename(input_tree, '.nwk')}.log","w").write(f"ete3 Rendered OK at {datetime.now().isoformat()}\n")
+
+    # Background flattening and external scale bar (optional)
+    from PIL import Image, ImageDraw
+    im = Image.open(out_img)
+    if im.mode in ("RGBA", "LA") or (im.mode == "P" and "transparency" in im.info):
+        bg_im = Image.new("RGB", im.size, bg)
+        bg_im.paste(im, mask=im.split()[-1])
+        im = bg_im
+        im.save(out_img)
+    elif im.mode != "RGB":
+        im = im.convert("RGB"); im.save(out_img)
+
+    if (~{if show_scale then "True" else "False"}) and (~{if scale_outside then "True" else "False"}):
+        root = t.get_tree_root()
+        leaves = t.get_leaves()
+        max_depth = max((leaf.get_distance(root) for leaf in leaves), default=1.0) or 1.0
+        def nice_step2(x):
+            if x <= 0: return 0.0
+            exp = math.floor(math.log10(x))
+            frac = x / (10**exp)
+            if frac < 1.5: nice = 1
+            elif frac < 3: nice = 2
+            elif frac < 7: nice = 5
+            else: nice = 10
+            return nice * (10**exp)
+        bar_units = nice_step2(max_depth/5.0) or (max_depth/5.0)
+        content_w = max(10, ~{width} - 2*margins)
+        bar_px = max(10, int(round(bar_units / max_depth * content_w)))
+        W,H = im.size
+        strip = scale_strip_px
+        newH = H + strip
+        canvas = Image.new("RGB", (W, newH), bg)
+        canvas.paste(im, (0,0))
+        draw = ImageDraw.Draw(canvas)
+        offx = margins
+        y0 = H + strip//2
+        y_bar = y0 - 6
+        lw = max(2, int(round(dynamic_thick*1.2)))
+        draw.line((offx, y_bar, offx+bar_px, y_bar), fill="#444444", width=lw)
+        draw.line((offx, y_bar-6, offx, y_bar+6), fill="#444444", width=max(1,lw-1))
+        draw.line((offx+bar_px, y_bar-6, offx+bar_px, y_bar+6), fill="#444444", width=max(1,lw-1))
+        draw.text((offx + bar_px/2, y_bar + 10), f"{bar_units:g}", fill="#222222", anchor="mm")
+        canvas.save(out_img)
+
+    open("output/~{basename(input_tree, '.nwk')}.log","w").write(f"ete3 Rendered OK at {datetime.now().isoformat()}\\n")
     raise SystemExit(0)
 except Exception as e:
-    open("output/~{basename(input_tree, '.nwk')}_error.log","a").write(f"[ete3 render error] {e}\n")
+    open("output/~{basename(input_tree, '.nwk')}_error.log","a").write(f"[ete3 render error] {e}\\n")
     raise SystemExit(22)
 PY
     ETE_RC=$?
     set -e
     echo "[INFO] ete3 render exit code: ${ETE_RC}" | tee -a debug.log
+
     if [ $ETE_RC -ne 0 ]; then
-      echo "[WARN] Falling back to Bio.Phylo + matplotlib" | tee -a debug.log
+      echo "[WARN] Falling back to manual matplotlib renderer (no Bio.Phylo.draw)" | tee -a debug.log
       set +e
       python3 - <<'PY'
 from datetime import datetime
+import math
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from Bio import Phylo
+import matplotlib.colors as mcolors
+import colorsys
+from PIL import Image, ImageDraw
+
 tree_path="~{input_tree}"
 out_img="output/~{basename(input_tree, '.nwk')}.~{image_format}"
 w,h=~{width},~{height}
 dpi=150.0
+
+# Read Newick
+tree = Phylo.read(tree_path,"newick")
+terms = tree.get_terminals()
+
+# Degenerate detection
+if len(terms) < 2 or any("FASTTREE_FAILED" in (getattr(t,'name','') or "") for t in terms):
+    img = Image.new("RGB",(~{width},~{height}), "~{background_color}")
+    d = ImageDraw.Draw(img)
+    title_txt = "~{tree_title}" if "~{tree_title}" != "None" else "Phylogenetic Tree"
+    d.text((~{width}*0.32, 20), title_txt, fill="#111111")
+    sub = "Reason: FASTTREE failed to infer a tree." if any("FASTTREE_FAILED" in (getattr(t,'name','') or "") for t in terms) else f"Reason: degenerate Newick (only {len(terms)} tip)."
+    d.text((~{width}*0.08, ~{height}*0.55), "Tree build failed", fill="#000000")
+    d.text((~{width}*0.08, ~{height}*0.55+34), sub, fill="#333333")
+    img.save(out_img)
+    open("output/~{basename(input_tree, '.nwk')}.log","w").write("Rendered diagnostic image for degenerate tree\\n")
+    raise SystemExit(0)
+
+# Depths
+depths = tree.depths()
+if not depths:
+    depths = tree.depths(unit_branch_lengths=True)
+
+# y-coordinates for clades
+def assign_y(clade, y=0, ymap=None):
+    if ymap is None: ymap = {}
+    if clade.is_terminal():
+        ymap[clade] = y; return y+1, ymap
+    ys=[]
+    for child in clade.clades:
+        y, ymap = assign_y(child, y, ymap); ys.append(ymap[child])
+    ymap[clade] = sum(ys)/float(len(ys)) if ys else y
+    return y, ymap
+
+_, ycoords = assign_y(tree.root, 0, {})
+xmin = 0.0
+xmax = max(depths.values()) if depths else 1.0
+ymin = min(ycoords.values()) if ycoords else 0.0
+ymax = max(ycoords.values()) if ycoords else 1.0
+if ymin == ymax: ymax = ymin + 1.0
+
+# Dynamic thickness scaling
+num_leaves = max(1, len(terms))
+scale_factor = max(0.3, min(1.0, 200.0 / float(num_leaves)))
+lw_dyn = ~{branch_thickness} * scale_factor
+
+# Figure/Axes
 fig = plt.figure(figsize=(w/dpi, h/dpi), dpi=dpi, facecolor="~{background_color}")
 ax = fig.add_subplot(1,1,1, facecolor="~{background_color}")
-tree = Phylo.read(tree_path,"newick")
-Phylo.draw(tree, do_show=False, axes=ax)
-for line in ax.get_lines():
-    try:
-        line.set_linewidth(~{branch_thickness})
-        line.set_solid_capstyle("~{line_cap}")
-    except Exception:
-        pass
-for text in ax.texts:
-    text.set_fontsize(~{select_first([font_size, label_font_size])})
-    text.set_color("~{label_color}")
-    text.set_fontweight("bold" if ~{if label_bold then "True" else "False"} else "normal")
+
+def color_for(clade):
+    scheme="~{color_scheme}".lower()
+    if scheme=="gradient":
+        maxd = xmax if xmax>0 else 1.0
+        ratio = 0.0 if maxd==0 else min(max(depths.get(clade,0.0)/maxd,0.0),1.0)
+        r,g,b = colorsys.hsv_to_rgb(0.66*(1-ratio), 0.65, 0.92)
+        return (r,g,b)
+    elif scheme=="categorical":
+        h = (hash(getattr(clade,'name','')) % 80)/100.0
+        r,g,b = colorsys.hsv_to_rgb(h, 0.8, 0.9)
+        return (r,g,b)
+    else:
+        return mcolors.to_rgb("#000000")
+
+def draw_clade(parent, clade, lw):
+    x0 = depths.get(parent, 0.0); y0 = ycoords.get(parent, 0.0)
+    x1 = depths.get(clade, x0);   y1 = ycoords.get(clade, y0)
+    col = color_for(clade)
+    ax.plot([x0,x0],[y0,y1], linewidth=lw, solid_capstyle="~{line_cap}", color=col, zorder=2)
+    ax.plot([x0,x1],[y1,y1], linewidth=lw, solid_capstyle="~{line_cap}", color=col, zorder=2)
+
+# draw branches
+for parent in tree.find_clades(order="level"):
+    for child in parent.clades:
+        draw_clade(parent, child, lw=lw_dyn)
+
+# tips
+x_term = [depths.get(t, 0.0) for t in terms]
+y_term = [ycoords.get(t, 0.0) for t in terms]
+faces_col=[]; edges_col=[]
+for t in terms:
+    if "~{color_scheme}".lower()=="standard":
+        faces_col.append(mcolors.to_rgb("~{tip_fill_color}"))
+        edges_col.append(mcolors.to_rgb("~{tip_border_color}"))
+    else:
+        c = color_for(t); faces_col.append(c); edges_col.append(c)
+sizesq = max(3, ~{tip_size})**2
+ax.scatter(x_term, y_term, s=sizesq, facecolors=faces_col, edgecolors=edges_col, linewidths=1.0, zorder=5)
+
+# tip labels
+for t,x,y in zip(terms, x_term, y_term):
+    ax.text(x + 0.01*(xmax-xmin if xmax>xmin else 1.0), y, getattr(t,'name',''), fontsize=~{select_first([font_size, label_font_size])},
+            color="~{label_color}", fontweight=("bold" if ~{if label_bold then "True" else "False"} else "normal"),
+            va="center", zorder=6)
+
+# bootstrap labels on internal nodes
+if ~{if show_bootstrap then "True" else "False"}:
+    bs_size = max(8, ~{select_first([font_size, label_font_size])} - 2)
+    for cl in tree.find_clades(order="level"):
+        if cl.is_terminal(): continue
+        bs = getattr(cl, "confidence", None)
+        if bs is None:
+            try:
+                bs = float(getattr(cl, "name", None))
+            except Exception:
+                bs = None
+        if bs is not None:
+            x = depths.get(cl, 0.0)
+            y = ycoords.get(cl, 0.0)
+            ax.text(x, y + 0.15, f"{int(round(float(bs)))}",
+                    fontsize=bs_size, color="#333333", ha="center", va="bottom", zorder=7)
+
+# title
 if "~{tree_title}" != "None" and len("~{tree_title}")>0:
     ax.set_title("~{tree_title}", fontsize=~{title_font_size}, fontweight='bold', color="#111111")
+
+# limits, layout
+ax.set_xlim(xmin - 0.02*(xmax-xmin if xmax>xmin else 1.0), xmax + 0.15*(xmax-xmin if xmax>xmin else 1.0))
+ax.set_ylim(ymin - 0.05*(ymax-ymin), ymax + 0.05*(ymax-ymin))
 ax.set_axis_off()
-plt.margins(x=0.02, y=0.02)
-plt.tight_layout(pad=~{margins_px}/100)
+left = ~{margins_px}/float(~{width})
+topm = ~{margins_px}/float(~{height})
+fig.subplots_adjust(left=left, right=1-left, top=1-topm, bottom=topm)
 fig.savefig(out_img, dpi=dpi, facecolor="~{background_color}")
-open("output/~{basename(input_tree, '.nwk')}.log","w").write(f"Phylo Rendered OK at {datetime.now().isoformat()}\n")
+
+# external scale bar if requested
+if ~{if show_scale then "True" else "False"} and ~{if scale_outside then "True" else "False"}:
+    im = Image.open(out_img).convert("RGB")
+    W,H = im.size
+    strip = int(~{scale_strip_px}); newH = H + strip
+    canvas = Image.new("RGB", (W, newH), "~{background_color}")
+    canvas.paste(im, (0,0))
+    draw = ImageDraw.Draw(canvas)
+    def nice_step2(x):
+        if x <= 0: return 0.0
+        exp = math.floor(math.log10(x))
+        frac = x / (10**exp)
+        if frac < 1.5: nice = 1
+        elif frac < 3: nice = 2
+        elif frac < 7: nice = 5
+        else: nice = 10
+        return nice * (10**exp)
+    span = (xmax - xmin) if xmax>xmin else 1.0
+    bar_units = nice_step2(span/5.0) or (span/5.0)
+    content_w = max(10, ~{width} - 2*~{margins_px})
+    bar_px = max(10, int(round(bar_units / span * content_w)))
+    offx = ~{margins_px}; y_bar = H + strip//2 - 6
+    lw = max(2, int(round(lw_dyn*1.2)))
+    draw.line((offx, y_bar, offx+bar_px, y_bar), fill="#444444", width=lw)
+    draw.line((offx, y_bar-6, offx, y_bar+6), fill="#444444", width=max(1,lw-1))
+    draw.line((offx+bar_px, y_bar-6, offx+bar_px, y_bar+6), fill="#444444", width=max(1,lw-1))
+    draw.text((offx + bar_px/2, y_bar + 10), f"{bar_units:g}", fill="#222222", anchor="mm")
+    canvas.save(out_img)
+
+open("output/~{basename(input_tree, '.nwk')}.log","w").write(f"Manual Matplotlib Rendered OK at {datetime.now().isoformat()}\\n")
 PY
       PHYLO_RC=$?
       set -e
-      echo "[INFO] Phylo/matplotlib render exit code: ${PHYLO_RC}" | tee -a debug.log
+      echo "[INFO] Manual matplotlib render exit code: ${PHYLO_RC}" | tee -a debug.log
       if [ $PHYLO_RC -ne 0 ]; then
         echo "[ERROR] All renderers failed; no image produced" | tee -a debug.log
-        printf "All renderers failed (ete3=%s, phylo=%s)\n" "$ETE_RC" "$PHYLO_RC" > "${ERR_LOG}"
+        printf "All renderers failed (ete3=%s, manual=%s)\n" "$ETE_RC" "$PHYLO_RC" > "${ERR_LOG}"
         exit 0
       fi
     fi
+
     echo "[INFO] TREE_VISUALIZATION finished $(date)" | tee -a debug.log
   >>>
 
@@ -3653,7 +4023,6 @@ PY
     Boolean tree_valid  = size(input_tree, "B") > 10
   }
 }
-
 
 task MERGE_REPORTS {
   input {
