@@ -49,7 +49,7 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 > Recommended settings for running rMAP-2.0 smoothly on Docker Desktop.
 
-**Settings → Resources → Advanced**
+** Docker Desktop → Settings → Resources → Advanced**
 1. **Memory:** set to **12–24 GB** (more if you can).
 2. **CPUs:** set to **8** (or ~50–60% of your cores).
 3. **Swap:** **2–4 GB** (small swap helps; large swap can slow jobs).
@@ -63,7 +63,12 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 
 **Verify resources inside a container** 
 
----
+``
+```bash
+docker run --rm alpine sh -c 'echo "mem.max=$(cat /sys/fs/cgroup/memory.max 2>/dev/null || echo max)"; grep MemTotal /proc/meminfo'
+docker info | grep -E "Total Memory|CPUs"
+
+```
 
 ![workflow](workflow.png)
 
