@@ -61,12 +61,7 @@ This pipeline is written in **Workflow Description Language (WDL)**, utilizes **
 - **Start Docker Desktop when you sign in** (ensures the engine is up before runs).
 - **Kubernetes:** off (unless you need it).
 
-**Verify resources inside a container**
-
-```bash
-
-docker run --rm alpine sh -c 'echo "mem.max=$(cat /sys/fs/cgroup/memory.max 2>/dev/null || echo max)"; grep MemTotal /proc/meminfo'
-docker info | grep -E "Total Memory|CPUs"
+**Verify resources inside a container** 
 
 ---
 
