@@ -1,3 +1,10 @@
-title: rMAP 2.0
-description: Rapid Microbial Analysis Pipeline — WDL · Cromwell · Docker
-theme: jekyll-theme-minimal
+title: "rMAP 2.0 – ESKAPEE Reports"
+description: "Interactive rMAP HTML reports for Klebsiella and other ESKAPEE pathogens"
+theme: minima   # You can switch to any supported Jekyll theme
+url: "https://gmboowa.github.io"
+baseurl: "/rMAP-2.0"
+
+# Build settings
+markdown: kramdown
+plugins:
+  - jekyll-feed

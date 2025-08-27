@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>rMAP Analysis Pipeline - Comprehensive Report</title>
+  <style>
+    :root { --primary:#3498db; --secondary:#2c3e50; --light:#f8f9fa; --text:#333; --accent:#fff3cd; }
+    body { font-family:'Segoe UI',Tahoma,Arial,sans-serif; margin:0; background:#f5f5f5; color:var(--text); line-height:1.6; }
+    .container { max-width:1200px; margin:0 auto; padding:20px; }
+    .header { background:var(--secondary); color:#fff; padding:24px; border-radius:6px; margin-bottom:24px; }
+    .logo-combo { margin: 20px 0; }
+    .logo-container { text-align:center; margin:10px 0 }
+    .logo-caption-top, .logo-caption-bottom { text-align:center; margin:6px 0; font-weight:600 }
+    h1,h2,h3{margin-top:0} h1{font-size:2rem;text-align:center}
+    h2{font-size:1.75rem;color:var(--secondary); border-bottom:2px solid #3498db; padding-bottom:8px;}
+    h3{font-size:1.25rem;color:var(--secondary)}
+    .meta{opacity:.9;text-align:center;font-size:.9rem}
+    .layout{display:flex;gap:24px}
+    .nav{position:sticky;top:16px;width:260px;background:#f8f9fa;padding:16px;border-radius:6px;height:fit-content}
+    .nav a{display:block;padding:8px 10px;border-radius:4px;text-decoration:none;color:#2c3e50;margin:4px 0}
+    .nav a:hover{background:#3498db;color:#fff}
+    .content{flex:1;background:#fff;padding:20px;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,.05)}
+    .section{margin-bottom:36px;border-bottom:1px solid #eee;padding-bottom:20px}.section:last-child{border:none}
+    .report-card{background:#f8f9fa;padding:16px;border-radius:6px;margin:12px 0}
+    .image-center{text-align:center;margin:12px 0}
+    img{max-width:100%;height:auto;border:1px solid #ddd;border-radius:4px}
+    table{width:100%;border-collapse:collapse;margin:12px 0}
+    th,td{padding:8px 12px;text-align:left;border:1px solid #ddd}
+    th{background-color:#2c3e50;color:white} tr:nth-child(even){background:#f2f2f2}
+    .footer-banner{text-align:center;color:#333;margin:24px 0;padding:10px 12px;background:#fff3cd;border:1px solid #e6cf8b;border-radius:6px;font-weight:600}
+    @media(max-width:768px){.layout{flex-direction:column}.nav{position:static;width:auto}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="logo-combo">
+  <div class="logo-caption-top">rMAP-2.0 Comprehensive Analysis Report Summary: 2025-08-21 09:47:36 UTC</div>
+  <div class="logo-container"><img src="assets/images/rMAP_logo.png" alt="rMAP Logo" style="height:200px;object-fit:contain;margin:10px" onerror="this.style.display='none'"></div>
+  <div class="logo-caption-bottom">This run was generated using rMAP version 2.0 performed on 2025-08-21 09:47:36 UTC... Thank you for using this pipeline!!</div>
+</div>
+
+  <div class="header">
+    <h1>rMAP Analysis Pipeline</h1>
+    <div class="meta">Version 2.0 • Run: 2025-08-21 09:47:36 UTC</div>
+  </div>
+
+  <div class="layout">
+    <nav class="nav">
+      <strong>Sections</strong>
+      <a href="#summary">Summary</a>
+      <a href="#qc">Quality Control</a>
+      <a href="#assembly">Assembly</a>
+      <a href="#annotation">Annotation</a>
+      <a href="#pangenome">Pangenome</a>
+      <a href="#mlst">MLST</a>
+      <a href="#variants">Variants</a>
+      <a href="#amr">AMR</a>
+      <a href="#mge">MGE</a>
+      <a href="#virulence">Virulence</a>
+      <a href="#blast">BLAST</a>
+      <a href="#phylogeny">Phylogeny</a>
+    </nav>
+
+    <div class="content">
+      <div id="summary" class="section">
+        <h2>Analysis Summary</h2>
+        <div class="report-card">
+          <p>This report aggregates results from rMAP modules (QC, assembly/annotation, pangenome/phylogeny, AMR/MGE/virulence/BLAST, and phylogeny).</p>
+        </div>
+      </div>
+
+      <div id="qc" class="section">
+        <h2>Quality Control</h2>
+        <div class="report-card"><h3>Per-sample QC reports</h3><ul>
+          <li><a href="assets/sections/SRR8948882_qc.html" target="_blank">QC Report 1 — SRR8948882</a></li>
+          <li><a href="assets/sections/SRR8948883_qc.html" target="_blank">QC Report 2 — SRR8948883</a></li>
+          <li><a href="assets/sections/SRR8948883_qc.html" target="_blank">QC Report 3 — SRR8948883</a></li>
+          <li><a href="assets/sections/SRR8948884_qc.html" target="_blank">QC Report 4 — SRR8948884</a></li>
+          <li><a href="assets/sections/SRR8948884_qc.html" target="_blank">QC Report 5 — SRR8948884</a></li>
+          <li><a href="assets/sections/SRR8948885_qc.html" target="_blank">QC Report 6 — SRR8948885</a></li>
+          <li><a href="assets/sections/SRR8948885_qc.html" target="_blank">QC Report 7 — SRR8948885</a></li>
+          <li><a href="assets/sections/SRR8948886_qc.html" target="_blank">QC Report 8 — SRR8948886</a></li>
+          <li><a href="assets/sections/SRR8948886_qc.html" target="_blank">QC Report 9 — SRR8948886</a></li>
+          <li><a href="assets/sections/SRR8948887_qc.html" target="_blank">QC Report 10 — SRR8948887</a></li>
+          <li><a href="assets/sections/SRR8948878_qc.html" target="_blank">QC Report 11 — SRR8948878</a></li>
+          <li><a href="assets/sections/SRR8948887_qc.html" target="_blank">QC Report 12 — SRR8948887</a></li>
+          <li><a href="assets/sections/SRR8948888_qc.html" target="_blank">QC Report 13 — SRR8948888</a></li>
+          <li><a href="assets/sections/SRR8948888_qc.html" target="_blank">QC Report 14 — SRR8948888</a></li>
+          <li><a href="assets/sections/SRR8948889_qc.html" target="_blank">QC Report 15 — SRR8948889</a></li>
+          <li><a href="assets/sections/SRR8948889_qc.html" target="_blank">QC Report 16 — SRR8948889</a></li>
+          <li><a href="assets/sections/SRR8948890_qc.html" target="_blank">QC Report 17 — SRR8948890</a></li>
+          <li><a href="assets/sections/SRR8948890_qc.html" target="_blank">QC Report 18 — SRR8948890</a></li>
+          <li><a href="assets/sections/SRR8948891_qc.html" target="_blank">QC Report 19 — SRR8948891</a></li>
+          <li><a href="assets/sections/SRR8948891_qc.html" target="_blank">QC Report 20 — SRR8948891</a></li>
+          <li><a href="assets/sections/SRR8948878_qc.html" target="_blank">QC Report 21 — SRR8948878</a></li>
+          <li><a href="assets/sections/SRR8948879_qc.html" target="_blank">QC Report 22 — SRR8948879</a></li>
+          <li><a href="assets/sections/SRR8948879_qc.html" target="_blank">QC Report 23 — SRR8948879</a></li>
+          <li><a href="assets/sections/SRR8948880_qc.html" target="_blank">QC Report 24 — SRR8948880</a></li>
+          <li><a href="assets/sections/SRR8948880_qc.html" target="_blank">QC Report 25 — SRR8948880</a></li>
+          <li><a href="assets/sections/SRR8948881_qc.html" target="_blank">QC Report 26 — SRR8948881</a></li>
+          <li><a href="assets/sections/SRR8948881_qc.html" target="_blank">QC Report 27 — SRR8948881</a></li>
+          <li><a href="assets/sections/SRR8948882_qc.html" target="_blank">QC Report 28 — SRR8948882</a></li>
+        </ul></div>
+          <div class="report-card">
+            <h3>Read trimming</h3>
+            <div class="report-content">
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Input Pairs</th>
+                <th>Both Surviving</th>
+                <th>Forward Only</th>
+                <th>Reverse Only</th>
+                <th>Dropped (%)</th>
+                <th>Survival Rate (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>SRR8948878</td>
+                <td>798695</td>
+                <td>686272</td>
+                <td>89774</td>
+                <td>6881</td>
+                <td>1.97%</td>
+                <td class="good">98.03%</td>
+            </tr>
+            <tr>
+                <td>SRR8948879</td>
+                <td>795565</td>
+                <td>704552</td>
+                <td>68196</td>
+                <td>8554</td>
+                <td>1.79%</td>
+                <td class="good">98.21%</td>
+            </tr>
+            <tr>
+                <td>SRR8948880</td>
+                <td>798476</td>
+                <td>707768</td>
+                <td>68715</td>
+                <td>8166</td>
+                <td>1.73%</td>
+                <td class="good">98.27%</td>
+            </tr>
+            <tr>
+                <td>SRR8948881</td>
+                <td>796777</td>
+                <td>702646</td>
+                <td>73041</td>
+                <td>7542</td>
+                <td>1.70%</td>
+                <td class="good">98.30%</td>
+            </tr>
+            <tr>
+                <td>SRR8948882</td>
+                <td>794677</td>
+                <td>690974</td>
+                <td>82136</td>
+                <td>7037</td>
+                <td>1.83%</td>
+                <td class="good">98.17%</td>
+            </tr>
+            <tr>
+                <td>SRR8948883</td>
+                <td>791155</td>
+                <td>686762</td>
+                <td>81358</td>
+                <td>7678</td>
+                <td>1.94%</td>
+                <td class="good">98.06%</td>
+            </tr>
+            <tr>
+                <td>SRR8948884</td>
+                <td>797008</td>
+                <td>708498</td>
+                <td>67058</td>
+                <td>8099</td>
+                <td>1.68%</td>
+                <td class="good">98.32%</td>
+            </tr>
+            <tr>
+                <td>SRR8948885</td>
+                <td>793703</td>
+                <td>698515</td>
+                <td>72734</td>
+                <td>8129</td>
+                <td>1.80%</td>
+                <td class="good">98.20%</td>
+            </tr>
+            <tr>
+                <td>SRR8948886</td>
+                <td>793366</td>
+                <td>698501</td>
+                <td>71982</td>
+                <td>8190</td>
+                <td>1.85%</td>
+                <td class="good">98.15%</td>
+            </tr>
+            <tr>
+                <td>SRR8948887</td>
+                <td>794174</td>
+                <td>698245</td>
+                <td>73190</td>
+                <td>8193</td>
+                <td>1.83%</td>
+                <td class="good">98.17%</td>
+            </tr>
+            <tr>
+                <td>SRR8948888</td>
+                <td>789960</td>
+                <td>699891</td>
+                <td>67503</td>
+                <td>8501</td>
+                <td>1.78%</td>
+                <td class="good">98.22%</td>
+            </tr>
+            <tr>
+                <td>SRR8948889</td>
+                <td>796379</td>
+                <td>709445</td>
+                <td>65106</td>
+                <td>8466</td>
+                <td>1.68%</td>
+                <td class="good">98.32%</td>
+            </tr>
+            <tr>
+                <td>SRR8948890</td>
+                <td>795517</td>
+                <td>688686</td>
+                <td>83627</td>
+                <td>7485</td>
+                <td>1.98%</td>
+                <td class="good">98.02%</td>
+            </tr>
+            <tr>
+                <td>SRR8948891</td>
+                <td>796160</td>
+                <td>702080</td>
+                <td>71553</td>
+                <td>8133</td>
+                <td>1.81%</td>
+                <td class="good">98.19%</td>
+            </tr>
+        </tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="assembly" class="section"><h2>Assembly</h2>
+          <div class="report-card">
+            <h3>Assembly statistics</h3>
+            <div class="report-content">
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Contigs</th>
+                <th>Total Length</th>
+                <th>Min Length</th>
+                <th>Max Length</th>
+                <th>Avg Length</th>
+                <th>N50</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr><td>SRR8948878</td><td>12613</td><td>5386819</td><td>78</td><td>273502</td><td>427</td><td>16861</td></tr>
+<tr><td>SRR8948879</td><td>8758</td><td>5238305</td><td>78</td><td>245309</td><td>598</td><td>18589</td></tr>
+<tr><td>SRR8948880</td><td>8620</td><td>5491052</td><td>78</td><td>273483</td><td>637</td><td>15660</td></tr>
+<tr><td>SRR8948881</td><td>2674</td><td>3287057</td><td>78</td><td>200750</td><td>1229</td><td>63261</td></tr>
+<tr><td>SRR8948882</td><td>2778</td><td>3293639</td><td>78</td><td>113420</td><td>1185</td><td>22403</td></tr>
+<tr><td>SRR8948883</td><td>1803</td><td>3197525</td><td>78</td><td>93483</td><td>1773</td><td>23568</td></tr>
+<tr><td>SRR8948884</td><td>14662</td><td>7806957</td><td>78</td><td>200750</td><td>532</td><td>908</td></tr>
+<tr><td>SRR8948885</td><td>1828</td><td>3615890</td><td>78</td><td>423875</td><td>1978</td><td>109187</td></tr>
+<tr><td>SRR8948886</td><td>6982</td><td>3905010</td><td>78</td><td>173043</td><td>559</td><td>34899</td></tr>
+<tr><td>SRR8948887</td><td>3750</td><td>5856934</td><td>78</td><td>245309</td><td>1561</td><td>7931</td></tr>
+<tr><td>SRR8948888</td><td>2403</td><td>3330695</td><td>78</td><td>369354</td><td>1386</td><td>62414</td></tr>
+<tr><td>SRR8948889</td><td>2972</td><td>6255193</td><td>78</td><td>272949</td><td>2104</td><td>37601</td></tr>
+<tr><td>SRR8948890</td><td>3344</td><td>3475065</td><td>78</td><td>369354</td><td>1039</td><td>60951</td></tr>
+<tr><td>SRR8948891</td><td>9867</td><td>6334874</td><td>78</td><td>247312</td><td>642</td><td>1614</td></tr>
+        </tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="annotation" class="section"><h2>Annotation</h2>
+          <div class="report-card">
+            <h3>Annotation summary</h3>
+            <div class="report-content">
+        <table>
+          <tr><th>Sample ID</th><th>Gene Count</th></tr>
+<tr><td>SRR8948878</td><td>3376</td></tr>
+<tr><td>SRR8948879</td><td>3675</td></tr>
+<tr><td>SRR8948880</td><td>3992</td></tr>
+<tr><td>SRR8948881</td><td>2745</td></tr>
+<tr><td>SRR8948882</td><td>2812</td></tr>
+<tr><td>SRR8948883</td><td>2871</td></tr>
+<tr><td>SRR8948884</td><td>5270</td></tr>
+<tr><td>SRR8948885</td><td>3257</td></tr>
+<tr><td>SRR8948886</td><td>2747</td></tr>
+<tr><td>SRR8948887</td><td>4996</td></tr>
+<tr><td>SRR8948888</td><td>2893</td></tr>
+<tr><td>SRR8948889</td><td>5635</td></tr>
+<tr><td>SRR8948890</td><td>2899</td></tr>
+<tr><td>SRR8948891</td><td>4627</td></tr>
+</table>
+            </div>
+          </div>
+      </div>
+      <div id="pangenome" class="section"><h2>Pangenome</h2>
+          <div class="report-card">
+            <h3>Pangenome report</h3>
+            <div class="report-content">
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Pangenome Analysis Report</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;margin:20px}h1{color:#2c3e50}</style>
+</head>
+<body>
+  <h1>Pangenome Analysis</h1>
+  <p id="status">Roary completed successfully. (This page will show Roary results if available.)</p>
+  <img id="heatmap" src="gene_presence_heatmap.png" alt="Gene presence/absence heatmap" onerror="this.style.display='none'">
+</body>
+</html>
+            </div>
+          </div>
+        <div class="report-card">
+          <h3>Gene Presence/Absence Heatmap</h3>
+          <div class="image-center"><img src="assets/images/gene_presence_heatmap.png" alt="Gene heatmap" onerror="this.style.display='none'"></div>
+        </div>
+      </div>
+      <div id="mlst" class="section"><h2>MLST</h2>
+          <div class="report-card">
+            <h3>Combined MLST</h3>
+            <div class="report-content">
+    <table>
+<thead><tr>
+<th>Sample ID</th>
+<th>Species</th>
+<th>ST</th>
+<th>gapA</th>
+<th>infB</th>
+<th>mdh</th>
+<th>pgi</th>
+<th>phoE</th>
+<th>rpoB</th>
+<th>tonB</th>
+</tr></thead><tbody>
+<tr>
+<td>SRR8948878</td>
+<td>efaecalis</td>
+<td class="st">16</td>
+<td>5</td>
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>7</td>
+<td>7</td>
+<td>6</td>
+</tr>
+<tr>
+<td>SRR8948879</td>
+<td>efaecalis</td>
+<td class="st">40</td>
+<td>3</td>
+<td>6</td>
+<td>23</td>
+<td>12</td>
+<td>9</td>
+<td>10</td>
+<td>7</td>
+</tr>
+<tr>
+<td>SRR8948880</td>
+<td>efaecalis</td>
+<td class="st">16</td>
+<td>5</td>
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>7</td>
+<td>7</td>
+<td>6</td>
+</tr>
+<tr>
+<td>SRR8948881</td>
+<td>efaecalis</td>
+<td class="st">40</td>
+<td>3</td>
+<td>6</td>
+<td>23</td>
+<td>12</td>
+<td>9</td>
+<td>10</td>
+<td>7</td>
+</tr>
+<tr>
+<td>SRR8948882</td>
+<td>efaecium</td>
+<td class="st">80</td>
+<td>9</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>12</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>SRR8948883</td>
+<td>efaecium</td>
+<td class="st">203</td>
+<td>15</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>20</td>
+<td>1</td>
+</tr>
+<tr>
+<td>SRR8948884</td>
+<td>efaecalis</td>
+<td class="st">-</td>
+<td>3</td>
+<td>6,11</td>
+<td>23</td>
+<td>12</td>
+<td>9</td>
+<td>10</td>
+<td>7</td>
+</tr>
+<tr>
+<td>SRR8948885</td>
+<td>-</td>
+<td class="st">-</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+<td>N/A</td>
+</tr>
+<tr>
+<td>SRR8948886</td>
+<td>efaecium</td>
+<td class="st">1446</td>
+<td>11</td>
+<td>13</td>
+<td>18</td>
+<td>15</td>
+<td>10</td>
+<td>19</td>
+<td>6</td>
+</tr>
+<tr>
+<td>SRR8948887</td>
+<td>efaecalis</td>
+<td class="st">40</td>
+<td>3</td>
+<td>6</td>
+<td>23</td>
+<td>12</td>
+<td>9</td>
+<td>10</td>
+<td>7</td>
+</tr>
+<tr>
+<td>SRR8948888</td>
+<td>efaecalis</td>
+<td class="st">179</td>
+<td>5</td>
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>7</td>
+<td>1</td>
+<td>6</td>
+</tr>
+<tr>
+<td>SRR8948889</td>
+<td>efaecalis</td>
+<td class="st">-</td>
+<td>5,92</td>
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>7</td>
+<td>1</td>
+<td>6</td>
+</tr>
+<tr>
+<td>SRR8948890</td>
+<td>efaecalis</td>
+<td class="st">179</td>
+<td>5</td>
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>7</td>
+<td>1</td>
+<td>6</td>
+</tr>
+<tr>
+<td>SRR8948891</td>
+<td>efaecalis</td>
+<td class="st">179</td>
+<td>5</td>
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>7</td>
+<td>1</td>
+<td>6</td>
+</tr>
+</tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="variants" class="section"><h2>Variants</h2>
+          <div class="report-card">
+            <h3>Variant summary</h3>
+            <div class="report-content">
+  <table>
+    <thead>
+      <tr>
+        <th>Sample</th>
+        <th>Status</th>
+        <th>SNPs</th>
+        <th>INDELs</th>
+        <th>Total Variants</th>
+        <th>Attempts</th>
+      </tr>
+    </thead>
+    <tbody>
+<tr><td>SRR8948878</td><td>Success</td><td>16001</td><td>0</td><td class="error">16001</td><td>1</td></tr>
+<tr><td>SRR8948879</td><td>Success</td><td>15709</td><td>0</td><td class="error">15709</td><td>1</td></tr>
+<tr><td>SRR8948880</td><td>Success</td><td>16025</td><td>0</td><td class="error">16025</td><td>1</td></tr>
+<tr><td>SRR8948881</td><td>Success</td><td>15976</td><td>0</td><td class="error">15976</td><td>1</td></tr>
+<tr><td>SRR8948882</td><td>Success</td><td>1587</td><td>0</td><td class="error">1587</td><td>1</td></tr>
+<tr><td>SRR8948883</td><td>Success</td><td>1617</td><td>0</td><td class="error">1617</td><td>1</td></tr>
+<tr><td>SRR8948884</td><td>Success</td><td>15981</td><td>0</td><td class="error">15981</td><td>1</td></tr>
+<tr><td>SRR8948885</td><td>Success</td><td>1488</td><td>0</td><td class="error">1488</td><td>1</td></tr>
+<tr><td>SRR8948886</td><td>Success</td><td>1451</td><td>0</td><td class="error">1451</td><td>1</td></tr>
+<tr><td>SRR8948887</td><td>Success</td><td>15718</td><td>0</td><td class="error">15718</td><td>1</td></tr>
+<tr><td>SRR8948888</td><td>Success</td><td>16872</td><td>0</td><td class="error">16872</td><td>1</td></tr>
+<tr><td>SRR8948889</td><td>Success</td><td>16709</td><td>0</td><td class="error">16709</td><td>1</td></tr>
+<tr><td>SRR8948890</td><td>Success</td><td>16877</td><td>0</td><td class="error">16877</td><td>1</td></tr>
+<tr><td>SRR8948891</td><td>Success</td><td>16868</td><td>0</td><td class="error">16868</td><td>1</td></tr>
+    </tbody>
+  </table>
+            </div>
+          </div>
+      </div>
+      <div id="amr" class="section"><h2>Antimicrobial Resistance</h2>
+        <div class="report-card"><h3>Per-sample AMR reports</h3><ul>
+          <li><a href="assets/sections/SRR8948878_amr.html" target="_blank">AMR Report 1 — SRR8948878</a></li>
+          <li><a href="assets/sections/SRR8948879_amr.html" target="_blank">AMR Report 2 — SRR8948879</a></li>
+          <li><a href="assets/sections/SRR8948880_amr.html" target="_blank">AMR Report 3 — SRR8948880</a></li>
+          <li><a href="assets/sections/SRR8948881_amr.html" target="_blank">AMR Report 4 — SRR8948881</a></li>
+          <li><a href="assets/sections/SRR8948882_amr.html" target="_blank">AMR Report 5 — SRR8948882</a></li>
+          <li><a href="assets/sections/SRR8948883_amr.html" target="_blank">AMR Report 6 — SRR8948883</a></li>
+          <li><a href="assets/sections/SRR8948884_amr.html" target="_blank">AMR Report 7 — SRR8948884</a></li>
+          <li><a href="assets/sections/SRR8948885_amr.html" target="_blank">AMR Report 8 — SRR8948885</a></li>
+          <li><a href="assets/sections/SRR8948886_amr.html" target="_blank">AMR Report 9 — SRR8948886</a></li>
+          <li><a href="assets/sections/SRR8948887_amr.html" target="_blank">AMR Report 10 — SRR8948887</a></li>
+          <li><a href="assets/sections/SRR8948888_amr.html" target="_blank">AMR Report 11 — SRR8948888</a></li>
+          <li><a href="assets/sections/SRR8948889_amr.html" target="_blank">AMR Report 12 — SRR8948889</a></li>
+          <li><a href="assets/sections/SRR8948890_amr.html" target="_blank">AMR Report 13 — SRR8948890</a></li>
+          <li><a href="assets/sections/SRR8948891_amr.html" target="_blank">AMR Report 14 — SRR8948891</a></li>
+        </ul></div>
+      </div>
+      <div id="mge" class="section"><h2>Mobile Genetic Elements</h2>
+        <div class="report-card"><h3>Per-sample MGE reports</h3><ul>
+          <li><a href="assets/sections/SRR8948878_mge.html" target="_blank">MGE Report 1 — SRR8948878</a></li>
+          <li><a href="assets/sections/SRR8948879_mge.html" target="_blank">MGE Report 2 — SRR8948879</a></li>
+          <li><a href="assets/sections/SRR8948880_mge.html" target="_blank">MGE Report 3 — SRR8948880</a></li>
+          <li><a href="assets/sections/SRR8948881_mge.html" target="_blank">MGE Report 4 — SRR8948881</a></li>
+          <li><a href="assets/sections/SRR8948882_mge.html" target="_blank">MGE Report 5 — SRR8948882</a></li>
+          <li><a href="assets/sections/SRR8948883_mge.html" target="_blank">MGE Report 6 — SRR8948883</a></li>
+          <li><a href="assets/sections/SRR8948884_mge.html" target="_blank">MGE Report 7 — SRR8948884</a></li>
+          <li><a href="assets/sections/SRR8948885_mge.html" target="_blank">MGE Report 8 — SRR8948885</a></li>
+          <li><a href="assets/sections/SRR8948886_mge.html" target="_blank">MGE Report 9 — SRR8948886</a></li>
+          <li><a href="assets/sections/SRR8948887_mge.html" target="_blank">MGE Report 10 — SRR8948887</a></li>
+          <li><a href="assets/sections/SRR8948888_mge.html" target="_blank">MGE Report 11 — SRR8948888</a></li>
+          <li><a href="assets/sections/SRR8948889_mge.html" target="_blank">MGE Report 12 — SRR8948889</a></li>
+          <li><a href="assets/sections/SRR8948890_mge.html" target="_blank">MGE Report 13 — SRR8948890</a></li>
+          <li><a href="assets/sections/SRR8948891_mge.html" target="_blank">MGE Report 14 — SRR8948891</a></li>
+        </ul></div>
+      </div>
+      <div id="virulence" class="section"><h2>Virulence</h2>
+        <div class="report-card"><h3>Per-sample Virulence reports</h3><ul>
+          <li><a href="assets/sections/SRR8948887_virulence.html" target="_blank">Virulence Report 1 — SRR8948887</a></li>
+          <li><a href="assets/sections/SRR8948888_virulence.html" target="_blank">Virulence Report 2 — SRR8948888</a></li>
+          <li><a href="assets/sections/SRR8948889_virulence.html" target="_blank">Virulence Report 3 — SRR8948889</a></li>
+          <li><a href="assets/sections/SRR8948890_virulence.html" target="_blank">Virulence Report 4 — SRR8948890</a></li>
+          <li><a href="assets/sections/SRR8948891_virulence.html" target="_blank">Virulence Report 5 — SRR8948891</a></li>
+          <li><a href="assets/sections/SRR8948878_virulence.html" target="_blank">Virulence Report 6 — SRR8948878</a></li>
+          <li><a href="assets/sections/SRR8948879_virulence.html" target="_blank">Virulence Report 7 — SRR8948879</a></li>
+          <li><a href="assets/sections/SRR8948880_virulence.html" target="_blank">Virulence Report 8 — SRR8948880</a></li>
+          <li><a href="assets/sections/SRR8948881_virulence.html" target="_blank">Virulence Report 9 — SRR8948881</a></li>
+          <li><a href="assets/sections/SRR8948882_virulence.html" target="_blank">Virulence Report 10 — SRR8948882</a></li>
+          <li><a href="assets/sections/SRR8948883_virulence.html" target="_blank">Virulence Report 11 — SRR8948883</a></li>
+          <li><a href="assets/sections/SRR8948884_virulence.html" target="_blank">Virulence Report 12 — SRR8948884</a></li>
+          <li><a href="assets/sections/SRR8948885_virulence.html" target="_blank">Virulence Report 13 — SRR8948885</a></li>
+          <li><a href="assets/sections/SRR8948886_virulence.html" target="_blank">Virulence Report 14 — SRR8948886</a></li>
+        </ul></div>
+      </div>
+      <div id="blast" class="section"><h2>BLAST</h2>
+        <div class="report-card"><h3>Per-sample BLAST reports</h3><ul>
+          <li><a href="assets/sections/SRR8948878_blast.html" target="_blank">BLAST Report 1 — SRR8948878</a></li>
+          <li><a href="assets/sections/SRR8948879_blast.html" target="_blank">BLAST Report 2 — SRR8948879</a></li>
+          <li><a href="assets/sections/SRR8948880_blast.html" target="_blank">BLAST Report 3 — SRR8948880</a></li>
+          <li><a href="assets/sections/SRR8948881_blast.html" target="_blank">BLAST Report 4 — SRR8948881</a></li>
+          <li><a href="assets/sections/SRR8948882_blast.html" target="_blank">BLAST Report 5 — SRR8948882</a></li>
+          <li><a href="assets/sections/SRR8948883_blast.html" target="_blank">BLAST Report 6 — SRR8948883</a></li>
+          <li><a href="assets/sections/SRR8948884_blast.html" target="_blank">BLAST Report 7 — SRR8948884</a></li>
+          <li><a href="assets/sections/SRR8948885_blast.html" target="_blank">BLAST Report 8 — SRR8948885</a></li>
+          <li><a href="assets/sections/SRR8948886_blast.html" target="_blank">BLAST Report 9 — SRR8948886</a></li>
+          <li><a href="assets/sections/SRR8948887_blast.html" target="_blank">BLAST Report 10 — SRR8948887</a></li>
+          <li><a href="assets/sections/SRR8948888_blast.html" target="_blank">BLAST Report 11 — SRR8948888</a></li>
+          <li><a href="assets/sections/SRR8948889_blast.html" target="_blank">BLAST Report 12 — SRR8948889</a></li>
+          <li><a href="assets/sections/SRR8948890_blast.html" target="_blank">BLAST Report 13 — SRR8948890</a></li>
+          <li><a href="assets/sections/SRR8948891_blast.html" target="_blank">BLAST Report 14 — SRR8948891</a></li>
+        </ul></div>
+      </div>
+      <div id="phylogeny" class="section"><h2>Phylogeny</h2>
+        <div class="report-card">
+          <h3>core_core_genes.png</h3>
+          <div class="image-center"><img src="assets/images/core_core_genes.png" alt="Phylogenetic tree" onerror="this.style.display='none'"></div>
+        </div>
+        <div class="report-card">
+          <h3>accessory_accessory_genes.png</h3>
+          <div class="image-center"><img src="assets/images/accessory_accessory_genes.png" alt="Phylogenetic tree" onerror="this.style.display='none'"></div>
+        </div>
+      </div>
+    </div> <!-- content -->
+  </div> <!-- layout -->
+
+  <div class="logo-combo">
+  <div class="logo-caption-top">rMAP-2.0 Comprehensive Analysis Report Summary: 2025-08-21 09:47:36 UTC</div>
+  <div class="logo-container"><img src="assets/images/rMAP_logo.png" alt="rMAP Logo" style="height:200px;object-fit:contain;margin:10px" onerror="this.style.display='none'"></div>
+  <div class="logo-caption-bottom">This run was generated using rMAP version 2.0 performed on 2025-08-21 09:47:36 UTC... Thank you for using this pipeline!!</div>
+</div>
+  <div class="footer-banner">This report was generated by rMAP 2.0 pipeline</div>
+</div>
+</body></html>

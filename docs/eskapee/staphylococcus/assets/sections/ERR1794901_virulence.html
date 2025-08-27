@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Virulence Factor Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #3498db; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .virulence { font-weight: bold; color: #e74c3c; }
+        .coverage-high { background-color: #e6ffe6; }
+        .coverage-medium { background-color: #fff9e6; }
+        .coverage-low { background-color: #ffe6e6; }
+        .risk-high { color: #d63031; }
+        .risk-medium { color: #f39c12; }
+        .risk-low { color: #27ae60; }
+        .summary-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Virulence Factor Analysis Report</h1>
+    <div class="summary-card">
+        <p><strong>Analysis Date:</strong> <span id="analysis-date"></span></p>
+        <p><strong>Database Used:</strong> vfdb</p>
+        <p><strong>Parameters:</strong> Min Coverage: 60%, Min Identity: 80.0%</p>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Virulence Factor</th>
+                <th>Product</th>
+                <th>% Coverage</th>
+                <th>% Identity</th>
+                <th>Risk Level</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">icaR</td><td>(icaR)</td><td>100.0</td><td>98.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">icaA</td><td>(icaA)</td><td>100.0</td><td>98.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">icaD</td><td>(icaD)</td><td>100.0</td><td>99.3</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">icaB</td><td>(icaB)</td><td>100.0</td><td>99.1</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">icaC</td><td>(icaC)</td><td>100.0</td><td>95.3</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">lip</td><td>(lip)</td><td>100.0</td><td>98.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">sbi</td><td>(sbi)</td><td>97.1</td><td>93.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">hlgA</td><td>(hlgA)</td><td>100.0</td><td>95.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">hlgC</td><td>(hlgC)</td><td>100.0</td><td>85.0</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">hlgB</td><td>(hlgB)</td><td>100.0</td><td>94.7</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">hld</td><td>(hld)</td><td>100.0</td><td>99.3</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">lukF-PV</td><td>(lukF-PV)</td><td>98.8</td><td>80.1</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">aur</td><td>(aur)</td><td>100.0</td><td>98.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">clfB</td><td>(clfB)</td><td>96.3</td><td>89.5</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">scn</td><td>(scn)</td><td>100.0</td><td>99.7</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">sak</td><td>(sak)</td><td>100.0</td><td>99.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">sdrD</td><td>(sdrD)</td><td>81.7</td><td>98.1</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">hlb</td><td>(hlb)</td><td>99.9</td><td>96.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">lukS-PV</td><td>(lukS-PV)</td><td>100.0</td><td>100.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">lukF-PV</td><td>(lukF-PV)</td><td>100.0</td><td>99.9</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">geh</td><td>(geh)</td><td>100.0</td><td>94.1</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">fnbA</td><td>(fnbA)</td><td>92.1</td><td>86.1</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">cap8A</td><td>(cap8A)</td><td>100.0</td><td>94.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">cap8B</td><td>(cap8B)</td><td>100.0</td><td>93.9</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">cap8C</td><td>(cap8C)</td><td>100.0</td><td>97.9</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">cap8D</td><td>(cap8D)</td><td>100.0</td><td>98.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">cap8E</td><td>(cap8E)</td><td>100.0</td><td>98.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">cap8F</td><td>(cap8F)</td><td>100.0</td><td>97.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">cap8G</td><td>(cap8G)</td><td>100.0</td><td>99.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">cap8L</td><td>(cap8L)</td><td>100.0</td><td>97.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">cap8M</td><td>(cap8M)</td><td>100.0</td><td>98.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">cap8N</td><td>(cap8N)</td><td>100.0</td><td>97.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">cap8O</td><td>(cap8O)</td><td>100.0</td><td>98.3</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">cap8P</td><td>(cap8P)</td><td>100.0</td><td>98.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">fnbB</td><td>(fnbB)</td><td>88.1</td><td>85.6</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">clfA</td><td>(clfA)</td><td>92.8</td><td>91.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">coa</td><td>(coa)</td><td>99.7</td><td>83.1</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">esxA</td><td>(esxA)</td><td>100.0</td><td>99.7</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">esaA</td><td>(esaA)</td><td>100.0</td><td>98.7</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">essA</td><td>(essA)</td><td>100.0</td><td>99.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">esaB</td><td>(esaB)</td><td>100.0</td><td>99.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">essB</td><td>(essB)</td><td>100.0</td><td>98.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">essC</td><td>(essC)</td><td>100.0</td><td>98.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">esaC</td><td>(esaC)</td><td>100.0</td><td>98.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">esxB</td><td>(esxB)</td><td>100.0</td><td>99.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">sspC</td><td>(sspC)</td><td>100.0</td><td>98.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">sspB</td><td>(sspB)</td><td>100.0</td><td>98.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">sspA</td><td>(sspA)</td><td>100.0</td><td>95.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">isdB</td><td>(isdB)</td><td>99.4</td><td>93.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">isdA</td><td>(isdA)</td><td>100.0</td><td>89.4</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">isdC</td><td>(isdC)</td><td>99.6</td><td>93.3</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">isdD</td><td>(isdD)</td><td>100.0</td><td>94.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">isdE</td><td>(isdE)</td><td>100.0</td><td>99.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">isdF</td><td>(isdF)</td><td>100.0</td><td>97.7</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">srtB</td><td>(srtB)</td><td>100.0</td><td>98.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">isdG</td><td>(isdG)</td><td>100.0</td><td>99.1</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">ebp</td><td>(ebp)</td><td>99.8</td><td>95.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">adsA</td><td>(adsA)</td><td>99.5</td><td>96.1</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">hly/hla</td><td>(hly/hla)</td><td>100.0</td><td>94.7</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">hysA</td><td>(hysA)</td><td>98.0</td><td>84.0</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 2 — ERR1794901</td><td class="virulence">sdrE</td><td>(sdrE)</td><td>80.0</td><td>92.8</td><td class="risk-medium">Medium</td></tr>
+        </tbody>
+    </table>
+    <script>
+        document.getElementById("analysis-date").textContent = new Date().toLocaleString();
+
+        // Add coverage highlighting
+        const coverageCells = document.querySelectorAll("td:nth-child(4)");
+        coverageCells.forEach(cell => {
+            const coverage = parseFloat(cell.textContent);
+            if (coverage >= 90) cell.classList.add("coverage-high");
+            else if (coverage >= 70) cell.classList.add("coverage-medium");
+            else cell.classList.add("coverage-low");
+        });
+    </script>
+</body>
+</html>

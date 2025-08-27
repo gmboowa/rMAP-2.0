@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Virulence Factor Analysis</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #3498db; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .virulence { font-weight: bold; color: #e74c3c; }
+        .coverage-high { background-color: #e6ffe6; }
+        .coverage-medium { background-color: #fff9e6; }
+        .coverage-low { background-color: #ffe6e6; }
+        .risk-high { color: #d63031; }
+        .risk-medium { color: #f39c12; }
+        .risk-low { color: #27ae60; }
+        .summary-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Virulence Factor Analysis Report</h1>
+    <div class="summary-card">
+        <p><strong>Analysis Date:</strong> <span id="analysis-date"></span></p>
+        <p><strong>Database Used:</strong> vfdb</p>
+        <p><strong>Parameters:</strong> Min Coverage: 60%, Min Identity: 80.0%</p>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Virulence Factor</th>
+                <th>Product</th>
+                <th>% Coverage</th>
+                <th>% Identity</th>
+                <th>Risk Level</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">ace</td><td>(ace)</td><td>74.2</td><td>97.1</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">srtC</td><td>(srtC)</td><td>100.0</td><td>99.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">ebpC</td><td>(ebpC)</td><td>100.0</td><td>99.0</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">ebpB</td><td>(ebpB)</td><td>100.0</td><td>99.4</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">ebpA</td><td>(ebpA)</td><td>100.0</td><td>99.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">fss1</td><td>(fss1)</td><td>100.0</td><td>98.7</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">efaA</td><td>(efaA)</td><td>100.0</td><td>99.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">EF3023</td><td>(EF3023)</td><td>81.1</td><td>98.8</td><td class="risk-medium">Medium</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">sprE</td><td>(sprE)</td><td>100.0</td><td>98.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">gelE</td><td>(gelE)</td><td>100.0</td><td>98.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">fsrC</td><td>(fsrC)</td><td>100.0</td><td>99.5</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">fsrB</td><td>(fsrB)</td><td>100.0</td><td>98.8</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">fsrA</td><td>(fsrA)</td><td>100.0</td><td>98.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">bopD</td><td>(bopD)</td><td>100.0</td><td>99.1</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">fss2</td><td>(fss2)</td><td>66.9</td><td>94.6</td><td class="risk-low">Low</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">EF0818</td><td>(EF0818)</td><td>100.0</td><td>99.2</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">cpsA</td><td>(cpsA)</td><td>100.0</td><td>99.6</td><td class="risk-high">High</td></tr>
+<tr><td>Virulence Report 2 — SRR8948879</td><td class="virulence">cpsB</td><td>(cpsB)</td><td>100.0</td><td>99.5</td><td class="risk-high">High</td></tr>
+        </tbody>
+    </table>
+    <script>
+        document.getElementById("analysis-date").textContent = new Date().toLocaleString();
+
+        // Add coverage highlighting
+        const coverageCells = document.querySelectorAll("td:nth-child(4)");
+        coverageCells.forEach(cell => {
+            const coverage = parseFloat(cell.textContent);
+            if (coverage >= 90) cell.classList.add("coverage-high");
+            else if (coverage >= 70) cell.classList.add("coverage-medium");
+            else cell.classList.add("coverage-low");
+        });
+    </script>
+</body>
+</html>
