@@ -1041,7 +1041,7 @@ EOF
   }
 
   output {
-    Array[File] assembly_output = if do_assembly then glob("~{output_dir}/*.fa") else []  
+    Array[File] assembly_output = if do_assembly then glob("~{output_dir}/*.fa") else []
     File assembly_stats = if do_assembly then "~{output_dir}/assembly_stats.html" else "~{output_dir}/skipped.txt"
     String assembly_dir_out = "~{output_dir}"
     File? assembly_log = if do_assembly then "assembly.log" else "~{output_dir}/skipped.txt"
@@ -3377,6 +3377,15 @@ PYEOF
       idx=$((idx+1))
     done
 
+    # Decide threads per BLAST job (spread total CPUs across concurrent jobs)
+    TOTAL_CPU=~{cpu}
+    N_FILES=$(wc -l < "$work_list")
+    CONC_JOBS=$(( N_FILES < TOTAL_CPU ? N_FILES : TOTAL_CPU ))
+    [ $CONC_JOBS -lt 1 ] && CONC_JOBS=1
+    THREADS_PER_JOB=$(( TOTAL_CPU / CONC_JOBS ))
+    [ $THREADS_PER_JOB -lt 1 ] && THREADS_PER_JOB=1
+    export CONC_JOBS THREADS_PER_JOB
+
     # Main processing function
     process_sample() {
       local contig_file="$1"
@@ -3410,9 +3419,13 @@ PYEOF
           -outfmt "6 std qlen slen stitle" \
           -out "${sample_dir}/blast_results.tsv" \
           -evalue ~{evalue} \
-          -max_target_seqs ~{max_target_seqs} \
-          -num_threads 1 \
-          -task megablast > "${sample_dir}/blast.log" 2>&1 || true
+          -max_target_seqs 25 \
+          -max_hsps 1 \
+          -culling_limit 1 \
+          -task megablast \
+          -word_size 28 \
+          -num_threads "${THREADS_PER_JOB}" \
+          >> "${sample_dir}/blast.log" 2>&1 || true
       else
         echo "No sequences passed length filters" > "${sample_dir}/blast.log"
         : > "${sample_dir}/blast_results.tsv"
@@ -3442,8 +3455,8 @@ PYEOF
     export -f process_sample debug_log
     export BLAST_DB
 
-    # Process samples in parallel from the working-copy list
-    /usr/bin/parallel --will-cite --noswap -j ~{cpu} --joblog parallel.log \
+    # Process samples in parallel from the working-copy list (smart concurrency)
+    /usr/bin/parallel --will-cite --noswap -j "${CONC_JOBS}" --joblog parallel.log \
       --progress --eta --tagstring "{}" "process_sample {}" :::: "$work_list" \
       1> sample_ids.txt
 
@@ -3483,6 +3496,7 @@ PYEOF
     File? debug_log = "debug.log"
   }
 }
+
 task TREE_VISUALIZATION {
   input {
     File input_tree
