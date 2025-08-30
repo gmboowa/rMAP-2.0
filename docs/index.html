@@ -182,7 +182,6 @@
     </div>
 
     <footer>
-      <div id="stamp"></div>
     </footer>
   </div>
 
@@ -197,9 +196,6 @@
         c.style.display = hay.includes(needle) ? '' : 'none';
       });
     });
-
-    // Timestamp
-    document.getElementById('stamp').textContent = 'Last updated: ' + new Date().toLocaleString();
 
     // --- Image fallback loaders ---
     function setupFallback(id, candidates) {
