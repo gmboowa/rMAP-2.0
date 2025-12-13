@@ -102,8 +102,6 @@ Edit the input JSON file (e.g., `inputs.json`) with paths to your:
 java -jar cromwell.jar run rMAP.wdl --inputs inputs.json
 ```
 
-To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accordingly.
-
 ---
 ### Configuration guidance
 
@@ -115,12 +113,42 @@ To run on a backend like SLURM or Google Cloud, configure `cromwell.conf` accord
 - Pangenome analysis (Roary): Requires at least 2 annotated genome assemblies (in GFF3 format) for meaningful core/accessory genome separation.
 
 - Phylogenetic tree construction (FastTree): Minimum of 4 samples is recommended to create a useful & interpretable tree. With fewer genomes, tree resolution & branching may be trivial or misleading.
-  
+
 - After running this tool on *Klebsiella pneumoniae* & *Escherichia coli*, proceed to analyze the assembled genomes using [`kleborate_wf.wdl`](https://github.com/gmboowa/kleborate_wf.wdl) to enable comprehensive genomic characterization.
 
 
 
 ---
+
+## Quick start / Test dataset (E. coli, Illumina PE)
+
+To support reproducibility and quick validation, the repository includes a small Illumina paired-end *Escherichia coli* test dataset (5 isolates) under [`example_data/`](./example_data), together with a matching input JSON: [`example_data/inputs_test.json`](./example_data/inputs_test.json).
+
+A hosted end-to-end example HTML report generated from this dataset is available here:
+- https://gmboowa.github.io/rMAP-2.0/eskapee/example_data/
+
+### Run the workflow on the bundled test dataset
+
+```bash
+git clone https://github.com/gmboowa/rMAP-2.0.git
+cd rMAP-2.0
+
+# Run with Cromwell
+java -jar cromwell.jar run rMAP.wdl --inputs example_data/inputs_test.json
+```
+
+### Expected outputs
+
+After a successful run, Cromwell will write outputs under `cromwell-executions/` (plus workflow logs). Key expected outputs include:
+
+- **QC outputs**: FastQC per-sample + MultiQC summary
+- **Assembly outputs**: assembled contigs (FASTA)
+- **Annotation outputs**: Prokka annotations (e.g., GFF/GBK)
+- **Typing/AMR outputs**: MLST and AMR profiling results
+- **Pangenome/phylogeny outputs** (multi-isolate): Roary outputs and phylogenetic trees
+- **Final HTML report**: merged interactive report generated at the end of the workflow
+
+> Note: Pangenome and phylogeny are most meaningful with multiple isolates; this test dataset is provided specifically to exercise the full end-to-end workflow quickly.
 
 ## Output structure
 
@@ -320,12 +348,7 @@ pip install ncbi-genome-download
 Then run the following command to download complete RefSeq genomes for the 7 ESKAPEE species:
 
 ```bash
-ncbi-genome-download bacteria \
->     --genera "Escherichia,Klebsiella,Enterobacter,Acinetobacter,Pseudomonas,Staphylococcus,Enterococcus" \
->     --formats fasta \
->     --assembly-level complete \
->     --section refseq \
->     --output-folder eskapee_genomes
+ncbi-genome-download bacteria >     --genera "Escherichia,Klebsiella,Enterobacter,Acinetobacter,Pseudomonas,Staphylococcus,Enterococcus" >     --formats fasta >     --assembly-level complete >     --section refseq >     --output-folder eskapee_genomes
 
 ```
 ### Step 3: Combine all Fasta files into one file
@@ -388,4 +411,3 @@ This project is licensed under the MIT License.
 ## To report bugs, ask questions or seek help
 
 The software developing team works round the clock to ensure the bugs within the tool are captured & fixed. For support or any inquiry: You can submit your query using the [Issue Tracker](https://github.com/gmboowa/rMAP-WDL-Cromwell-Docker/issues)
-
