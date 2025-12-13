@@ -28,32 +28,26 @@
     .search{margin:14px 0 8px;position:relative}
     .search input{
       width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);outline:none;position:relative;z-index:2;
-      /* small readability bump */
       font-size:17px;
     }
-    /* Make the placeholder text bold */
     .search input::placeholder{font-weight:700;color:var(--muted)}
-    /* Faux placeholder overlay so we can italicize species names */
     .search .hint{
       position:absolute; left:14px; top:50%; transform:translateY(-50%);
       color:var(--muted); pointer-events:none; z-index:3; transition:opacity .15s ease; line-height:1.2;
-      font-size:17px; /* match input bump */
+      font-size:17px;
     }
     .search input:focus + .hint,
     .search input:not(:placeholder-shown) + .hint{ opacity:0; }
 
-    /* Slightly wider cards for readability */
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:14px}
     .card{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:16px;background:var(--card);padding:18px;box-shadow:var(--shadow);transition:transform .08s ease, border-color .15s ease}
     .card:hover{transform:translateY(-2px);border-color:var(--accent)}
 
     .icon{font-size:0; line-height:0}
     .icon img{
-      /* small bump from 32px -> 40px */
       width:40px;height:40px;display:block;border-radius:8px;object-fit:cover;border:1px solid var(--line)
     }
 
-    /* Small bump + responsive clamp for species names */
     .title{
       margin:10px 0 6px;font-weight:700;
       font-size: clamp(18px, 1rem + 0.25vw, 22px);
@@ -61,7 +55,7 @@
 
     .chips{display:flex;gap:6px;flex-wrap:wrap}
     .chip{
-      font-size:13px; /* was 12px */
+      font-size:13px;
       background:var(--chip);padding:4px 8px;border-radius:999px;border:1px solid var(--line);color:var(--muted)
     }
 
@@ -77,13 +71,11 @@
       </div>
       <div class="actions">
         <a class="btn" href="./eskapee/">Browse all reports</a>
-        <!-- NEW: Light/Dark toggle -->
         <button type="button" class="btn" id="themeToggle" aria-pressed="false" title="Toggle light/dark">🌙/☀️</button>
       </div>
     </header>
 
     <div class="search" aria-label="Filter reports">
-      <!-- keep placeholder as single space for :placeholder-shown -->
       <input id="q" placeholder=" " autocomplete="off" aria-label="Search pathogen">
       <div class="hint" aria-hidden="true">
         Search pathogen… (e.g., <em>Klebsiella</em>, <em>E. coli</em>, <em>S. aureus</em>)
@@ -108,7 +100,7 @@
         <div class="icon acinetobacter" aria-hidden="true">
           <img
             id="acinetobacter-img"
-            src="./docs/assets/acinetobacter_baumannii.jpg"
+            src="./assets/acinetobacter_baumannii.jpg"
             alt="Acinetobacter baumannii micrograph"
             loading="lazy">
         </div>
@@ -179,6 +171,20 @@
         <div class="title"><em>Staphylococcus aureus</em></div>
         <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
       </a>
+
+      <!-- ✅ NEW: example_data -->
+      <a class="card" href="./eskapee/example_data/" data-name="example_data test dataset demo ecoli example e. coli">
+        <div class="icon" aria-hidden="true">
+          <img
+            id="example-data-img"
+            src="./assets/ecoli.jpg"
+            alt="Example dataset"
+            loading="lazy">
+        </div>
+        <div class="title">example_data</div>
+        <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
+      </a>
+
     </div>
 
     <footer>
@@ -207,46 +213,45 @@
         if (!next) return;
         tried.add(next);
         img.src = next + (next.includes('?') ? '' : `?v=${Date.now()}`);
-        console.log(`[${id}] trying:`, img.src);
+        // console.log(`[${id}] trying:`, img.src);
       }
       img.addEventListener('error', tryNext, { once: false });
     }
 
     setupFallback('enterobacter-img', [
       './assets/enterobacter.jpg',
-      './doc/assets/enterobacter.jpg',
-      './docs/assets/enterobacter.jpg',
       '/rMAP-2.0/assets/enterobacter.jpg',
       'https://gmboowa.github.io/rMAP-2.0/assets/enterobacter.jpg'
     ]);
 
     setupFallback('acinetobacter-img', [
-      './docs/assets/acinetobacter_baumannii.jpg',
       './assets/acinetobacter_baumannii.jpg',
-      './doc/assets/acinetobacter_baumannii.jpg',
       '/rMAP-2.0/assets/acinetobacter_baumannii.jpg',
       'https://gmboowa.github.io/rMAP-2.0/assets/acinetobacter_baumannii.jpg'
     ]);
 
     setupFallback('ecoli-img', [
       './assets/ecoli.jpg',
-      './docs/assets/ecoli.jpg',
       '/rMAP-2.0/assets/ecoli.jpg',
       'https://gmboowa.github.io/rMAP-2.0/assets/ecoli.jpg'
     ]);
 
     setupFallback('pseudomonas-img', [
       './assets/pseudomonas.jpg',
-      './docs/assets/pseudomonas.jpg',
       '/rMAP-2.0/assets/pseudomonas.jpg',
       'https://gmboowa.github.io/rMAP-2.0/assets/pseudomonas.jpg'
     ]);
 
     setupFallback('staph-img', [
       './assets/s.aureus.jpg',
-      './docs/assets/s.aureus.jpg',
       '/rMAP-2.0/assets/s.aureus.jpg',
       'https://gmboowa.github.io/rMAP-2.0/assets/s.aureus.jpg'
+    ]);
+
+    setupFallback('example-data-img', [
+      './assets/ecoli.jpg',
+      '/rMAP-2.0/assets/ecoli.jpg',
+      'https://gmboowa.github.io/rMAP-2.0/assets/ecoli.jpg'
     ]);
 
     // --- Theme toggle ---
@@ -268,7 +273,6 @@
       if (saved === 'light' || saved === 'dark') {
         setTheme(saved);
       } else {
-        // default: follow system (do nothing). Set button icon based on system.
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         themeBtn.textContent = prefersDark ? '☀️' : '🌙';
         themeBtn.setAttribute('aria-pressed', String(prefersDark));
