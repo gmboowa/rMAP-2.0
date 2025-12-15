@@ -106,6 +106,26 @@ java -jar cromwell.jar run rMAP.wdl --inputs inputs.json
 ### Configuration guidance
 
 - For the pipeline to execute successfully, the following tasks must be enabled at a minimum: Trimming, Assembly & Reporting.
+  
+### Quality score options
+
+rMAP uses Trimmomatic for adapter/quality trimming. By default, Trimmomatic is run with -phred33, which is the standard quality encoding for modern Illumina FASTQ files.
+
+If you need flexibility (e.g., legacy data encoded as Phred+64), you can override the default via the inputs JSON parameter below:
+
+```bash
+{
+  "rMAP.trimmomatic_quality_encoding": "phred33"
+}
+
+```
+Allowed values:
+
+"phred33" (default; recommended for Illumina FASTQ)
+
+"phred64" (legacy encoding; use only if your FASTQ is Phred+64)
+
+If rMAP.trimmomatic_quality_encoding is not provided, rMAP will automatically default to phred33.
 
 
 ### Note on pangenome & phylogenetic tree construction 
