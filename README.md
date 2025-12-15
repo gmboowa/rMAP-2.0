@@ -209,6 +209,7 @@ Validate your JSON at: 'https://jsonlint.com/'
  ],
   "rMAP.adapters": "~/adapters.fa",
   "rMAP.reference_genome": "~/genbank_reference.gbk",
+  "rMAP.trimmomatic_quality_encoding": "phred33",
   "rMAP.do_trimming": true,
   "rMAP.do_quality_control": true,
   "rMAP.do_assembly": true,
