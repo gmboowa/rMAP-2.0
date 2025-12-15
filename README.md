@@ -106,7 +106,7 @@ java -jar cromwell.jar run rMAP.wdl --inputs inputs.json
 ### Configuration guidance
 
 - For the pipeline to execute successfully, the following tasks must be enabled at a minimum: Trimming, Assembly & Reporting.
-  
+
 ### Quality score options
 
 rMAP uses Trimmomatic for adapter/quality trimming. By default, Trimmomatic is run with -phred33, which is the standard quality encoding for modern Illumina FASTQ files.
@@ -169,23 +169,6 @@ After a successful run, Cromwell will write outputs under `cromwell-executions/`
 - **Final HTML report**: merged interactive report generated at the end of the workflow
 
 > Note: Pangenome and phylogeny are most meaningful with multiple isolates; this test dataset is provided specifically to exercise the full end-to-end workflow quickly.
-
-## Output structure
-
-- `trimmed/` – Trimmed FASTQ files  
-- `qc_reports/` – FastQC and MultiQC reports  
-- `assembly/` – Final contigs from MEGAHIT  
-- `annotation_results/` – Prokka annotation files (`*.gff`, `*.gbk`)  
-- `mlst_results/` – MLST profiles (`*.tsv`, `*.txt`)  
-- `variants/` – Variant calls in VCF format from Snippy  
-- `amr_results/` – Antimicrobial resistance gene matches  
-- `mge_results/` – Mobile genetic element predictions  
-- `virulence_results/` – Virulence gene predictions  
-- `pangenome_results/` – Roary output files including `gene_presence_absence.csv` and `core_gene_alignment.aln`  
-- `phylogeny_results/` – Newick tree files (`*.nwk`) and PDFs of core/accessory trees  
-- `blast_results/` – Top BLAST hits in XML and TSV formats  
-- `tree_visualization/` – Tree image visualizations from ETE3 (`*.png`)  
-- `merged_reports/` – Final summary report (`index.html`), logs, & combined tables  
 
 ---
 
@@ -419,8 +402,8 @@ makeblastdb -in vfdb.fa -dbtype nucl
 
 ## Resources
 
-- GitHub: [https://github.com/GunzIvan28/rMAP](https://github.com/GunzIvan28/rMAP)
-- Publication: rMAP: the Rapid Microbial Analysis Pipeline for ESKAPE bacterial group whole-genome sequence data  
+- GitHub: [https://github.com/GunzIvan28/rMAP](https://github.com/gmboowa/rMAP-WDL-Cromwell-Docker/issues)
+- Publication: rMAP: the Rapid Microbial Analysis Pipeline for ESKAPEE bacterial group whole-genome sequence data  
 *Published in [Microbial Genomics](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000583)*
 - The philosophy of **rMAP-WDL-Cromwell-Docker** is built on the foundation of already pre-existing tools. As a token of gratitude to the authors of those numerous tools.
 ---
