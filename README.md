@@ -1,8 +1,8 @@
 # rMAP-2.0
 
-This modular tool provides a ready-to-use environment for **rMAP**, a bioinformatics pipeline for analyzing microbial genomic data & profiling **AMR**, **Mobilome** & **Virulome**. It includes all required tools & dependencies, enabling reproducible, scalable analysis of NGS data in research & public health settings.
+This modular tool provides a ready-to-use environment for **rMAP-2.0**, a bioinformatics pipeline for analyzing microbial genomic data & profiling **AMR**, **Mobilome**, **Virulome** & **Phylogenomics** with support for **MLST typing**, **variant calling**, **BLASTn-based** sequence similarity search,. It includes all required tools & dependencies, enabling reproducible, scalable analysis of NGS data in research & public health settings.
 
-**rMAP** is a fully automated pipeline for profiling the resistome & other genomic features of ESKAPEE (*Enterococcus faecium*, *Staphylococcus aureus*, *Klebsiella pneumoniae*, *Acinetobacter baumannii*, *Pseudomonas aeruginosa*, *Enterobacter* species & *Escherichia coli*) pathogens using whole-genome sequencing (WGS) paired-end reads.
+**rMAP-2.0** is a fully automated pipeline for profiling the resistome & other genomic features of ESKAPEE (*Enterococcus faecium*, *Staphylococcus aureus*, *Klebsiella pneumoniae*, *Acinetobacter baumannii*, *Pseudomonas aeruginosa*, *Enterobacter* species & *Escherichia coli*) pathogens using whole-genome sequencing (WGS) paired-end reads.
 
 ---
 
@@ -54,6 +54,7 @@ This modular tool provides a ready-to-use environment for **rMAP**, a bioinforma
 - [Appendix (optional reference material)](#appendix-optional-reference-material)
 
 ---
+![workflow](workflow.png)
 
 ## Overview
 
@@ -84,13 +85,14 @@ The workflow is written in **Workflow Description Language (WDL)**, uses **Docke
 
 ---
 
-## Quick start / Test dataset (E. coli, Illumina PE)
+## Quick start / Test dataset (*E. coli*, Illumina PE)
 
 To support reproducibility and quick validation, the repository includes a small Illumina paired-end *Escherichia coli* test dataset (5 isolates) under [`test_data/`](./test_data), together with a matching input JSON: [`test_data/inputs_test.json`](./test_data/inputs_test.json).
 
 > The **test_data** cohort comprises five *E. coli* WGS datasets retrieved from NCBI/SRA (typical *E. coli* genome size ≈ **5.0 Mb**, with expected strain-to-strain variation).
 
 A hosted end-to-end test HTML report generated from this dataset is available here:
+
 - https://gmboowa.github.io/rMAP-2.0/eskapee/test_data/
 
 ### Run the workflow on the bundled test dataset
@@ -109,11 +111,11 @@ After a successful run, Cromwell will write outputs under `cromwell-executions/`
 - **QC outputs**: FastQC per-sample + MultiQC summary
 - **Assembly outputs**: assembled contigs (FASTA)
 - **Annotation outputs**: Prokka annotations (e.g., GFF/GBK)
-- **Typing/AMR outputs**: MLST and AMR profiling results
-- **Pangenome/phylogeny outputs** (multi-isolate): Roary outputs and phylogenetic trees
+- **Typing/AMR outputs**: MLST & AMR profiling results
+- **Pangenome/phylogeny outputs** (multi-isolate): Roary outputs & phylogenetic trees
 - **Final HTML report**: merged interactive report generated at the end of the workflow
 
-> Note: pangenome and phylogeny are most meaningful with multiple isolates; this test dataset is provided specifically to exercise the full end-to-end workflow quickly.
+> Note: pangenome & phylogeny are most meaningful with multiple isolates; this test dataset is provided specifically to exercise the full end-to-end workflow quickly.
 
 ---
 
@@ -152,11 +154,30 @@ cd rMAP-2.0
 Download `cromwell.jar` from the Cromwell releases page (or use your site-provided Cromwell).  
 Place it in your working directory or provide its full path in commands below.
 
-### Step 3: Confirm Docker is running
+
+### Step 3: Confirm Docker is running (check allocated resources)
 
 ```bash
-docker info >/dev/null && echo "Docker is running ✅"
+docker info >/dev/null && echo "Docker is running"
 ```
+
+### Show Docker Desktop VM allocation for Docker
+
+Open Docker Desktop > Go to Settings → Resources → Advanced > Move the sliders
+
+- CPU limit → increase (e.g., 8–15 as you have)
+
+- Memory limit → increase  (~15.8 GB, basically max for a 16 GB machine)
+
+- Swap → optional (2–4 GB is fine)
+
+- Disk usage limit → increase if you’re pulling large images / databases
+
+Finally, click **Apply** (Docker may restart)
+
+In the terminal 
+
+docker info | egrep "CPUs|Total Memory"
 
 ---
 
@@ -228,7 +249,7 @@ Certain analysis modules require minimum sample numbers to function properly:
 Validate JSON locally with `jq` or any JSON validator.
 
 ```bash
-jq . inputs.json >/dev/null && echo "JSON OK ✅"
+jq . inputs.json >/dev/null && echo "JSON OK"
 ```
 
 Example JSON (update paths to your environment):
@@ -236,13 +257,13 @@ Example JSON (update paths to your environment):
 ```json
 {
   "rMAP.input_reads": [
-    "/path/to/sample1_R1.fastq.gz",
-    "/path/to/sample1_R2.fastq.gz",
-    "/path/to/sample2_R1.fastq.gz",
-    "/path/to/sample2_R2.fastq.gz"
+    "~/sample1_R1.fastq.gz",
+    "~/sample1_R2.fastq.gz",
+    "~/sample2_R1.fastq.gz",
+    "~/sample2_R2.fastq.gz"
   ],
-  "rMAP.adapters": "/path/to/adapters.fa",
-  "rMAP.reference_genome": "/path/to/reference.gbk",
+  "rMAP.adapters": "~/adapters.fa",
+  "rMAP.reference_genome": "~/reference.gbk",
   "rMAP.reference_type": "genbank",
 
   "rMAP.trimmomatic_quality_encoding": "phred33",
@@ -263,10 +284,10 @@ Example JSON (update paths to your environment):
 
   "rMAP.use_local_blast": true,
 
-  "rMAP.local_blast_db": "/path/to/eskapee_db/eskapee_db",
-  "rMAP.local_amr_db": "/path/to/resfinder.fa",
-  "rMAP.local_mge_db": "/path/to/plasmidfinder.fa",
-  "rMAP.local_virulence_db": "/path/to/vfdb.fa",
+  "rMAP.local_blast_db": "~/eskapee_db/eskapee_db",
+  "rMAP.local_amr_db": "~/resfinder.fa",
+  "rMAP.local_mge_db": "~/plasmidfinder.fa",
+  "rMAP.local_virulence_db": "~/vfdb.fa",
 
   "rMAP.blast_max_target_seqs": 250,
   "rMAP.blast_evalue": 0.000001,
@@ -282,13 +303,12 @@ Example JSON (update paths to your environment):
 }
 ```
 
-> Important: when using local BLAST, `rMAP.local_blast_db` must point to the **BLAST database prefix** (e.g., `/path/to/eskapee_db/eskapee_db`), **not** the FASTA file.
+> Important: when using local BLAST, `rMAP.local_blast_db` must point to the **BLAST database prefix** (e.g., `~/eskapee_db/eskapee_db`), **not** the FASTA file.
 
 ---
 
 ## Tools used (with Docker images)
 
-> Recommendation: avoid floating tags like `latest` in publication-grade runs. Prefer pinned tags that match your release.
 
 | Step                | Tool          | Docker image                                  |
 |---------------------|---------------|-----------------------------------------------|
@@ -332,11 +352,10 @@ Each `call-*` directory contains:
 - `rc` – return code for the task
 - output files generated by the task (e.g., `.fasta`, `.vcf`, `.tsv`, `.json`, `.html`, etc.)
 
-> If you prefer a simplified project-level view, you can copy or symlink selected outputs from Cromwell’s execution directory into a user-defined folder (e.g., `rMAP_outputs/`). The authoritative record remains the Cromwell execution directory.
 
 ---
 
-### Example outputs by module
+### Example of outputs from different modules
 
 | Module                | Key output files                                                                 |
 |----------------------|-----------------------------------------------------------------------------------|
@@ -361,15 +380,14 @@ Each `call-*` directory contains:
 ### Report visualization
 
 Interactive HTML reports for several ESKAPEE example cohorts are hosted here:
-- https://gmboowa.github.io/rMAP-2.0/
 
-(See **Hosted example reports** for direct links.)
+- https://gmboowa.github.io/rMAP-2.0/
 
 ---
 
 ## Databases (local BLAST + updates)
 
-rMAP-2.0 supports fully offline operation by allowing users to run against **local, versioned reference databases**. For convenience and reproducibility, we provide a **prebuilt ESKAPEE reference BLAST database snapshot** and also document how to rebuild the database from public genomes (e.g., RefSeq) when users need a customized or refreshed reference set.
+rMAP-2.0 supports fully offline operation by allowing users to run against **local, versioned reference databases**. For convenience & reproducibility, we provide a **prebuilt ESKAPEE reference BLAST database snapshot** & also document how to rebuild the database from public genomes (e.g., RefSeq) when users need a customized or refreshed reference set.
 
 ---
 
@@ -397,7 +415,7 @@ After extraction, you should see the BLAST database prefix files (e.g., `.nsq/.n
 ```json
 {
   "rMAP.use_local_blast": true,
-  "rMAP.local_blast_db": "/path/to/eskapee_db/eskapee_db"
+  "rMAP.local_blast_db": "~/eskapee_db/eskapee_db"
 }
 ```
 
@@ -417,12 +435,13 @@ mkdir -p ~/refseq/bacteria/eskapee
 cd ~/refseq/bacteria/eskapee
 ```
 
-#### Step 2: Use `ncbi-genome-download` (recommended)
+#### Step 2: Use `ncbi-genome-download` 
 
 Install the tool if not already installed:
 
 ```bash
 pip install ncbi-genome-download
+
 ```
 
 Download RefSeq genomes for the 7 ESKAPEE genera (example filter: complete genomes):
@@ -463,14 +482,12 @@ If you maintain a curated FASTA (`eskapee_db.fasta`) from a known list of assemb
 
 ```bash
 mkdir -p databases/blast/eskapee
-cp /path/to/eskapee_db.fasta databases/blast/eskapee/
+cp ~/eskapee_db.fasta databases/blast/eskapee/
 
 cd databases/blast/eskapee
 
 makeblastdb   -in eskapee_db.fasta   -dbtype nucl   -parse_seqids   -max_file_sz 3000000000   -out eskapee_db
 ```
-
-(Optional) Package for distribution (release artifact):
 
 ```bash
 tar -czvf eskapee_db.tar.gz eskapee_db.*
@@ -489,40 +506,34 @@ makeblastdb -in plasmidfinder.fa  -dbtype nucl -parse_seqids
 makeblastdb -in vfdb.fa           -dbtype nucl -parse_seqids
 ```
 
-Then point rMAP to these FASTAs in your inputs JSON:
+Then point rMAP-2.0 to these FASTAs in your inputs JSON:
 
 ```json
 {
-  "rMAP.local_amr_db": "/path/to/resfinder.fa",
-  "rMAP.local_mge_db": "/path/to/plasmidfinder.fa",
-  "rMAP.local_virulence_db": "/path/to/vfdb.fa"
+  "rMAP.local_amr_db": "~/resfinder.fa",
+  "rMAP.local_mge_db": "~/plasmidfinder.fa",
+  "rMAP.local_virulence_db": "~/vfdb.fa"
 }
 ```
 
 ---
 
-### Database refresh cadence and reproducibility
+### Database refresh cadence & reproducibility
 
-To support reproducible analyses, we plan to refresh and publish reference snapshots on a defined cadence:
+To support reproducible analyses, we plan to refresh & publish reference snapshots on a defined cadence:
 
-- **Planned refresh frequency:** **quarterly** (every ~3 months)
 - **Hotfix updates:** on-demand when major upstream reference updates or critical issues are identified
-
-Each published snapshot should include:
-- Versioned archive (e.g., `eskapee_db-vX.Y.Z.tar.gz`)
-- **SHA-256 checksum** (e.g., `eskapee_db-vX.Y.Z.tar.gz.sha256`)
-- Brief build metadata (build date, source scope/filters, number of sequences/genomes)
 
 ---
 
 ### Notes on BLAST usage
 
-- For large batches, using a local ESKAPEE BLAST database may require substantial disk space (tens of GB depending on scope and assembly level).
+- For large batches, using a local ESKAPEE BLAST database may require substantial disk space (tens of GB depending on scope & assembly level).
 - NCBI imposes usage limits on BLAST queries from a single IP address; local databases improve throughput, reproducibility & compliance with query limits.
 
 ---
 
-## Benchmarking (this manuscript)
+## Benchmarking 
 
 We benchmarked rMAP-2.0 using three bacterial isolate WGS cohorts spanning increasing cohort sizes:
 
@@ -530,11 +541,11 @@ We benchmarked rMAP-2.0 using three bacterial isolate WGS cohorts spanning incre
 - **Medium:** 11 *Pseudomonas aeruginosa* genomes (typical genome ≈ **6.3 Mb**)
 - **Large:** 20 *Klebsiella pneumoniae* genomes (typical genome ≈ **5.5 Mb**)
 
-The *E. coli* cohort served as the standardized, end-to-end runtime benchmark for direct comparison with Bactopia, whereas the medium and large cohorts were used to assess scaling behavior and reporting for multi-isolate analyses, including pangenome reconstruction and core-gene phylogeny.
+The *E. coli* cohort served as the standardized, end-to-end runtime benchmark for direct comparison with Bactopia, whereas the medium & large cohorts were used to assess scaling behavior & reporting for multi-isolate analyses, including pangenome reconstruction & core-gene phylogeny.
 
-### Hosted example reports
+### Hosted test reports
 
-Interactive example reports generated by rMAP-2.0 are hosted on GitHub Pages:
+Interactive test reports generated by rMAP-2.0 are hosted on GitHub Pages:
 
 - Test dataset (5 *E. coli*): https://gmboowa.github.io/rMAP-2.0/eskapee/test_data/
 - Medium dataset (11 *Pseudomonas aeruginosa* cohort): https://gmboowa.github.io/rMAP-2.0/eskapee/pseudomonas/report.html
@@ -544,9 +555,9 @@ Interactive example reports generated by rMAP-2.0 are hosted on GitHub Pages:
 
 ## HPC / cloud execution (Cromwell backends)
 
-rMAP-2.0 is implemented in WDL and executed with Cromwell, enabling the same workflow to run reproducibly on **local workstations**, **HPC schedulers**, and **cloud backends** by switching Cromwell configuration files (without modifying the WDL).
+rMAP-2.0 is implemented in WDL & executed with Cromwell, enabling the same workflow to run reproducibly on **local workstations**, **HPC schedulers** & **cloud backends** by switching Cromwell configuration files (without modifying the WDL).
 
-> In addition to the laptop benchmarks described in the manuscript, we validated end-to-end execution on both an HPC environment and a cloud backend, confirming the workflow runs reproducibly across compute settings with comparable output organization and reporting.
+> In addition to the laptop benchmarks, we validated end-to-end execution on both an HPC environment & a cloud backend, confirming the workflow runs reproducibly across compute settings with comparable output organization & reporting.
 
 ### Suggested configuration layout
 
@@ -559,7 +570,7 @@ configs/
   cromwell.gcp.conf     # Google Cloud / PAPIv2 (optional) OR Terra notes
 ```
 
-### Example commands
+### Test commands
 
 1) Local workstation (Docker backend)
 
@@ -573,7 +584,7 @@ java -Dconfig.file=configs/cromwell.local.conf -jar cromwell.jar run rMAP.wdl --
 java -Dconfig.file=configs/cromwell.slurm.conf -jar cromwell.jar run rMAP.wdl --inputs inputs.json
 ```
 
-3) Google Cloud backend (PAPIv2)
+3) Google Cloud backend 
 
 ```bash
 java -Dconfig.file=configs/cromwell.gcp.conf -jar cromwell.jar run rMAP.wdl --inputs inputs.json
@@ -581,8 +592,8 @@ java -Dconfig.file=configs/cromwell.gcp.conf -jar cromwell.jar run rMAP.wdl --in
 
 ### Notes
 
-- Backend configs control execution details (job submission, localization/scratch, retries, and resource limits), while the WDL and inputs remain unchanged.
-- For HPC environments where Docker is restricted, sites may require an approved container runtime (e.g., Apptainer/Singularity) and corresponding Cromwell configuration.
+- Backend configs control execution details (job submission, localization/scratch, retries & resource limits), while the WDL & inputs remain unchanged.
+- For HPC environments where Docker is restricted, sites may require an approved container runtime & corresponding Cromwell configuration.
 
 ---
 
@@ -598,7 +609,7 @@ For sequence similarity screening, rMAP-2.0 supports offline BLAST by allowing u
 
 ## Releases & reproducibility
 
-rMAP-2.0 is versioned and released to support reproducible, comparable analyses across machines (laptop/HPC/cloud) and over time. For manuscript-grade runs and long-term comparability, we recommend using a tagged GitHub Release rather than an arbitrary commit.
+rMAP-2.0 is versioned and released to support reproducible, comparable analyses across machines (laptop/HPC/cloud) & over time. For manuscript-grade runs and long-term comparability, we recommend using a tagged GitHub Release rather than an arbitrary commit.
 
 ### What a GitHub Release contains
 
@@ -609,16 +620,16 @@ Each release (e.g., `vX.Y.Z`) is an immutable snapshot of:
   - a versioned ESKAPEE BLAST database tarball (or pointers to Zenodo snapshots)
   - corresponding checksums (sha256)
   - basic build metadata (date, scope, number of sequences)
-- **Documentation snapshot:** README updates aligned to that release, including expected outputs and example report links
+- **Documentation snapshot:** README updates aligned to that release, including expected outputs & example report links
 
 ### Container pinning
 
-rMAP-2.0 relies on Docker images to standardize tool versions and ensure consistent outputs. For best reproducibility:
+rMAP-2.0 relies on Docker images to standardize tool versions & ensure consistent outputs. For best reproducibility:
 - Prefer pinned tags (avoid `latest` when possible)
 - Keep the “Tools used (with Docker images)” table aligned to the current release
 - Record for each run:
   - GitHub Release tag (e.g., `vX.Y.Z`)
-  - container tags (and ideally digests)
+  - container tags & ideally digests
   - database snapshot version (Zenodo record/version or local rebuild date)
 
 Capture image digests used in a run:
@@ -627,29 +638,16 @@ Capture image digests used in a run:
 docker image inspect --format='{{index .RepoDigests 0}}' <image:tag>
 ```
 
-### Changelog and upgrading
-
-All user-visible changes should be documented in [`CHANGELOG.md`](./CHANGELOG.md), including:
-- workflow/module changes,
-- container tool/tag changes,
-- report structure changes,
-- database snapshot updates.
-
-To upgrade safely:
-1. Read `CHANGELOG.md` for breaking changes and migration notes.
-2. Pull the new release tag (and updated DB tarball/checksum if applicable).
-3. Re-run `test_data/inputs_test.json` to confirm expected outputs and report generation before analyzing production datasets.
-
 ---
 
 ## Intended use & limitations
 
-rMAP-2.0 is designed for end-to-end analysis of **bacterial isolate** whole-genome sequencing (WGS), with an emphasis on **Illumina short-read paired-end data** and standardized reporting for research and public health use cases (e.g., AMR profiling, MLST, assembly/annotation, pangenome, and phylogeny). The workflow is most appropriate when samples represent single-organism isolates (or near-isolates) and when users want a reproducible, containerized pipeline with a consolidated HTML report.
+rMAP-2.0 is designed for end-to-end analysis of **bacterial isolate** whole-genome sequencing (WGS), with an emphasis on **Illumina short-read paired-end data** & standardized reporting for research and public health use cases (e.g., AMR profiling, MLST, assembly/annotation, pangenome & phylogeny). The workflow is most appropriate when samples represent single-organism isolates (or near-isolates) & when users want a reproducible, containerized pipeline with a consolidated HTML report.
 
 ### Limitations / non-target use cases
 
-- **Metagenomics & mixed communities:** rMAP-2.0 is not intended for complex metagenomic samples (e.g., stool, wastewater) where multiple organisms and uneven abundance require dedicated taxonomic profiling, binning, and contamination-aware assembly workflows.
-- **Long-read–only datasets:** rMAP-2.0 is optimized and validated for Illumina short-read PE inputs; long-read (ONT/PacBio) or hybrid assemblies may require additional tuning and are not the primary target in this release.
+- **Metagenomics & mixed communities:** rMAP-2.0 is not intended for complex metagenomic samples (e.g., stool, wastewater) where multiple organisms & uneven abundance require dedicated taxonomic profiling, binning & contamination-aware assembly workflows.
+- **Long-read–only datasets:** rMAP-2.0 is optimized & validated for Illumina short-read PE inputs; long-read (ONT/PacBio) or hybrid assemblies may require additional tuning & are not the primary target in this release.
 - **Species/cohort composition:** Some multi-isolate analyses (pangenome/phylogeny) assume broadly comparable genomes; mixed-species cohorts may yield reduced interpretability unless intentionally included (e.g., as outgroups).
 - **Container runtime constraints:** rMAP-2.0 uses Docker for tool standardization. On some HPC systems where Docker is restricted, execution may require Apptainer/Singularity (or a site-approved container runtime). We plan to expand documentation and tested configurations for these environments in future releases.
 
@@ -658,7 +656,7 @@ rMAP-2.0 is designed for end-to-end analysis of **bacterial isolate** whole-geno
 ## Docker Desktop configuration for rMAP-2.0
 
 > Recommended settings for running rMAP-2.0 smoothly on Docker Desktop.
-> If you prefer, move this section into `docs/docker_desktop.md` and keep a short pointer here.
+> If you prefer, move this section into `docs/docker_desktop.md` & keep a short pointer here.
 
 **Docker Desktop → Settings → Resources → Advanced**
 1. **Memory:** set to **12–24 GB** (more if you can)
@@ -679,7 +677,6 @@ docker run --rm alpine sh -c 'echo "mem.max=$(cat /sys/fs/cgroup/memory.max 2>/d
 docker info | grep -E "Total Memory|CPUs"
 ```
 
-![workflow](workflow.png)
 
 ---
 
