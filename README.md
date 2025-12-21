@@ -32,11 +32,11 @@ This modular tool provides a ready-to-use environment for **rMAP-2.0**, a bioinf
   - [Index custom nucleotide databases (AMR / plasmid / virulence)](#index-custom-nucleotide-databases-amr--plasmid--virulence)
   - [Database refresh cadence and reproducibility](#database-refresh-cadence-and-reproducibility)
   - [Notes on BLAST usage](#notes-on-blast-usage)
-- [Benchmarking (this manuscript)](#benchmarking-this-manuscript)
+- [Benchmarking](#benchmarking)
   - [Hosted example reports](#hosted-example-reports)
 - [HPC / cloud execution (Cromwell backends)](#hpc--cloud-execution-cromwell-backends)
   - [Suggested configuration layout](#suggested-configuration-layout)
-  - [Example commands](#example-commands)
+  - [Test commands](#Test-commands)
   - [Notes](#notes)
 - [Offline use & data sovereignty](#offline-use--data-sovereignty)
 - [Releases & reproducibility](#releases--reproducibility)
@@ -50,7 +50,7 @@ This modular tool provides a ready-to-use environment for **rMAP-2.0**, a bioinf
 - [Authors & contributors](#authors--contributors)
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
-- [Appendix (optional reference material)](#appendix-optional-reference-material)
+- [Appendix](#appendix)
 
 ---
 ![workflow](workflow.png)
@@ -762,12 +762,11 @@ If you use rMAP-2.0 in your work, please cite:
 
 Recommended repository citation (GitHub + release tag):
 - rMAP-2.0 GitHub repository: https://github.com/gmboowa/rMAP-2.0  
-- Include the release tag you used (e.g., `vX.Y.Z`) for reproducibility.
+
 
 If using the prebuilt ESKAPEE reference DB snapshot, cite the Zenodo record:
 - https://zenodo.org/records/18001238
 
-> Tip: consider adding a `CITATION.cff` file so GitHub’s “Cite this repository” feature is enabled.
 
 ---
 
@@ -792,7 +791,7 @@ This project is licensed under the MIT License.
 
 ---
 
-## Appendix (optional reference material)
+## Appendix 
 
 > This appendix keeps frequently requested reference content in one place. You can remove or move it into `docs/` if you prefer a shorter README.
 
