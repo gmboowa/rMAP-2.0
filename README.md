@@ -142,10 +142,10 @@ If rMAP.trimmomatic_quality_encoding is not provided, rMAP will automatically de
 
 ## Quick start / Test dataset (E. coli, Illumina PE)
 
-To support reproducibility and quick validation, the repository includes a small Illumina paired-end *Escherichia coli* test dataset (5 isolates) under [`example_data/`](./example_data), together with a matching input JSON: [`example_data/inputs_test.json`](./example_data/inputs_test.json).
+To support reproducibility and quick validation, the repository includes a small Illumina paired-end *Escherichia coli* test dataset (5 isolates) under [`test_data/`](./test_data), together with a matching input JSON: [`test_data/inputs_test.json`](./test_data/inputs_test.json).
 
-A hosted end-to-end example HTML report generated from this dataset is available here:
-- https://gmboowa.github.io/rMAP-2.0/eskapee/example_data/
+A hosted end-to-end test HTML report generated from this dataset is available here:
+- https://gmboowa.github.io/rMAP-2.0/eskapee/test_data/
 
 ### Run the workflow on the bundled test dataset
 
@@ -154,7 +154,7 @@ git clone https://github.com/gmboowa/rMAP-2.0.git
 cd rMAP-2.0
 
 # Run with Cromwell
-java -jar cromwell.jar run rMAP.wdl --inputs example_data/inputs_test.json
+java -jar cromwell.jar run rMAP.wdl --inputs test_data/inputs_test.json
 ```
 
 ### Expected outputs
@@ -392,6 +392,11 @@ makeblastdb -in plasmidfinder.fa -dbtype nucl
 makeblastdb -in vfdb.fa -dbtype nucl
 
 ```
+
+## Releases & reproducibility
+
+rMAP-2.0 is implemented in WDL and executed with Cromwell, with all major tools containerized to support portable, reproducible analyses across laptops, HPC schedulers & cloud backends. For manuscript-grade runs and long-term comparability, we recommend using a tagged GitHub Release rather than an arbitrary commit.
+
 
 ## Authors & contributors
 
