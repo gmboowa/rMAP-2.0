@@ -42,7 +42,6 @@ This modular tool provides a ready-to-use environment for **rMAP-2.0**, a bioinf
 - [Releases & reproducibility](#releases--reproducibility)
   - [What a GitHub Release contains](#what-a-github-release-contains)
   - [Container pinning](#container-pinning)
-  - [Changelog and upgrading](#changelog-and-upgrading)
 - [Intended use & limitations](#intended-use--limitations)
 - [Docker Desktop configuration for rMAP-2.0](#docker-desktop-configuration-for-rmap-20)
 - [Troubleshooting](#troubleshooting)
@@ -788,8 +787,8 @@ This project is licensed under the MIT License.
 
 ## Acknowledgements
 
-- rMAP-2.0 builds on many excellent open-source bioinformatics tools. We acknowledge and thank the authors and maintainers of these tools and their communities.
-- The workflow design emphasizes reproducibility, portability, and practical reporting for bacterial genomics in research and public health settings.
+- rMAP-2.0 builds on many excellent open-source bioinformatics tools. We acknowledge & thank the authors & maintainers of these tools and their communities.
+- The workflow design emphasizes reproducibility, portability & practical reporting for bacterial genomics in research & public health settings.
 
 ---
 
@@ -807,7 +806,7 @@ For each analysis (especially publications), record:
 - rMAP-2.0 release tag (or commit SHA if no release)
 - Inputs JSON used
 - Database snapshot version (Zenodo or local rebuild date)
-- Docker image tags and (ideally) digests
+- Docker image tags & (ideally) digests
 - Cromwell backend config used (local/slurm/gcp)
 - Hardware summary (CPU/RAM, storage type)
 
@@ -822,18 +821,14 @@ To further strengthen reproducibility:
   - `scripts/package_db.sh`
   - `scripts/verify_checksums.sh`
 
----
 
-# End of README (main sections)
 
 ---
 
-## Appendix B (expanded reference)
+## Appendix 
 
-> The sections below are optional, but are included to keep this README self-contained for users who prefer a single document.
-> If you prefer a shorter README, move these blocks to `docs/` and link from the main sections above.
 
-### B1) Example Cromwell backend config: local (Docker) — template
+### Example Cromwell backend config: local (Docker) 
 
 Create a file at `configs/cromwell.local.conf`:
 
@@ -856,7 +851,7 @@ backend {
 }
 ```
 
-### B2) Example Cromwell backend config: Slurm (template)
+### Example Cromwell backend config: Slurm (template)
 
 Create a file at `configs/cromwell.slurm.conf` (template; adjust to your site):
 
@@ -885,9 +880,9 @@ backend {
 
 > Many HPC sites use custom wrappers for container execution (Apptainer/Singularity). If Docker is not permitted, consult your system administrators.
 
-### B3) Example Cromwell backend config: Google Cloud (PAPIv2) (template)
+### Example Cromwell backend config: Google Cloud 
 
-Create a file at `configs/cromwell.gcp.conf` (template; requires Google auth and project setup):
+Create a file at `configs/cromwell.gcp.conf` (template; requires Google auth & project setup):
 
 ```hocon
 include required(classpath("application"))
@@ -914,9 +909,9 @@ backend {
 }
 ```
 
-> If you primarily run on Terra, keep Terra-specific notes in `docs/terra.md` and reference them from the HPC/cloud section.
+> If you primarily run on Terra, keep Terra-specific notes in `docs/terra.md` & reference them from the HPC/cloud section.
 
-### B4) Suggested folder layout in the repo
+### Suggested folder layout in the repo
 
 ```text
 rMAP-2.0/
@@ -939,7 +934,7 @@ rMAP-2.0/
     verify_checksums.sh
 ```
 
-### B5) Frequently asked questions (FAQ)
+### Frequently asked questions (FAQ)
 
 **Q: Can I run rMAP-2.0 without internet access?**  
 Yes. After containers are pulled once (cached locally), subsequent runs can proceed offline. For BLAST, set up a local BLAST DB (Zenodo snapshot or locally built).
@@ -951,18 +946,18 @@ The final consolidated report is written in the MERGE_REPORTS outputs in Cromwel
 Toggle the corresponding JSON boolean, e.g. `"rMAP.do_phylogeny": false`. Ensure dependent downstream steps are also disabled if they require that output.
 
 **Q: Does rMAP-2.0 support ONT/PacBio?**  
-The primary target is Illumina paired-end bacterial isolate WGS. Long-read support may require tuning and is not the main validated path for this release.
+The primary target is Illumina paired-end bacterial isolate WGS. Long-read support may require tuning & is not the main validated path for this release.
 
 **Q: I see mixed species in my cohort. Is that OK?**  
-Yes, but interpret pangenome/phylogeny outputs carefully. Mixed-species cohorts can create long branches/outgroups and reduce interpretability for within-species inference.
+Yes, but interpret pangenome/phylogeny outputs carefully. Mixed-species cohorts can create long branches/outgroups & reduce interpretability for within-species inference.
 
 **Q: How do I pin versions for a manuscript?**  
-Use a GitHub Release tag, record the image tags/digests, and record the database snapshot version (Zenodo record + checksum or local rebuild date).
+Use a GitHub Release tag, record the image tags/digests & record the database snapshot version (Zenodo record + checksum or local rebuild date).
 
 **Q: My HPC blocks Docker. What should I do?**  
-Use a site-approved runtime (often Apptainer/Singularity) and a compatible Cromwell backend configuration. We recommend adding site-specific docs under `docs/`.
+Use a site-approved runtime (often Apptainer/Singularity) & a compatible Cromwell backend configuration. We recommend adding site-specific docs under `docs/`.
 
-### B6) Checksums and verification (recommended)
+### Checksums and verification (recommended)
 
 When you download reference artifacts (e.g., database tarballs), verify checksums:
 
@@ -976,45 +971,6 @@ To generate checksums for a release:
 sha256sum eskapee_db-vX.Y.Z.tar.gz > eskapee_db-vX.Y.Z.tar.gz.sha256
 ```
 
-### B7) Suggested CHANGELOG format (for maintainers)
-
-Create `CHANGELOG.md` and structure like:
-
-```markdown
-# Changelog
-
-## [v1.0.1] - YYYY-MM-DD
-### Fixed
-- ...
-
-### Changed
-- ...
-
-### Added
-- ...
-```
-
-### B8) Suggested CITATION.cff (for maintainers)
-
-Create `CITATION.cff` in the repo root to enable GitHub’s citation UI:
-
-```yaml
-cff-version: 1.2.0
-message: "If you use this software, please cite it using the metadata below."
-title: "rMAP-2.0"
-authors:
-  - family-names: "Mboowa"
-    given-names: "Gerald"
-repository-code: "https://github.com/gmboowa/rMAP-2.0"
-license: "MIT"
-```
-
-### B9) Notes for GitHub Pages example reports
-
-If you regenerate reports and publish to GitHub Pages:
-- Update `docs/index.html` links to match `test_data/` naming (no stale `example_data/` paths).
-- Ensure the `docs/` build path includes the correct directories and that any caches are cleared.
-- Consider adding a small `docs/README.md` explaining how reports are published.
 
 ---
 
