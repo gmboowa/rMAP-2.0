@@ -489,6 +489,14 @@ java -Dconfig.file=configs/cromwell.slurm.conf -jar cromwell.jar run rMAP.wdl --
 ```bash
 java -Dconfig.file=configs/cromwell.gcp.conf -jar cromwell.jar run rMAP.wdl --inputs inputs.json
 ```
+
+## Offline use & data sovereignty
+
+rMAP-2.0 is designed to support data sovereignty by allowing analyses to run fully on-premises (workstation or HPC) with local inputs & local outputs—no data upload is required by the workflow. All results, intermediate files & the final consolidated HTML report are written to your local/project storage under the Cromwell execution directories.
+
+rMAP-2.0 uses Docker containers for tool standardization. After the first successful container pull, images are cached locally, so subsequent runs can proceed offline (provided the required images are already present on the machine/cluster).
+
+For sequence similarity screening, rMAP-2.0 supports offline BLAST by allowing users to point the workflow to local BLAST databases (e.g., the ESKAPEE reference DB snapshot or user-built databases). This enables high-throughput analyses without reliance on remote BLAST services & avoids network rate limits while preserving reproducibility through versioned database snapshots.
   
 ## Authors & contributors
 
