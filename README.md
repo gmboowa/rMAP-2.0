@@ -23,7 +23,7 @@ This modular tool provides a ready-to-use environment for **rMAP-2.0**, a bioinf
 - [Tools used (with Docker images)](#tools-used-with-docker-images)
 - [Outputs](#outputs)
   - [Cromwell output structure (actual)](#cromwell-output-structure-actual)
-  - [Example outputs by module](#example-outputs-by-module)
+  - [Example of outputs by modules](#example-of-outputs-by-modules)
   - [Report visualization](#report-visualization)
 - [Databases (local BLAST + updates)](#databases-local-blast--updates)
   - [Prebuilt ESKAPEE reference database (Zenodo)](#prebuilt-eskapee-reference-database-zenodo)
