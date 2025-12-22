@@ -919,24 +919,31 @@ rMAP-2.0/
 ### Frequently asked questions (FAQ)
 
 **Q: Can I run rMAP-2.0 without internet access?**  
+
 Yes. After containers are pulled once (cached locally), subsequent runs can proceed offline. For BLAST, set up a local BLAST DB (Zenodo snapshot or locally built).
 
 **Q: Where is the final HTML report?**  
+
 The final consolidated report is written in the MERGE_REPORTS outputs in Cromwell’s execution directory. Search within the workflow output directory for `final_report.html` if needed.
 
 **Q: How do I disable a module?**  
+
 Toggle the corresponding JSON boolean, e.g. `"rMAP.do_phylogeny": false`. Ensure dependent downstream steps are also disabled if they require that output.
 
 **Q: Does rMAP-2.0 support ONT/PacBio?**  
+
 The primary target is Illumina paired-end bacterial isolate WGS. Long-read support may require tuning & is not the main validated path for this release.
 
 **Q: I see mixed species in my cohort. Is that OK?**  
+
 Yes, but interpret pangenome/phylogeny outputs carefully. Mixed-species cohorts can create long branches/outgroups & reduce interpretability for within-species inference.
 
 **Q: How do I pin versions for a manuscript?**  
+
 Use a GitHub Release tag, record the image tags/digests & record the database snapshot version (Zenodo record + checksum or local rebuild date).
 
 **Q: My HPC blocks Docker. What should I do?**  
+
 Use a site-approved runtime (often Apptainer/Singularity) & a compatible Cromwell backend configuration. We recommend adding site-specific docs under `docs/`.
 
 ### Checksums and verification (recommended)
