@@ -5,6 +5,8 @@ workflow rMAP {
     Array[File] input_reads
     File adapters
     File reference_genome
+    # Trimmomatic quality score encoding (default: phred33; set to "phred64" if needed)
+    String trimmomatic_quality_encoding = "phred33"
     Boolean do_trimming = true
     Boolean do_quality_control = true
     Boolean do_assembly = true
@@ -72,6 +74,7 @@ workflow rMAP {
     input:
       input_reads = input_reads,
       adapters = adapters,
+      trimmomatic_quality_encoding = trimmomatic_quality_encoding,
       do_trimming = do_trimming,
       cpu = cpu_4,
       min_length = min_read_length
@@ -328,6 +331,8 @@ task TRIMMING {
   input {
     Array[File]+ input_reads
     File adapters
+    # Trimmomatic quality score encoding: "phred33" (default) or "phred64"
+    String trimmomatic_quality_encoding = "phred33"
     Boolean do_trimming
     Int cpu = 4
     Int min_length = 50
@@ -454,7 +459,15 @@ EOF
           touch "$sample_log"
 
           (
-            trimmomatic PE -threads ~{cpu} \
+            # Select Trimmomatic quality encoding flag (phred33/phred64)
+            PHRED_FLAG="-phred33"
+            case "~{trimmomatic_quality_encoding}" in
+              phred33|PHRED33) PHRED_FLAG="-phred33" ;;
+              phred64|PHRED64) PHRED_FLAG="-phred64" ;;
+              *) echo "WARNING: Unknown trimmomatic_quality_encoding=~{trimmomatic_quality_encoding}; defaulting to -phred33" >> trimming.log ;;
+            esac
+
+            trimmomatic PE ${PHRED_FLAG} -threads ~{cpu} \
               "$R1" "$R2" \
               "trimmed/${sample_name}_1.trim.fastq.gz" "trimmed/${sample_name}_1.unpair.fastq.gz" \
               "trimmed/${sample_name}_2.trim.fastq.gz" "trimmed/${sample_name}_2.unpair.fastq.gz" \
