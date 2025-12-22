@@ -283,7 +283,7 @@ Example JSON (update paths to your environment):
 
   "rMAP.use_local_blast": true,
 
-  "rMAP.local_blast_db": "~/eskapee_db/eskapee_db",
+  "rMAP.local_blast_db": "~/eskapee_db/eskapee_db.fasta",
   "rMAP.local_amr_db": "~/resfinder.fa",
   "rMAP.local_mge_db": "~/plasmidfinder.fa",
   "rMAP.local_virulence_db": "~/vfdb.fa",
@@ -302,7 +302,7 @@ Example JSON (update paths to your environment):
 }
 ```
 
-> Important: when using local BLAST, `rMAP.local_blast_db` must point to the **BLAST database prefix** (e.g., `~/eskapee_db/eskapee_db`), **not** the FASTA file.
+> Important: when using local BLAST, `rMAP.local_blast_db` must point to the **BLAST database prefix** (e.g., `~/eskapee_db/eskapee_db.fasta`), **not** the FASTA file.
 
 ---
 
@@ -452,14 +452,14 @@ ncbi-genome-download bacteria   --genera "Escherichia,Klebsiella,Enterobacter,Ac
 #### Step 3: Combine FASTA files into one multi-FASTA
 
 ```bash
-find eskapee_genomes -name "*.fna.gz" -print0 | xargs -0 cat > eskapee_combined.fasta.gz
-gunzip -f eskapee_combined.fasta.gz
+find eskapee_genomes -name "*.fna.gz" -print0 | xargs -0 cat > eskapee_db.fasta.gz
+gunzip -f eskapee_db.fasta.gz
 ```
 
 #### Step 4: Create the BLAST database (prefix output)
 
 ```bash
-makeblastdb   -in eskapee_combined.fasta   -dbtype nucl   -parse_seqids   -title "ESKAPEE_DB"   -out eskapee_db
+makeblastdb   -in eskapee_db.fasta   -dbtype nucl   -parse_seqids   -title "ESKAPEE_DB"   -out eskapee_db
 ```
 
 You should now have `eskapee_db.nsq`, `eskapee_db.nin`, `eskapee_db.nhr`, etc. Use the prefix in JSON:
@@ -467,7 +467,7 @@ You should now have `eskapee_db.nsq`, `eskapee_db.nin`, `eskapee_db.nhr`, etc. U
 ```json
 {
   "rMAP.use_local_blast": true,
-  "rMAP.local_blast_db": "/path/to/eskapee_db"
+  "rMAP.local_blast_db": "~/eskapee_db.fasta"
 }
 ```
 
