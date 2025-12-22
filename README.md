@@ -54,7 +54,7 @@ This modular tool provides a ready-to-use environment for **rMAP-2.0**, a bioinf
 
 ---
 ![workflow](workflow.png)
-
+---
 ## Overview
 
 **Version:** 1.0 (see **Releases** for tagged versions)  
