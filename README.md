@@ -608,7 +608,7 @@ For sequence similarity screening, rMAP-2.0 supports offline BLAST by allowing u
 
 ## Releases & reproducibility
 
-rMAP-2.0 is versioned and released to support reproducible, comparable analyses across machines (laptop/HPC/cloud) & over time. For manuscript-grade runs and long-term comparability, we recommend using a tagged GitHub Release rather than an arbitrary commit.
+rMAP-2.0 is versioned and released to support reproducible, comparable analyses across machines (laptop/HPC/cloud) & over time. 
 
 ### What a GitHub Release contains
 
@@ -793,7 +793,6 @@ This project is licensed under the MIT License.
 
 ## Appendix 
 
-> This appendix keeps frequently requested reference content in one place. You can remove or move it into `docs/` if you prefer a shorter README.
 
 ### MLST schemas (note)
 
@@ -807,25 +806,9 @@ For each analysis (especially publications), record:
 - Database snapshot version (Zenodo or local rebuild date)
 - Docker image tags & (ideally) digests
 - Cromwell backend config used (local/slurm/gcp)
-- Hardware summary (CPU/RAM, storage type)
-
-### Suggested repository files (for maintainers)
-
-To further strengthen reproducibility:
-- `CHANGELOG.md`
-- `CITATION.cff`
-- `configs/` containing example Cromwell backends
-- `scripts/` containing DB build helpers:
-  - `scripts/build_eskapee_blast_db.sh`
-  - `scripts/package_db.sh`
-  - `scripts/verify_checksums.sh`
-
-
+- Hardware summary (CPU/RAM)
 
 ---
-
-## Appendix 
-
 
 ### Example Cromwell backend config: local (Docker) 
 
