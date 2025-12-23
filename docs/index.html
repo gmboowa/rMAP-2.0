@@ -70,7 +70,7 @@
         <p><strong>Interactive HTML outputs for QC, Assembly, Annotation, Variant Calling, MLST, Pangenome, Phylogenetic Trees, AMR, Plasmids, Virulence, and BLAST results.</strong></p>
       </div>
       <div class="actions">
-        <a class="btn" href="./eskapee/">Browse all reports</a>
+        <a class="btn" href="./reports/">Browse all reports</a>
         <button type="button" class="btn" id="themeToggle" aria-pressed="false" title="Toggle light/dark">🌙/☀️</button>
       </div>
     </header>
@@ -181,7 +181,20 @@
             alt="Test dataset"
             loading="lazy">
         </div>
-        <div class="title">test_data</div>
+        <div class="title">Test_data</div>
+        <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
+      </a>
+
+      <!-- ✅ NEW: non-eskapee -->
+      <a class="card" href="./non-eskapee/" data-name="non-eskapee non eskapee non_eskapee noneskapee other pathogens">
+        <div class="icon" aria-hidden="true">
+          <img
+            id="non-eskapee-img"
+            src="./non-eskapee/assets/images/non-eskapee.jpg"
+            alt="Non-ESKAPEE reports"
+            loading="lazy">
+        </div>
+        <div class="title">Non-eskapee</div>
         <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
       </a>
 
@@ -249,6 +262,15 @@
     ]);
 
     setupFallback('test-data-img', [
+      './assets/ecoli.jpg',
+      '/rMAP-2.0/assets/ecoli.jpg',
+      'https://gmboowa.github.io/rMAP-2.0/assets/ecoli.jpg'
+    ]);
+
+    setupFallback('non-eskapee-img', [
+      './non-eskapee/assets/images/non-eskapee.jpg',
+      '/rMAP-2.0/non-eskapee/assets/images/non-eskapee.jpg',
+      'https://gmboowa.github.io/rMAP-2.0/non-eskapee/assets/images/non-eskapee.jpg',
       './assets/ecoli.jpg',
       '/rMAP-2.0/assets/ecoli.jpg',
       'https://gmboowa.github.io/rMAP-2.0/assets/ecoli.jpg'

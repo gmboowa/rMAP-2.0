@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>rMAP 2.0 – Browse all reports</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style>
+      :root {
+        --bg: #ffffff;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --line: #e5e7eb;
+        --card: #ffffff;
+        --chip: #f1f5f9;
+        --accent: #0ea5e9;
+        --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04);
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0b1220;
+          --ink: #e5e7eb;
+          --muted: #94a3b8;
+          --line: #1f2937;
+          --card: #0f172a;
+          --chip: #111827;
+          --accent: #38bdf8;
+          --shadow: none;
+        }
+      }
+
+      /* Optional explicit theme overrides (if you later add a toggle) */
+      :root[data-theme="light"] {
+        --bg: #ffffff;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --line: #e5e7eb;
+        --card: #ffffff;
+        --chip: #f1f5f9;
+        --accent: #0ea5e9;
+        --shadow: 0 1px 2px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04);
+      }
+
+      :root[data-theme="dark"] {
+        --bg: #0b1220;
+        --ink: #e5e7eb;
+        --muted: #94a3b8;
+        --line: #1f2937;
+        --card: #0f172a;
+        --chip: #111827;
+        --accent: #38bdf8;
+        --shadow: none;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Arial;
+      }
+
+      .wrap {
+        max-width: 1100px;
+        margin: auto;
+        padding: 28px 20px;
+      }
+
+      header {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 16px;
+        margin-bottom: 20px;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+
+      .brand p {
+        margin: 2px 0 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        text-decoration: none;
+        color: var(--ink);
+        background: var(--card);
+        box-shadow: var(--shadow);
+        cursor: pointer;
+      }
+
+      .btn:hover {
+        border-color: var(--accent);
+      }
+
+      .search {
+        margin: 14px 0 8px;
+        position: relative;
+      }
+
+      .search input {
+        width: 100%;
+        padding: 12px 14px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--card);
+        color: var(--ink);
+        outline: none;
+        position: relative;
+        z-index: 2;
+        font-size: 17px;
+      }
+
+      .search .hint {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--muted);
+        pointer-events: none;
+        z-index: 3;
+        transition: opacity 0.15s ease;
+        line-height: 1.2;
+        font-size: 17px;
+      }
+
+      .search input:focus + .hint,
+      .search input:not(:placeholder-shown) + .hint {
+        opacity: 0;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+        margin-top: 14px;
+      }
+
+      .card {
+        display: block;
+        text-decoration: none;
+        color: inherit;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        background: var(--card);
+        padding: 18px;
+        box-shadow: var(--shadow);
+        transition: transform 0.08s ease, border-color 0.15s ease;
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+        border-color: var(--accent);
+      }
+
+      .icon {
+        font-size: 0;
+        line-height: 0;
+      }
+
+      .icon img {
+        width: 40px;
+        height: 40px;
+        display: block;
+        border-radius: 8px;
+        object-fit: cover;
+        border: 1px solid var(--line);
+      }
+
+      .title {
+        margin: 10px 0 6px;
+        font-weight: 800;
+        font-size: clamp(18px, 1rem + 0.25vw, 22px);
+      }
+
+      .desc {
+        margin: 0;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .chips {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 10px;
+      }
+
+      .chip {
+        font-size: 13px;
+        background: var(--chip);
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        color: var(--muted);
+      }
+
+      footer {
+        display: none;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="wrap">
+      <header>
+        <div class="brand">
+          <h1>rMAP 2.0 – Browse all reports</h1>
+          <p><strong>Unified hub:</strong> ESKAPEE, non-ESKAPEE, and test datasets</p>
+        </div>
+
+        <div class="actions">
+          <a class="btn" href="../" aria-label="Back to dashboard">← Back to dashboard</a>
+        </div>
+      </header>
+
+      <div class="search" aria-label="Filter report categories">
+        <input id="q" placeholder=" " autocomplete="off" aria-label="Search categories" />
+        <div class="hint" aria-hidden="true">
+          Search… (e.g., <em>non-eskapee</em>, <em>test</em>, <em>ESKAPEE</em>)
+        </div>
+      </div>
+
+      <div id="cards" class="grid">
+        <!-- ESKAPEE (all) -->
+        <a
+          class="card"
+          href="../eskapee/"
+          data-name="eskapee eskapee reports pathogens klebsiella acinetobacter enterobacter enterococcus escherichia pseudomonas staphylococcus"
+        >
+          <div class="icon" aria-hidden="true">
+            <img
+              src="../assets/ecoli.jpg"
+              alt="ESKAPEE"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+          </div>
+          <div class="title">ESKAPEE Reports</div>
+          <p class="desc">Browse all ESKAPEE pathogen report folders.</p>
+          <div class="chips">
+            <span class="chip">Assembly</span>
+            <span class="chip">AMR</span>
+            <span class="chip">MLST</span>
+            <span class="chip">Phylogeny</span>
+          </div>
+        </a>
+
+        <!-- test_data -->
+        <a class="card" href="../eskapee/test_data/" data-name="test_data test dataset demo example run">
+          <div class="icon" aria-hidden="true">
+            <img
+              src="../assets/ecoli.jpg"
+              alt="test_data"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+          </div>
+          <div class="title">test_data</div>
+          <p class="desc">Demo / test dataset report (test_data output).</p>
+        </a>
+
+        <!-- non-eskapee -->
+        <a class="card" href="../non-eskapee/" data-name="non-eskapee non eskapee other organisms">
+          <div class="icon" aria-hidden="true">
+            <img
+              src="../non-eskapee/assets/images/non-eskapee.jpg"
+              alt="non-ESKAPEE"
+              loading="lazy"
+              onerror="this.style.display='none'"
+            />
+          </div>
+          <div class="title">non-ESKAPEE</div>
+          <p class="desc">Reports for non-ESKAPEE organisms.</p>
+        </a>
+      </div>
+
+      <footer></footer>
+    </div>
+
+    <script>
+      // Live filter
+      const q = document.getElementById("q");
+      const cards = Array.from(document.querySelectorAll("#cards .card"));
+
+      q.addEventListener("input", () => {
+        const needle = q.value.trim().toLowerCase();
+        cards.forEach((c) => {
+          const hay = (c.dataset.name || "").toLowerCase();
+          c.style.display = hay.includes(needle) ? "" : "none";
+        });
+      });
+    </script>
+  </body>
+</html>
