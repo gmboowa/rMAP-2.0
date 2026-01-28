@@ -234,10 +234,10 @@ If `rMAP.trimmomatic_quality_encoding` is not provided, rMAP defaults to `phred3
 
 Certain analysis modules require minimum sample numbers to function properly:
 
-| Analysis module                                   | Minimum samples | Required for                                   | JSON parameter to disable             |
+| Analysis module  | Minimum samples | Required for  | JSON parameter to disable  |
 |--------------------------------------------------|-----------------|------------------------------------------------|--------------------------------------|
-| **Pangenome analysis** (Roary)                   | 2               | Core/accessory genome separation               | `"rMAP.do_pangenome": false`         |
-| **Phylogenetic analysis** (core/accessory trees) | 4               | Meaningful tree topology & bootstrap support   | `"rMAP.do_phylogeny": false`         |
+| **Pangenome analysis** (Roary)  | 2  | Core/accessory genome separation  | `"rMAP.do_pangenome": false`  |
+| **Phylogenetic analysis** (core/accessory trees) | 4  | Meaningful tree topology & bootstrap support  | `"rMAP.do_phylogeny": false`  |
 
 > Tip: rMAP will still run on smaller cohorts if you disable modules that require multi-sample context.
 
@@ -256,10 +256,10 @@ Example JSON (update paths to your environment):
 ```json
 {
   "rMAP.input_reads": [
-    "~/sample1_R1.fastq.gz",
-    "~/sample1_R2.fastq.gz",
-    "~/sample2_R1.fastq.gz",
-    "~/sample2_R2.fastq.gz"
+  "~/sample1_R1.fastq.gz",
+  "~/sample1_R2.fastq.gz",
+  "~/sample2_R1.fastq.gz",
+  "~/sample2_R2.fastq.gz"
   ],
   "rMAP.adapters": "~/adapters.fa",
   "rMAP.reference_genome": "~/reference.gbk",
@@ -309,19 +309,19 @@ Example JSON (update paths to your environment):
 ## Tools used (with Docker images)
 
 
-| Step                | Tool          | Docker image                                  |
+| Step  | Tool  | Docker image  |
 |---------------------|---------------|-----------------------------------------------|
-| Trimming            | Trimmomatic   | `staphb/trimmomatic:0.39`                     |
-| QC                  | FastQC        | `staphb/fastqc:0.11.9`                        |
-| Assembly            | Megahit       | `quay.io/biocontainers/megahit:1.2.9--h5ca1c30_6` |
-| Annotation          | Prokka        | `staphb/prokka:1.14.6`                        |
-| Variant Calling     | Snippy        | `staphb/snippy:4.6.0`                         |
-| MLST                | MLST          | `staphb/mlst:2.19.0`                          |
-| Pangenome           | Roary         | `gmboowa/roary-pillow:0.4`                    |
-| Phylogeny           | FastTree      | `staphb/fasttree:2.1.11`                      |
-| Tree Visualization  | ETE3          | `gmboowa/ete3-render:1.18`                    |
-| AMR/MGE/Virulence   | Abricate      | `staphb/abricate:1.0.0`                       |
-| BLAST               | BLAST+        | `gmboowa/blast-analysis:1.9.4`                |
+| Trimming  | Trimmomatic  | `staphb/trimmomatic:0.39`  |
+| QC  | FastQC  | `staphb/fastqc:0.11.9`  |
+| Assembly  | Megahit  | `quay.io/biocontainers/megahit:1.2.9--h5ca1c30_6` |
+| Annotation  | Prokka  | `staphb/prokka:1.14.6`  |
+| Variant Calling  | Snippy  | `staphb/snippy:4.6.0`  |
+| MLST  | MLST  | `staphb/mlst:2.19.0`  |
+| Pangenome  | Roary  | `gmboowa/roary-pillow:0.4`  |
+| Phylogeny  | FastTree  | `staphb/fasttree:2.1.11`  |
+| Tree Visualization  | ETE3  | `gmboowa/ete3-render:1.18`  |
+| AMR/MGE/Virulence  | Abricate  | `staphb/abricate:1.0.0`  |
+| BLAST  | BLAST+  | `gmboowa/blast-analysis:1.9.4`  |
 
 ---
 
@@ -334,15 +334,15 @@ Cromwell typically writes outputs under:
 ```bash
 cromwell-executions/
   rMAP/
-    <workflow-id>/
-      call-TRIMMING/
-        execution/
-        stdout
-        stderr
-        rc
-      call-QUALITY_CONTROL/
-      call-ASSEMBLY/
-      ...
+  <workflow-id>/
+  call-TRIMMING/
+  execution/
+  stdout
+  stderr
+  rc
+  call-QUALITY_CONTROL/
+  call-ASSEMBLY/
+  ...
 ```
 
 Each `call-*` directory contains:
@@ -356,23 +356,23 @@ Each `call-*` directory contains:
 
 ### Example of outputs from different modules
 
-| Module                | Key output files                                                                 |
+| Module  | Key output files  |
 |----------------------|-----------------------------------------------------------------------------------|
-| `TRIMMING`            | Trimmed FASTQ files (`*.fastq.gz`)                                                |
-| `QUALITY_CONTROL`     | MultiQC report + FastQC outputs (`*.zip`, `*.html`)                               |
-| `ASSEMBLY`            | Assembled contigs (`*.fasta`)                                                     |
-| `VARIANT_CALLING`     | Variant calls (`*.vcf`)                                                           |
-| `ANNOTATION`          | Prokka annotations (`*.gff`, `*.gbk`)                                             |
-| `AMR_PROFILING`       | AMR profiles (`*.txt`, `*.tsv`)                                                   |
-| `MLST`                | MLST profiles (`*.txt`, `*.tsv`)                                                  |
-| `MGE_ANALYSIS`        | Plasmid/MGE predictions (`*.txt`, `*.tsv`)                                        |
-| `VIRULENCE_ANALYSIS`  | Virulence gene predictions (`*.txt`, `*.tsv`)                                     |
-| `BLAST_ANALYSIS`      | Top BLAST hits (`*.tsv`, `*.xml`)                                                 |
-| `PANGENOME`           | Roary outputs (`gene_presence_absence.csv`, `core_gene_alignment.aln`)            |
-| `CORE_PHYLOGENY`      | Core genome tree + alignment (`*.nwk`, alignments)                                |
-| `ACCESSORY_PHYLOGENY` | Accessory tree (`*.nwk`)                                                          |
-| `TREE_VISUALIZATION`  | Rendered trees (`*.png`, `*.pdf`)                                                 |
-| `MERGE_REPORTS`       | Consolidated HTML report + assets (`final_report.html`, `assets/*`, summaries)    |
+| `TRIMMING`  | Trimmed FASTQ files (`*.fastq.gz`)  |
+| `QUALITY_CONTROL`  | MultiQC report + FastQC outputs (`*.zip`, `*.html`)  |
+| `ASSEMBLY`  | Assembled contigs (`*.fasta`)  |
+| `VARIANT_CALLING`  | Variant calls (`*.vcf`)  |
+| `ANNOTATION`  | Prokka annotations (`*.gff`, `*.gbk`)  |
+| `AMR_PROFILING`  | AMR profiles (`*.txt`, `*.tsv`)  |
+| `MLST`  | MLST profiles (`*.txt`, `*.tsv`)  |
+| `MGE_ANALYSIS`  | Plasmid/MGE predictions (`*.txt`, `*.tsv`)  |
+| `VIRULENCE_ANALYSIS`  | Virulence gene predictions (`*.txt`, `*.tsv`)  |
+| `BLAST_ANALYSIS`  | Top BLAST hits (`*.tsv`, `*.xml`)  |
+| `PANGENOME`  | Roary outputs (`gene_presence_absence.csv`, `core_gene_alignment.aln`)  |
+| `CORE_PHYLOGENY`  | Core genome tree + alignment (`*.nwk`, alignments)  |
+| `ACCESSORY_PHYLOGENY` | Accessory tree (`*.nwk`)  |
+| `TREE_VISUALIZATION`  | Rendered trees (`*.png`, `*.pdf`)  |
+| `MERGE_REPORTS`  | Consolidated HTML report + assets (`final_report.html`, `assets/*`, summaries)  |
 
 ---
 
@@ -400,7 +400,7 @@ Zenodo record: https://zenodo.org/records/18001238
 
 ```bash
 # 1) Download the archive from Zenodo (or via your browser)
-#    Example filename (may vary): eskapee_db.tar.gz
+#  Example filename (may vary): eskapee_db.tar.gz
 # 2) Verify checksum (recommended; compare to the published .sha256 if provided)
 
 sha256sum eskapee_db.tar.gz
@@ -446,7 +446,7 @@ pip install ncbi-genome-download
 Download RefSeq genomes for the 7 ESKAPEE genera (example filter: complete genomes):
 
 ```bash
-ncbi-genome-download bacteria   --genera "Escherichia,Klebsiella,Enterobacter,Acinetobacter,Pseudomonas,Staphylococcus,Enterococcus"   --formats fasta   --assembly-level complete   --section refseq   --output-folder eskapee_genomes
+ncbi-genome-download bacteria  --genera "Escherichia,Klebsiella,Enterobacter,Acinetobacter,Pseudomonas,Staphylococcus,Enterococcus"  --formats fasta  --assembly-level complete  --section refseq  --output-folder eskapee_genomes
 ```
 
 #### Step 3: Combine FASTA files into one multi-FASTA
@@ -459,7 +459,7 @@ gunzip -f eskapee_db.fasta.gz
 #### Step 4: Create the BLAST database (prefix output)
 
 ```bash
-makeblastdb   -in eskapee_db.fasta   -dbtype nucl   -parse_seqids   -title "ESKAPEE_DB"   -out eskapee_db
+makeblastdb  -in eskapee_db.fasta  -dbtype nucl  -parse_seqids  -title "ESKAPEE_DB"  -out eskapee_db
 ```
 
 You should now have `eskapee_db.nsq`, `eskapee_db.nin`, `eskapee_db.nhr`, etc. Use the prefix in JSON:
@@ -485,7 +485,7 @@ cp ~/eskapee_db.fasta databases/blast/eskapee/
 
 cd databases/blast/eskapee
 
-makeblastdb   -in eskapee_db.fasta   -dbtype nucl   -parse_seqids   -max_file_sz 3000000000   -out eskapee_db
+makeblastdb  -in eskapee_db.fasta  -dbtype nucl  -parse_seqids  -max_file_sz 3000000000  -out eskapee_db
 ```
 
 ```bash
@@ -500,9 +500,9 @@ sha256sum eskapee_db.tar.gz > eskapee_db.tar.gz.sha256
 Before running rMAP-2.0 with custom FASTA databases for AMR/plasmid/virulence detection, index each FASTA file with `makeblastdb`:
 
 ```bash
-makeblastdb -in resfinder.fa      -dbtype nucl -parse_seqids
+makeblastdb -in resfinder.fa  -dbtype nucl -parse_seqids
 makeblastdb -in plasmidfinder.fa  -dbtype nucl -parse_seqids
-makeblastdb -in vfdb.fa           -dbtype nucl -parse_seqids
+makeblastdb -in vfdb.fa  -dbtype nucl -parse_seqids
 ```
 
 Then point rMAP-2.0 to these FASTAs in your inputs JSON:
@@ -564,9 +564,9 @@ Store backend-specific Cromwell configs under `configs/`:
 
 ```text
 configs/
-  cromwell.local.conf   # local workstation (docker backend)
-  cromwell.slurm.conf   # HPC (Slurm backend)
-  cromwell.gcp.conf     # Google Cloud / PAPIv2 (optional) OR Terra notes
+  cromwell.local.conf  # local workstation (docker backend)
+  cromwell.slurm.conf  # HPC (Slurm backend)
+  cromwell.gcp.conf  # Google Cloud / PAPIv2 (optional) OR Terra notes
 ```
 
 ### Test commands
@@ -820,15 +820,15 @@ include required(classpath("application"))
 backend {
   default = "Local"
   providers {
-    Local {
-      actor-factory = "cromwell.backend.impl.sfs.config.ConfigBackendLifecycleActorFactory"
-      config {
-        # NOTE: This is a template; adjust runtime attributes to match your WDL.
-        runtime-attributes = "String docker\nInt cpu = 2\nInt memory_gb = 4\nInt disks_gb = 50\n"
-        submit = "bash ${script}"
-        root = "cromwell-executions"
-      }
-    }
+  Local {
+  actor-factory = "cromwell.backend.impl.sfs.config.ConfigBackendLifecycleActorFactory"
+  config {
+  # NOTE: This is a template; adjust runtime attributes to match your WDL.
+  runtime-attributes = "String docker\nInt cpu = 2\nInt memory_gb = 4\nInt disks_gb = 50\n"
+  submit = "bash ${script}"
+  root = "cromwell-executions"
+  }
+  }
   }
 }
 ```
@@ -843,19 +843,19 @@ include required(classpath("application"))
 backend {
   default = "Slurm"
   providers {
-    Slurm {
-      actor-factory = "cromwell.backend.impl.sfs.config.ConfigBackendLifecycleActorFactory"
-      config {
-        runtime-attributes = "String docker\nInt cpu = 4\nInt memory_gb = 16\nInt disks_gb = 200\nString queue = \"general\"\n"
+  Slurm {
+  actor-factory = "cromwell.backend.impl.sfs.config.ConfigBackendLifecycleActorFactory"
+  config {
+  runtime-attributes = "String docker\nInt cpu = 4\nInt memory_gb = 16\nInt disks_gb = 200\nString queue = \"general\"\n"
 
-        # Site-specific submit wrapper; replace with your Slurm submit script
-        submit = "sbatch --cpus-per-task=${cpu} --mem=${memory_gb}G -p ${queue} --wrap 'bash ${script}'"
-        kill = "scancel ${job_id}"
-        check-alive = "squeue -j ${job_id}"
+  # Site-specific submit wrapper; replace with your Slurm submit script
+  submit = "sbatch --cpus-per-task=${cpu} --mem=${memory_gb}G -p ${queue} --wrap 'bash ${script}'"
+  kill = "scancel ${job_id}"
+  check-alive = "squeue -j ${job_id}"
 
-        root = "cromwell-executions"
-      }
-    }
+  root = "cromwell-executions"
+  }
+  }
   }
 }
 ```
@@ -872,21 +872,21 @@ include required(classpath("application"))
 backend {
   default = "PAPIv2"
   providers {
-    PAPIv2 {
-      actor-factory = "cromwell.backend.google.pipelines.v2beta.PipelinesApiLifecycleActorFactory"
-      config {
-        project = "YOUR_GCP_PROJECT"
-        root = "gs://YOUR_BUCKET/cromwell-executions"
-        auth = "application-default"
-        region = "us-central1"
+  PAPIv2 {
+  actor-factory = "cromwell.backend.google.pipelines.v2beta.PipelinesApiLifecycleActorFactory"
+  config {
+  project = "YOUR_GCP_PROJECT"
+  root = "gs://YOUR_BUCKET/cromwell-executions"
+  auth = "application-default"
+  region = "us-central1"
 
-        filesystems {
-          gcs {
-            auth = "application-default"
-          }
-        }
-      }
-    }
+  filesystems {
+  gcs {
+  auth = "application-default"
+  }
+  }
+  }
+  }
   }
 }
 ```
@@ -900,20 +900,20 @@ rMAP-2.0/
   rMAP.wdl
   inputs.json
   test_data/
-    inputs_test.json
-    ...
+  inputs_test.json
+  ...
   configs/
-    cromwell.local.conf
-    cromwell.slurm.conf
-    cromwell.gcp.conf
+  cromwell.local.conf
+  cromwell.slurm.conf
+  cromwell.gcp.conf
   docs/
-    docker_desktop.md
-    databases.md
-    terra.md
+  docker_desktop.md
+  databases.md
+  terra.md
   scripts/
-    build_eskapee_blast_db.sh
-    package_db.sh
-    verify_checksums.sh
+  build_eskapee_blast_db.sh
+  package_db.sh
+  verify_checksums.sh
 ```
 
 ### Frequently asked questions (FAQ)
