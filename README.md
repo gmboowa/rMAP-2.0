@@ -734,8 +734,12 @@ When filing an issue, please include:
 ## Citation
 
 If you use rMAP-2.0 in your work, please cite:
-- rMAP: the Rapid Microbial Analysis Pipeline for ESKAPEE bacterial group whole-genome sequence data  
-  *Microbial Genomics* (see journal page): https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000583
+
+- **rMAP 2.0: A modular, reproducible and scalable WDL-Cromwell-Docker workflow for genomic analysis of ESKAPEE pathogens**  
+  *Bioinformatics Advances* — [See journal page](https://academic.oup.com/bioinformaticsadvances/advance-article/doi/10.1093/bioadv/vbag046/8483022)
+
+- **rMAP: the Rapid Microbial Analysis Pipeline for ESKAPEE bacterial group whole-genome sequence data**  
+  *Microbial Genomics* — [See journal page](https://www.microbiologyresearch.org/content/journal/mgen/10.1099/mgen.0.000583)
 
 Recommended repository citation (GitHub + release tag):
 - rMAP-2.0 GitHub repository: https://github.com/gmboowa/rMAP-2.0  
