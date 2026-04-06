@@ -19,7 +19,7 @@ workflow rMAP {
     Boolean do_mge_analysis = true
     Boolean do_reporting = true
     Boolean do_blast = true
-    Boolean use_local_blast = false
+    Boolean use_local_blast = true
     File? local_blast_db
     File? local_amr_db
     File? local_mge_db
@@ -88,13 +88,13 @@ workflow rMAP {
   }
 
   call ASSEMBLY {
-    input:
-      input_reads = if do_trimming then TRIMMING.trimmed_reads else input_reads,
-      assembler = "megahit",
-      do_assembly = do_assembly,
-      cpu = cpu_8,
-      memory_gb = mem_16,
-      min_quality = min_assembly_quality
+  input:
+  input_reads = trimmed_reads,
+  do_assembly = do_assembly,
+  cpu = cpu_8,
+  memory_gb = mem_16,
+  min_contig_len = min_assembly_quality
+  
   }
 
   call ANNOTATION {
@@ -381,7 +381,10 @@ task TRIMMING {
         else
           R2="$file"
           R1_base=$(basename "$R1")
-          sample_name=$(echo "$R1_base" | sed -e 's/[._][Rr]1[._].*//' -e 's/[._]1[._].*//')
+          sample_name="${R1_base%_1.fastq.gz}"
+          sample_name="${sample_name%_2.fastq.gz}"
+          sample_name="${sample_name%_R1.fastq.gz}"
+          sample_name="${sample_name%_R2.fastq.gz}"
 
           touch "trimmed/${sample_name}_1.trim.fastq.gz"
           touch "trimmed/${sample_name}_2.trim.fastq.gz"
@@ -451,7 +454,10 @@ EOF
         else
           R2="$file"
           R1_base=$(basename "$R1")
-          sample_name=$(echo "$R1_base" | sed -e 's/[._][Rr]1[._].*//' -e 's/[._]1[._].*//')
+          sample_name="${R1_base%_1.fastq.gz}"
+          sample_name="${sample_name%_2.fastq.gz}"
+          sample_name="${sample_name%_R1.fastq.gz}"
+          sample_name="${sample_name%_R2.fastq.gz}"
 
           echo "Processing sample: $sample_name (Files: $R1_base and $(basename "$R2"))" >> trimming.log
 
@@ -459,25 +465,37 @@ EOF
           touch "$sample_log"
 
           (
-            # Select Trimmomatic quality encoding flag (phred33/phred64)
-            PHRED_FLAG="-phred33"
-            case "~{trimmomatic_quality_encoding}" in
-              phred33|PHRED33) PHRED_FLAG="-phred33" ;;
-              phred64|PHRED64) PHRED_FLAG="-phred64" ;;
-              *) echo "WARNING: Unknown trimmomatic_quality_encoding=~{trimmomatic_quality_encoding}; defaulting to -phred33" >> trimming.log ;;
-            esac
+          # Select Trimmomatic quality encoding flag (phred33/phred64/none)
+          PHRED_FLAG=""
+          case "~{trimmomatic_quality_encoding}" in
+            phred33|PHRED33) PHRED_FLAG="-phred33" ;;
+            phred64|PHRED64) PHRED_FLAG="-phred64" ;;
+            none|NONE|"") PHRED_FLAG="" ;;
+            *) echo "WARNING: Unknown trimmomatic_quality_encoding=~{trimmomatic_quality_encoding}; running without explicit flag (default phred33)" >> trimming.log ;;
+          esac
 
-            trimmomatic PE ${PHRED_FLAG} -threads ~{cpu} \
-              "$R1" "$R2" \
-              "trimmed/${sample_name}_1.trim.fastq.gz" "trimmed/${sample_name}_1.unpair.fastq.gz" \
-              "trimmed/${sample_name}_2.trim.fastq.gz" "trimmed/${sample_name}_2.unpair.fastq.gz" \
-              ILLUMINACLIP:~{adapters}:2:30:10:8:true \
-              LEADING:20 \
-              TRAILING:20 \
-              SLIDINGWINDOW:4:20 \
-              MINLEN:~{min_length} > "$sample_log" 2>&1 || {
-                echo "WARNING: Trimmomatic failed for sample $sample_name" >> trimming.log
-                touch "trimmed/${sample_name}_1.trim.fastq.gz" "trimmed/${sample_name}_2.trim.fastq.gz"
+          # Ensure clean sample naming
+          R1_base=$(basename "$R1")
+          sample_name="${R1_base%_1.fastq.gz}"
+          sample_name="${sample_name%_2.fastq.gz}"
+          sample_name="${sample_name%_R1.fastq.gz}"
+          sample_name="${sample_name%_R2.fastq.gz}"
+
+          # Run Trimmomatic
+          trimmomatic PE ${PHRED_FLAG} -threads ~{cpu} \
+            "$R1" "$R2" \
+            "trimmed/${sample_name}_1.trim.fastq.gz" "trimmed/${sample_name}_1.unpair.fastq.gz" \
+            "trimmed/${sample_name}_2.trim.fastq.gz" "trimmed/${sample_name}_2.unpair.fastq.gz" \
+            ILLUMINACLIP:~{adapters}:2:30:10:8:true \
+            LEADING:20 \
+            TRAILING:20 \
+            SLIDINGWINDOW:4:20 \
+            MINLEN:~{min_length} > "$sample_log" 2>&1 || {
+              echo "WARNING: Trimmomatic failed for sample $sample_name" >> trimming.log
+              touch "trimmed/${sample_name}_1.trim.fastq.gz" \
+                    "trimmed/${sample_name}_2.trim.fastq.gz" \
+                    "trimmed/${sample_name}_1.unpair.fastq.gz" \
+                    "trimmed/${sample_name}_2.unpair.fastq.gz"
               }
           )
 
@@ -632,6 +650,7 @@ EOF
     continueOnReturnCode: [0, -1]
     preemptible: 2
     timeout: "8 hours"
+
   }
 
   output {
@@ -894,7 +913,7 @@ task ASSEMBLY {
     String output_dir = "assembly"
     Int cpu = 8
     Int memory_gb = 16
-    Int min_quality = 50
+    Int min_contig_len = 500
     Boolean run_quast = false
     Float memory_usage = 0.8
   }
@@ -920,7 +939,7 @@ task ASSEMBLY {
       echo "- CPU: ~{cpu}" >> assembly.log
       echo "- Memory: ~{memory_gb} GB" >> assembly.log
       echo "- Memory usage fraction: ~{memory_usage}" >> assembly.log
-      echo "- Min quality: ~{min_quality}" >> assembly.log
+      echo "- Min contig length: ~{min_contig_len}" >> assembly.log
       echo "- Run QUAST: ~{run_quast}" >> assembly.log
 
       files=( ~{sep=' ' input_reads} )
@@ -980,7 +999,7 @@ EOF
             -t ~{cpu} \
             --memory ~{memory_usage} \
             --min-count 2 \
-            --min-contig-len ~{min_quality} \
+            --min-contig-len ~{min_contig_len} \
             --k-list 21,33,55,77 \
             --merge-level 20,0.98 \
             --prune-level 2 \
@@ -1502,7 +1521,7 @@ task CORE_PHYLOGENY {
     adj_boot="~{bootstrap_replicates}"
 
     if awk -v a="$avail_gb" 'BEGIN{exit !(a < 2.0)}'; then
-      adj_boot="0"
+      adj_boot="10"
     elif awk -v a="$avail_gb" -v r="$req" 'BEGIN{exit !(a < r)}'; then
       # Only reduce if requested > 50; otherwise keep requested small values
       if [ "~{bootstrap_replicates}" -gt 50 ] 2>/dev/null; then
@@ -1570,16 +1589,16 @@ EOF
       fi
     fi
 
-    # Attempt 4: 0 with -gamma
+    # Attempt 4: 10 with -gamma
     if [ $status -ne 0 ]; then
-      if run_fasttree "0" "1"; then
+      if run_fasttree "10" "1"; then
         status=0
       fi
     fi
 
-    # Attempt 5: 0 without -gamma (cheapest)
+    # Attempt 5: 10 without -gamma
     if [ $status -ne 0 ]; then
-      if run_fasttree "0" "0"; then
+      if run_fasttree "10" "0"; then
         status=0
       fi
     fi
