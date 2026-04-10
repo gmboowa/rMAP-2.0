@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>rMAP Analysis Pipeline - Comprehensive Report</title>
+  <style>
+    :root { --primary:#3498db; --secondary:#2c3e50; --light:#f8f9fa; --text:#333; --accent:#fff3cd; }
+    body { font-family:'Segoe UI',Tahoma,Arial,sans-serif; margin:0; background:#f5f5f5; color:var(--text); line-height:1.6; }
+    .container { max-width:1200px; margin:0 auto; padding:20px; }
+    .header { background:var(--secondary); color:#fff; padding:24px; border-radius:6px; margin-bottom:24px; }
+    .logo-combo { margin: 20px 0; }
+    .logo-container { text-align:center; margin:10px 0 }
+    .logo-caption-top, .logo-caption-bottom { text-align:center; margin:6px 0; font-weight:600 }
+    h1,h2,h3{margin-top:0} h1{font-size:2rem;text-align:center}
+    h2{font-size:1.75rem;color:var(--secondary); border-bottom:2px solid #3498db; padding-bottom:8px;}
+    h3{font-size:1.25rem;color:var(--secondary)}
+    .meta{opacity:.9;text-align:center;font-size:.9rem}
+    .layout{display:flex;gap:24px}
+    .nav{position:sticky;top:16px;width:260px;background:#f8f9fa;padding:16px;border-radius:6px;height:fit-content}
+    .nav a{display:block;padding:8px 10px;border-radius:4px;text-decoration:none;color:#2c3e50;margin:4px 0}
+    .nav a:hover{background:#3498db;color:#fff}
+    .content{flex:1;background:#fff;padding:20px;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,.05)}
+    .section{margin-bottom:36px;border-bottom:1px solid #eee;padding-bottom:20px}.section:last-child{border:none}
+    .report-card{background:#f8f9fa;padding:16px;border-radius:6px;margin:12px 0}
+    .image-center{text-align:center;margin:12px 0}
+    img{max-width:100%;height:auto;border:1px solid #ddd;border-radius:4px}
+    table{width:100%;border-collapse:collapse;margin:12px 0}
+    th,td{padding:8px 12px;text-align:left;border:1px solid #ddd}
+    th{background-color:#2c3e50;color:white} tr:nth-child(even){background:#f2f2f2}
+    .footer-banner{text-align:center;color:#333;margin:24px 0;padding:10px 12px;background:#fff3cd;border:1px solid #e6cf8b;border-radius:6px;font-weight:600}
+    @media(max-width:768px){.layout{flex-direction:column}.nav{position:static;width:auto}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="logo-combo">
+  <div class="logo-caption-top">rMAP-2.0 Comprehensive Analysis Report Summary: 2026-04-10 10:46:09 UTC</div>
+  <div class="logo-container"><img src="assets/images/rMAP_logo.png" alt="rMAP Logo" style="height:200px;object-fit:contain;margin:10px" onerror="this.style.display='none'"></div>
+  <div class="logo-caption-bottom">This run was generated using rMAP version 2.0 performed on 2026-04-10 10:46:09 UTC... Thank you for using this pipeline!!</div>
+</div>
+
+  <div class="header">
+    <h1>rMAP Analysis Pipeline</h1>
+    <div class="meta">Version 2.0 • Run: 2026-04-10 10:46:09 UTC</div>
+  </div>
+
+  <div class="layout">
+    <nav class="nav">
+      <strong>Sections</strong>
+      <a href="#summary">Summary</a>
+      <a href="#qc">Quality Control</a>
+      <a href="#assembly">Assembly</a>
+      <a href="#annotation">Annotation</a>
+      <a href="#pangenome">Pangenome</a>
+      <a href="#mlst">MLST</a>
+      <a href="#variants">Variants</a>
+      <a href="#amr">AMR</a>
+      <a href="#mge">MGE</a>
+      <a href="#virulence">Virulence</a>
+      <a href="#blast">BLAST</a>
+      <a href="#phylogeny">Phylogeny</a>
+    </nav>
+
+    <div class="content">
+      <div id="summary" class="section">
+        <h2>Analysis Summary</h2>
+        <div class="report-card">
+          <p>This report aggregates results from rMAP modules (QC, assembly/annotation, pangenome/phylogeny, AMR/MGE/virulence/BLAST, and phylogeny).</p>
+        </div>
+      </div>
+
+      <div id="qc" class="section">
+        <h2>Quality Control</h2>
+        <div class="report-card"><h3>Per-sample QC reports</h3><ul>
+          <li><a href="assets/sections/A55737_qc.html" target="_blank">QC Report 1 — A55737</a></li>
+          <li><a href="assets/sections/A55743_qc.html" target="_blank">QC Report 2 — A55743</a></li>
+          <li><a href="assets/sections/A55743_qc.html" target="_blank">QC Report 3 — A55743</a></li>
+          <li><a href="assets/sections/A55759_qc.html" target="_blank">QC Report 4 — A55759</a></li>
+          <li><a href="assets/sections/A55759_qc.html" target="_blank">QC Report 5 — A55759</a></li>
+          <li><a href="assets/sections/A55769_qc.html" target="_blank">QC Report 6 — A55769</a></li>
+          <li><a href="assets/sections/A55769_qc.html" target="_blank">QC Report 7 — A55769</a></li>
+          <li><a href="assets/sections/A55771_qc.html" target="_blank">QC Report 8 — A55771</a></li>
+          <li><a href="assets/sections/A55771_qc.html" target="_blank">QC Report 9 — A55771</a></li>
+          <li><a href="assets/sections/A55784_qc.html" target="_blank">QC Report 10 — A55784</a></li>
+          <li><a href="assets/sections/A55724_qc.html" target="_blank">QC Report 11 — A55724</a></li>
+          <li><a href="assets/sections/A55784_qc.html" target="_blank">QC Report 12 — A55784</a></li>
+          <li><a href="assets/sections/A55786_qc.html" target="_blank">QC Report 13 — A55786</a></li>
+          <li><a href="assets/sections/A55786_qc.html" target="_blank">QC Report 14 — A55786</a></li>
+          <li><a href="assets/sections/A55792_qc.html" target="_blank">QC Report 15 — A55792</a></li>
+          <li><a href="assets/sections/A55792_qc.html" target="_blank">QC Report 16 — A55792</a></li>
+          <li><a href="assets/sections/A55793_qc.html" target="_blank">QC Report 17 — A55793</a></li>
+          <li><a href="assets/sections/A55793_qc.html" target="_blank">QC Report 18 — A55793</a></li>
+          <li><a href="assets/sections/A55794_qc.html" target="_blank">QC Report 19 — A55794</a></li>
+          <li><a href="assets/sections/A55794_qc.html" target="_blank">QC Report 20 — A55794</a></li>
+          <li><a href="assets/sections/A55798_qc.html" target="_blank">QC Report 21 — A55798</a></li>
+          <li><a href="assets/sections/A55724_qc.html" target="_blank">QC Report 22 — A55724</a></li>
+          <li><a href="assets/sections/A55798_qc.html" target="_blank">QC Report 23 — A55798</a></li>
+          <li><a href="assets/sections/A55807_qc.html" target="_blank">QC Report 24 — A55807</a></li>
+          <li><a href="assets/sections/A55807_qc.html" target="_blank">QC Report 25 — A55807</a></li>
+          <li><a href="assets/sections/A55837_qc.html" target="_blank">QC Report 26 — A55837</a></li>
+          <li><a href="assets/sections/A55837_qc.html" target="_blank">QC Report 27 — A55837</a></li>
+          <li><a href="assets/sections/A55841_qc.html" target="_blank">QC Report 28 — A55841</a></li>
+          <li><a href="assets/sections/A55841_qc.html" target="_blank">QC Report 29 — A55841</a></li>
+          <li><a href="assets/sections/A55842_qc.html" target="_blank">QC Report 30 — A55842</a></li>
+          <li><a href="assets/sections/A55842_qc.html" target="_blank">QC Report 31 — A55842</a></li>
+          <li><a href="assets/sections/A55846_qc.html" target="_blank">QC Report 32 — A55846</a></li>
+          <li><a href="assets/sections/A55726_qc.html" target="_blank">QC Report 33 — A55726</a></li>
+          <li><a href="assets/sections/A55846_qc.html" target="_blank">QC Report 34 — A55846</a></li>
+          <li><a href="assets/sections/A55849_qc.html" target="_blank">QC Report 35 — A55849</a></li>
+          <li><a href="assets/sections/A55849_qc.html" target="_blank">QC Report 36 — A55849</a></li>
+          <li><a href="assets/sections/A55852_qc.html" target="_blank">QC Report 37 — A55852</a></li>
+          <li><a href="assets/sections/A55852_qc.html" target="_blank">QC Report 38 — A55852</a></li>
+          <li><a href="assets/sections/A55853_qc.html" target="_blank">QC Report 39 — A55853</a></li>
+          <li><a href="assets/sections/A55853_qc.html" target="_blank">QC Report 40 — A55853</a></li>
+          <li><a href="assets/sections/A55857_qc.html" target="_blank">QC Report 41 — A55857</a></li>
+          <li><a href="assets/sections/A55857_qc.html" target="_blank">QC Report 42 — A55857</a></li>
+          <li><a href="assets/sections/A55859_qc.html" target="_blank">QC Report 43 — A55859</a></li>
+          <li><a href="assets/sections/A55726_qc.html" target="_blank">QC Report 44 — A55726</a></li>
+          <li><a href="assets/sections/A55859_qc.html" target="_blank">QC Report 45 — A55859</a></li>
+          <li><a href="assets/sections/A55860_qc.html" target="_blank">QC Report 46 — A55860</a></li>
+          <li><a href="assets/sections/A55860_qc.html" target="_blank">QC Report 47 — A55860</a></li>
+          <li><a href="assets/sections/A55878_qc.html" target="_blank">QC Report 48 — A55878</a></li>
+          <li><a href="assets/sections/A55878_qc.html" target="_blank">QC Report 49 — A55878</a></li>
+          <li><a href="assets/sections/A55893_qc.html" target="_blank">QC Report 50 — A55893</a></li>
+          <li><a href="assets/sections/A55893_qc.html" target="_blank">QC Report 51 — A55893</a></li>
+          <li><a href="assets/sections/A55894_qc.html" target="_blank">QC Report 52 — A55894</a></li>
+          <li><a href="assets/sections/A55894_qc.html" target="_blank">QC Report 53 — A55894</a></li>
+          <li><a href="assets/sections/A55899_qc.html" target="_blank">QC Report 54 — A55899</a></li>
+          <li><a href="assets/sections/A55728_qc.html" target="_blank">QC Report 55 — A55728</a></li>
+          <li><a href="assets/sections/A55899_qc.html" target="_blank">QC Report 56 — A55899</a></li>
+          <li><a href="assets/sections/A55911_qc.html" target="_blank">QC Report 57 — A55911</a></li>
+          <li><a href="assets/sections/A55911_qc.html" target="_blank">QC Report 58 — A55911</a></li>
+          <li><a href="assets/sections/A55939_qc.html" target="_blank">QC Report 59 — A55939</a></li>
+          <li><a href="assets/sections/A55939_qc.html" target="_blank">QC Report 60 — A55939</a></li>
+          <li><a href="assets/sections/A55940_qc.html" target="_blank">QC Report 61 — A55940</a></li>
+          <li><a href="assets/sections/A55940_qc.html" target="_blank">QC Report 62 — A55940</a></li>
+          <li><a href="assets/sections/A55941_qc.html" target="_blank">QC Report 63 — A55941</a></li>
+          <li><a href="assets/sections/A55941_qc.html" target="_blank">QC Report 64 — A55941</a></li>
+          <li><a href="assets/sections/A55948_qc.html" target="_blank">QC Report 65 — A55948</a></li>
+          <li><a href="assets/sections/A55728_qc.html" target="_blank">QC Report 66 — A55728</a></li>
+          <li><a href="assets/sections/A55948_qc.html" target="_blank">QC Report 67 — A55948</a></li>
+          <li><a href="assets/sections/A55961_qc.html" target="_blank">QC Report 68 — A55961</a></li>
+          <li><a href="assets/sections/A55961_qc.html" target="_blank">QC Report 69 — A55961</a></li>
+          <li><a href="assets/sections/A55966_qc.html" target="_blank">QC Report 70 — A55966</a></li>
+          <li><a href="assets/sections/A55966_qc.html" target="_blank">QC Report 71 — A55966</a></li>
+          <li><a href="assets/sections/A56425_qc.html" target="_blank">QC Report 72 — A56425</a></li>
+          <li><a href="assets/sections/A56425_qc.html" target="_blank">QC Report 73 — A56425</a></li>
+          <li><a href="assets/sections/A56428_qc.html" target="_blank">QC Report 74 — A56428</a></li>
+          <li><a href="assets/sections/A56428_qc.html" target="_blank">QC Report 75 — A56428</a></li>
+          <li><a href="assets/sections/A55733_qc.html" target="_blank">QC Report 76 — A55733</a></li>
+          <li><a href="assets/sections/A55733_qc.html" target="_blank">QC Report 77 — A55733</a></li>
+          <li><a href="assets/sections/A55737_qc.html" target="_blank">QC Report 78 — A55737</a></li>
+        </ul></div>
+          <div class="report-card">
+            <h3>Read trimming</h3>
+            <div class="report-content">
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Input Pairs</th>
+                <th>Both Surviving</th>
+                <th>Forward Only</th>
+                <th>Reverse Only</th>
+                <th>Dropped (%)</th>
+                <th>Survival Rate (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>A55724</td>
+                <td>1543178</td>
+                <td>1434987</td>
+                <td>26072</td>
+                <td>69971</td>
+                <td>0.79%</td>
+                <td class="good">99.21%</td>
+            </tr>
+            <tr>
+                <td>A55726</td>
+                <td>1761638</td>
+                <td>1673784</td>
+                <td>19970</td>
+                <td>57627</td>
+                <td>0.58%</td>
+                <td class="good">99.42%</td>
+            </tr>
+            <tr>
+                <td>A55728</td>
+                <td>1743635</td>
+                <td>1637189</td>
+                <td>26535</td>
+                <td>65388</td>
+                <td>0.83%</td>
+                <td class="good">99.17%</td>
+            </tr>
+            <tr>
+                <td>A55733</td>
+                <td>1422378</td>
+                <td>1338089</td>
+                <td>25456</td>
+                <td>47211</td>
+                <td>0.82%</td>
+                <td class="good">99.18%</td>
+            </tr>
+            <tr>
+                <td>A55737</td>
+                <td>1504678</td>
+                <td>1380613</td>
+                <td>25860</td>
+                <td>85399</td>
+                <td>0.85%</td>
+                <td class="good">99.15%</td>
+            </tr>
+            <tr>
+                <td>A55743</td>
+                <td>1793305</td>
+                <td>1697902</td>
+                <td>19612</td>
+                <td>63101</td>
+                <td>0.71%</td>
+                <td class="good">99.29%</td>
+            </tr>
+            <tr>
+                <td>A55759</td>
+                <td>1130845</td>
+                <td>1048038</td>
+                <td>16258</td>
+                <td>57597</td>
+                <td>0.79%</td>
+                <td class="good">99.21%</td>
+            </tr>
+            <tr>
+                <td>A55769</td>
+                <td>1640063</td>
+                <td>1546591</td>
+                <td>27436</td>
+                <td>52193</td>
+                <td>0.84%</td>
+                <td class="good">99.16%</td>
+            </tr>
+            <tr>
+                <td>A55771</td>
+                <td>1347045</td>
+                <td>1249636</td>
+                <td>19928</td>
+                <td>67128</td>
+                <td>0.77%</td>
+                <td class="good">99.23%</td>
+            </tr>
+            <tr>
+                <td>A55784</td>
+                <td>1274895</td>
+                <td>1196448</td>
+                <td>17164</td>
+                <td>51910</td>
+                <td>0.74%</td>
+                <td class="good">99.26%</td>
+            </tr>
+            <tr>
+                <td>A55786</td>
+                <td>1310764</td>
+                <td>1246232</td>
+                <td>12020</td>
+                <td>44538</td>
+                <td>0.61%</td>
+                <td class="good">99.39%</td>
+            </tr>
+            <tr>
+                <td>A55792</td>
+                <td>1194394</td>
+                <td>1085258</td>
+                <td>34908</td>
+                <td>59056</td>
+                <td>1.27%</td>
+                <td class="good">98.73%</td>
+            </tr>
+            <tr>
+                <td>A55793</td>
+                <td>2604427</td>
+                <td>2435553</td>
+                <td>38666</td>
+                <td>108059</td>
+                <td>0.85%</td>
+                <td class="good">99.15%</td>
+            </tr>
+            <tr>
+                <td>A55794</td>
+                <td>2010718</td>
+                <td>1907408</td>
+                <td>19726</td>
+                <td>67493</td>
+                <td>0.80%</td>
+                <td class="good">99.20%</td>
+            </tr>
+            <tr>
+                <td>A55798</td>
+                <td>1480019</td>
+                <td>1416069</td>
+                <td>19354</td>
+                <td>32259</td>
+                <td>0.83%</td>
+                <td class="good">99.17%</td>
+            </tr>
+            <tr>
+                <td>A55807</td>
+                <td>1119221</td>
+                <td>1044707</td>
+                <td>14808</td>
+                <td>51466</td>
+                <td>0.74%</td>
+                <td class="good">99.26%</td>
+            </tr>
+            <tr>
+                <td>A55837</td>
+                <td>1347852</td>
+                <td>1287030</td>
+                <td>33244</td>
+                <td>11828</td>
+                <td>1.17%</td>
+                <td class="good">98.83%</td>
+            </tr>
+            <tr>
+                <td>A55841</td>
+                <td>2571794</td>
+                <td>2450444</td>
+                <td>17911</td>
+                <td>87044</td>
+                <td>0.64%</td>
+                <td class="good">99.36%</td>
+            </tr>
+            <tr>
+                <td>A55842</td>
+                <td>2184508</td>
+                <td>2080223</td>
+                <td>57827</td>
+                <td>18508</td>
+                <td>1.28%</td>
+                <td class="good">98.72%</td>
+            </tr>
+            <tr>
+                <td>A55846</td>
+                <td>1649315</td>
+                <td>1581752</td>
+                <td>18495</td>
+                <td>35365</td>
+                <td>0.83%</td>
+                <td class="good">99.17%</td>
+            </tr>
+            <tr>
+                <td>A55849</td>
+                <td>1585004</td>
+                <td>1517263</td>
+                <td>36724</td>
+                <td>15295</td>
+                <td>0.99%</td>
+                <td class="good">99.01%</td>
+            </tr>
+            <tr>
+                <td>A55852</td>
+                <td>1786169</td>
+                <td>1713200</td>
+                <td>33655</td>
+                <td>21048</td>
+                <td>1.02%</td>
+                <td class="good">98.98%</td>
+            </tr>
+            <tr>
+                <td>A55853</td>
+                <td>1758636</td>
+                <td>1685775</td>
+                <td>33553</td>
+                <td>21533</td>
+                <td>1.01%</td>
+                <td class="good">98.99%</td>
+            </tr>
+            <tr>
+                <td>A55857</td>
+                <td>1516056</td>
+                <td>1448773</td>
+                <td>34097</td>
+                <td>15271</td>
+                <td>1.18%</td>
+                <td class="good">98.82%</td>
+            </tr>
+            <tr>
+                <td>A55859</td>
+                <td>1945878</td>
+                <td>1862161</td>
+                <td>39876</td>
+                <td>22131</td>
+                <td>1.12%</td>
+                <td class="good">98.88%</td>
+            </tr>
+            <tr>
+                <td>A55860</td>
+                <td>1319648</td>
+                <td>1226661</td>
+                <td>6923</td>
+                <td>82751</td>
+                <td>0.25%</td>
+                <td class="good">99.75%</td>
+            </tr>
+            <tr>
+                <td>A55878</td>
+                <td>1421785</td>
+                <td>1353700</td>
+                <td>11044</td>
+                <td>46190</td>
+                <td>0.76%</td>
+                <td class="good">99.24%</td>
+            </tr>
+            <tr>
+                <td>A55893</td>
+                <td>2217309</td>
+                <td>2109191</td>
+                <td>58899</td>
+                <td>18962</td>
+                <td>1.36%</td>
+                <td class="good">98.64%</td>
+            </tr>
+            <tr>
+                <td>A55894</td>
+                <td>2207776</td>
+                <td>2098285</td>
+                <td>58965</td>
+                <td>20330</td>
+                <td>1.37%</td>
+                <td class="good">98.63%</td>
+            </tr>
+            <tr>
+                <td>A55899</td>
+                <td>1582087</td>
+                <td>1501787</td>
+                <td>44500</td>
+                <td>13633</td>
+                <td>1.40%</td>
+                <td class="good">98.60%</td>
+            </tr>
+            <tr>
+                <td>A55911</td>
+                <td>2026138</td>
+                <td>1930204</td>
+                <td>48864</td>
+                <td>21924</td>
+                <td>1.24%</td>
+                <td class="good">98.76%</td>
+            </tr>
+            <tr>
+                <td>A55939</td>
+                <td>2852935</td>
+                <td>2713862</td>
+                <td>86760</td>
+                <td>20340</td>
+                <td>1.12%</td>
+                <td class="good">98.88%</td>
+            </tr>
+            <tr>
+                <td>A55940</td>
+                <td>2100917</td>
+                <td>2004046</td>
+                <td>52792</td>
+                <td>21620</td>
+                <td>1.07%</td>
+                <td class="good">98.93%</td>
+            </tr>
+            <tr>
+                <td>A55941</td>
+                <td>1733593</td>
+                <td>1663642</td>
+                <td>33079</td>
+                <td>21556</td>
+                <td>0.88%</td>
+                <td class="good">99.12%</td>
+            </tr>
+            <tr>
+                <td>A55948</td>
+                <td>2531031</td>
+                <td>2419659</td>
+                <td>62890</td>
+                <td>21722</td>
+                <td>1.06%</td>
+                <td class="good">98.94%</td>
+            </tr>
+            <tr>
+                <td>A55961</td>
+                <td>1918626</td>
+                <td>1825401</td>
+                <td>54874</td>
+                <td>16856</td>
+                <td>1.12%</td>
+                <td class="good">98.88%</td>
+            </tr>
+            <tr>
+                <td>A55966</td>
+                <td>2428596</td>
+                <td>2323275</td>
+                <td>60888</td>
+                <td>20992</td>
+                <td>0.97%</td>
+                <td class="good">99.03%</td>
+            </tr>
+            <tr>
+                <td>A56425</td>
+                <td>1928995</td>
+                <td>1844169</td>
+                <td>48948</td>
+                <td>16721</td>
+                <td>0.99%</td>
+                <td class="good">99.01%</td>
+            </tr>
+            <tr>
+                <td>A56428</td>
+                <td>1513687</td>
+                <td>1447575</td>
+                <td>32107</td>
+                <td>19611</td>
+                <td>0.95%</td>
+                <td class="good">99.05%</td>
+            </tr>
+        </tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="assembly" class="section"><h2>Assembly</h2>
+          <div class="report-card">
+            <h3>Assembly statistics</h3>
+            <div class="report-content">
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Contigs</th>
+                <th>Total Length</th>
+                <th>Min Length</th>
+                <th>Max Length</th>
+                <th>Avg Length</th>
+                <th>N50</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr><td>A55724</td><td>131</td><td>4934440</td><td>435</td><td>343169</td><td>37667</td><td>107645</td></tr>
+<tr><td>A55726</td><td>64</td><td>4741700</td><td>476</td><td>467429</td><td>74089</td><td>172156</td></tr>
+<tr><td>A55728</td><td>80</td><td>5176036</td><td>432</td><td>659027</td><td>64700</td><td>355426</td></tr>
+<tr><td>A55733</td><td>94</td><td>4933443</td><td>432</td><td>355995</td><td>52483</td><td>154283</td></tr>
+<tr><td>A55737</td><td>115</td><td>4574595</td><td>428</td><td>358727</td><td>39779</td><td>80136</td></tr>
+<tr><td>A55743</td><td>137</td><td>5046946</td><td>505</td><td>306082</td><td>36839</td><td>94756</td></tr>
+<tr><td>A55759</td><td>80</td><td>5186075</td><td>459</td><td>601831</td><td>64826</td><td>172464</td></tr>
+<tr><td>A55769</td><td>3585</td><td>10507369</td><td>427</td><td>48513</td><td>2931</td><td>5031</td></tr>
+<tr><td>A55771</td><td>98</td><td>5129109</td><td>470</td><td>301441</td><td>52338</td><td>120453</td></tr>
+<tr><td>A55784</td><td>221</td><td>5288372</td><td>440</td><td>243882</td><td>23929</td><td>95807</td></tr>
+<tr><td>A55786</td><td>140</td><td>5448341</td><td>440</td><td>351404</td><td>38917</td><td>179681</td></tr>
+<tr><td>A55792</td><td>1319</td><td>9644116</td><td>429</td><td>279393</td><td>7312</td><td>19948</td></tr>
+<tr><td>A55793</td><td>113</td><td>4956357</td><td>405</td><td>344104</td><td>43862</td><td>125421</td></tr>
+<tr><td>A55794</td><td>84</td><td>5120256</td><td>476</td><td>579242</td><td>60955</td><td>222419</td></tr>
+<tr><td>A55798</td><td>120</td><td>4938774</td><td>527</td><td>344103</td><td>41156</td><td>122873</td></tr>
+<tr><td>A55807</td><td>80</td><td>5291220</td><td>472</td><td>511396</td><td>66140</td><td>157929</td></tr>
+<tr><td>A55837</td><td>1760</td><td>8955070</td><td>449</td><td>77359</td><td>5088</td><td>8804</td></tr>
+<tr><td>A55841</td><td>90</td><td>4677283</td><td>529</td><td>301635</td><td>51970</td><td>119856</td></tr>
+<tr><td>A55842</td><td>89</td><td>4989752</td><td>482</td><td>649161</td><td>56065</td><td>139439</td></tr>
+<tr><td>A55846</td><td>90</td><td>4633485</td><td>450</td><td>301622</td><td>51483</td><td>128930</td></tr>
+<tr><td>A55849</td><td>117</td><td>4884098</td><td>472</td><td>306090</td><td>41744</td><td>114390</td></tr>
+<tr><td>A55852</td><td>66</td><td>4790868</td><td>476</td><td>417672</td><td>72589</td><td>192728</td></tr>
+<tr><td>A55853</td><td>130</td><td>5627843</td><td>487</td><td>385753</td><td>43291</td><td>111681</td></tr>
+<tr><td>A55857</td><td>2515</td><td>7209616</td><td>447</td><td>59213</td><td>2867</td><td>4392</td></tr>
+<tr><td>A55859</td><td>88</td><td>4923776</td><td>469</td><td>401328</td><td>55952</td><td>136681</td></tr>
+<tr><td>A55860</td><td>78</td><td>5133301</td><td>469</td><td>640762</td><td>65812</td><td>269898</td></tr>
+<tr><td>A55878</td><td>68</td><td>4798105</td><td>476</td><td>619725</td><td>70560</td><td>336578</td></tr>
+<tr><td>A55893</td><td>63</td><td>5017567</td><td>480</td><td>806915</td><td>79644</td><td>319229</td></tr>
+<tr><td>A55894</td><td>1264</td><td>9405895</td><td>445</td><td>101230</td><td>7441</td><td>14670</td></tr>
+<tr><td>A55899</td><td>104</td><td>4758194</td><td>472</td><td>390591</td><td>45752</td><td>119678</td></tr>
+<tr><td>A55911</td><td>43</td><td>4847524</td><td>881</td><td>632455</td><td>112733</td><td>323983</td></tr>
+<tr><td>A55939</td><td>3293</td><td>7429299</td><td>445</td><td>131389</td><td>2256</td><td>3137</td></tr>
+<tr><td>A55940</td><td>53</td><td>4675030</td><td>472</td><td>677242</td><td>88208</td><td>281447</td></tr>
+<tr><td>A55941</td><td>1451</td><td>5956886</td><td>443</td><td>134402</td><td>4105</td><td>17724</td></tr>
+<tr><td>A55948</td><td>96</td><td>5290040</td><td>446</td><td>530201</td><td>55105</td><td>195574</td></tr>
+<tr><td>A55961</td><td>57</td><td>4700598</td><td>451</td><td>429015</td><td>82467</td><td>192261</td></tr>
+<tr><td>A55966</td><td>55</td><td>4756278</td><td>439</td><td>711491</td><td>86478</td><td>244615</td></tr>
+<tr><td>A56425</td><td>66</td><td>4866459</td><td>460</td><td>405417</td><td>73734</td><td>205821</td></tr>
+<tr><td>A56428</td><td>54</td><td>5004528</td><td>451</td><td>806978</td><td>92676</td><td>353496</td></tr>
+        </tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="annotation" class="section"><h2>Annotation</h2>
+          <div class="report-card">
+            <h3>Annotation summary</h3>
+            <div class="report-content">
+        <table>
+          <tr><th>Sample ID</th><th>Gene Count</th></tr>
+<tr><td>A55724</td><td>4565</td></tr>
+<tr><td>A55726</td><td>4410</td></tr>
+<tr><td>A55728</td><td>4806</td></tr>
+<tr><td>A55733</td><td>4618</td></tr>
+<tr><td>A55737</td><td>4271</td></tr>
+<tr><td>A55743</td><td>4738</td></tr>
+<tr><td>A55759</td><td>4903</td></tr>
+<tr><td>A55769</td><td>10000</td></tr>
+<tr><td>A55771</td><td>4729</td></tr>
+<tr><td>A55784</td><td>5083</td></tr>
+<tr><td>A55786</td><td>5190</td></tr>
+<tr><td>A55792</td><td>9212</td></tr>
+<tr><td>A55793</td><td>4582</td></tr>
+<tr><td>A55794</td><td>4819</td></tr>
+<tr><td>A55798</td><td>4563</td></tr>
+<tr><td>A55807</td><td>4911</td></tr>
+<tr><td>A55837</td><td>8265</td></tr>
+<tr><td>A55841</td><td>4406</td></tr>
+<tr><td>A55842</td><td>4706</td></tr>
+<tr><td>A55846</td><td>4337</td></tr>
+<tr><td>A55849</td><td>4537</td></tr>
+<tr><td>A55852</td><td>4473</td></tr>
+<tr><td>A55853</td><td>5322</td></tr>
+<tr><td>A55857</td><td>6868</td></tr>
+<tr><td>A55859</td><td>4592</td></tr>
+<tr><td>A55860</td><td>4809</td></tr>
+<tr><td>A55878</td><td>4460</td></tr>
+<tr><td>A55893</td><td>4693</td></tr>
+<tr><td>A55894</td><td>8804</td></tr>
+<tr><td>A55899</td><td>4492</td></tr>
+<tr><td>A55911</td><td>4520</td></tr>
+<tr><td>A55939</td><td>7244</td></tr>
+<tr><td>A55940</td><td>4333</td></tr>
+<tr><td>A55941</td><td>5514</td></tr>
+<tr><td>A55948</td><td>4967</td></tr>
+<tr><td>A55961</td><td>4366</td></tr>
+<tr><td>A55966</td><td>4394</td></tr>
+<tr><td>A56425</td><td>4553</td></tr>
+<tr><td>A56428</td><td>4694</td></tr>
+</table>
+            </div>
+          </div>
+      </div>
+      <div id="pangenome" class="section"><h2>Pangenome</h2>
+          <div class="report-card">
+            <h3>Pangenome report</h3>
+            <div class="report-content">
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Pangenome Analysis Report</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;margin:20px}h1{color:#2c3e50}</style>
+</head>
+<body>
+  <h1>Pangenome Analysis</h1>
+  <p id="status">Roary completed successfully. (This page will show Roary results if available.)</p>
+  <img id="heatmap" src="gene_presence_heatmap.png" alt="Gene presence/absence heatmap" onerror="this.style.display='none'">
+</body>
+</html>
+            </div>
+          </div>
+        <div class="report-card">
+          <h3>Gene Presence/Absence Heatmap</h3>
+          <div class="image-center"><img src="assets/images/gene_presence_heatmap.png" alt="Gene heatmap" onerror="this.style.display='none'"></div>
+        </div>
+      </div>
+      <div id="mlst" class="section"><h2>MLST</h2>
+          <div class="report-card">
+            <h3>Combined MLST</h3>
+            <div class="report-content">
+    <table>
+<thead><tr>
+<th>Sample ID</th>
+<th>Species</th>
+<th>ST</th>
+<th>gapA</th>
+<th>infB</th>
+<th>mdh</th>
+<th>pgi</th>
+<th>phoE</th>
+<th>rpoB</th>
+<th>tonB</th>
+</tr></thead><tbody>
+<tr>
+<td>A55724</td>
+<td>ecoli</td>
+<td class="st">617</td>
+<td>10</td>
+<td>11</td>
+<td>4</td>
+<td>8</td>
+<td>8</td>
+<td>13</td>
+<td>73</td>
+</tr>
+<tr>
+<td>A55726</td>
+<td>ecoli</td>
+<td class="st">2852</td>
+<td>6</td>
+<td>65</td>
+<td>5</td>
+<td>1</td>
+<td>11</td>
+<td>13</td>
+<td>6</td>
+</tr>
+<tr>
+<td>A55728</td>
+<td>ecoli</td>
+<td class="st">3910</td>
+<td>52</td>
+<td>403</td>
+<td>76</td>
+<td>324</td>
+<td>35</td>
+<td>40</td>
+<td>278</td>
+</tr>
+<tr>
+<td>A55733</td>
+<td>ecoli</td>
+<td class="st">10</td>
+<td>10</td>
+<td>11</td>
+<td>4</td>
+<td>8</td>
+<td>8</td>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<td>A55737</td>
+<td>ecoli</td>
+<td class="st">746</td>
+<td>10</td>
+<td>7</td>
+<td>4</td>
+<td>8</td>
+<td>12</td>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<td>A55743</td>
+<td>ecoli</td>
+<td class="st">1284</td>
+<td>10</td>
+<td>4</td>
+<td>4</td>
+<td>8</td>
+<td>8</td>
+<td>13</td>
+<td>73</td>
+</tr>
+<tr>
+<td>A55759</td>
+<td>ecoli</td>
+<td class="st">1193</td>
+<td>14</td>
+<td>14</td>
+<td>10</td>
+<td>200</td>
+<td>17</td>
+<td>7</td>
+<td>10</td>
+</tr>
+<tr>
+<td>A55769</td>
+<td>ecoli</td>
+<td class="st">-</td>
+<td>14</td>
+<td>14</td>
+<td>4</td>
+<td>8,200</td>
+<td>11,12,17</td>
+<td>-</td>
+<td>10</td>
+</tr>
+<tr>
+<td>A55771</td>
+<td>ecoli</td>
+<td class="st">69</td>
+<td>21</td>
+<td>35</td>
+<td>27</td>
+<td>6</td>
+<td>5</td>
+<td>5</td>
+<td>4</td>
+</tr>
+<tr>
+<td>A55784</td>
+<td>ecoli</td>
+<td class="st">-</td>
+<td>6</td>
+<td>4</td>
+<td>12</td>
+<td>~774</td>
+<td>24</td>
+<td>18</td>
+<td>7</td>
+</tr>
+<tr>
+<td>A55786</td>
+<td>ecoli</td>
+<td class="st">349</td>
+<td>34</td>
+<td>36</td>
+<td>39</td>
+<td>87</td>
+<td>67</td>
+<td>16</td>
+<td>4</td>
+</tr>
+<tr>
+<td>A55792</td>
+<td>ecoli</td>
+<td class="st">448</td>
+<td>6</td>
+<td>6</td>
+<td>5</td>
+<td>16</td>
+<td>11</td>
+<td>8</td>
+<td>7</td>
+</tr>
+<tr>
+<td>A55793</td>
+<td>ecoli</td>
+<td class="st">617</td>
+<td>10</td>
+<td>11</td>
+<td>4</td>
+<td>8</td>
+<td>8</td>
+<td>13</td>
+<td>73</td>
+</tr>
+<tr>
+<td>A55794</td>
+<td>ecoli</td>
+<td class="st">131</td>
+<td>53</td>
+<td>40</td>
+<td>47</td>
+<td>13</td>
+<td>36</td>
+<td>28</td>
+<td>29</td>
+</tr>
+<tr>
+<td>A55798</td>
+<td>ecoli</td>
+<td class="st">617</td>
+<td>10</td>
+<td>11</td>
+<td>4</td>
+<td>8</td>
+<td>8</td>
+<td>13</td>
+<td>73</td>
+</tr>
+<tr>
+<td>A55807</td>
+<td>ecoli</td>
+<td class="st">38</td>
+<td>4</td>
+<td>26</td>
+<td>2</td>
+<td>25</td>
+<td>5</td>
+<td>5</td>
+<td>19</td>
+</tr>
+<tr>
+<td>A55837</td>
+<td>ecoli</td>
+<td class="st">-</td>
+<td>8,21</td>
+<td>7,35</td>
+<td>1,27</td>
+<td>6,8</td>
+<td>5,8</td>
+<td>5</td>
+<td>4</td>
+</tr>
+<tr>
+<td>A55841</td>
+<td>ecoli</td>
+<td class="st">540</td>
+<td>6</td>
+<td>7</td>
+<td>57</td>
+<td>1</td>
+<td>8</td>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<td>A55842</td>
+<td>ecoli</td>
+<td class="st">295</td>
+<td>6</td>
+<td>4</td>
+<td>12</td>
+<td>1</td>
+<td>9</td>
+<td>2</td>
+<td>7</td>
+</tr>
+<tr>
+<td>A55846</td>
+<td>ecoli</td>
+<td class="st">540</td>
+<td>6</td>
+<td>7</td>
+<td>57</td>
+<td>1</td>
+<td>8</td>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<td>A55849</td>
+<td>ecoli</td>
+<td class="st">617</td>
+<td>10</td>
+<td>11</td>
+<td>4</td>
+<td>8</td>
+<td>8</td>
+<td>13</td>
+<td>73</td>
+</tr>
+<tr>
+<td>A55852</td>
+<td>ecoli</td>
+<td class="st">2852</td>
+<td>6</td>
+<td>65</td>
+<td>5</td>
+<td>1</td>
+<td>11</td>
+<td>13</td>
+<td>6</td>
+</tr>
+<tr>
+<td>A55853</td>
+<td>ecoli</td>
+<td class="st">38</td>
+<td>4</td>
+<td>26</td>
+<td>2</td>
+<td>25</td>
+<td>5</td>
+<td>5</td>
+<td>19</td>
+</tr>
+<tr>
+<td>A55857</td>
+<td>senterica</td>
+<td class="st">-</td>
+<td>621</td>
+<td>559</td>
+<td>495</td>
+<td>~765</td>
+<td>~690</td>
+<td>~281</td>
+<td>636</td>
+</tr>
+<tr>
+<td>A55859</td>
+<td>ecoli</td>
+<td class="st">10</td>
+<td>10</td>
+<td>11</td>
+<td>4</td>
+<td>8</td>
+<td>8</td>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<td>A55860</td>
+<td>ecoli</td>
+<td class="st">131</td>
+<td>53</td>
+<td>40</td>
+<td>47</td>
+<td>13</td>
+<td>36</td>
+<td>28</td>
+<td>29</td>
+</tr>
+<tr>
+<td>A55878</td>
+<td>ecoli</td>
+<td class="st">2705</td>
+<td>10</td>
+<td>11</td>
+<td>4</td>
+<td>10</td>
+<td>7</td>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<td>A55893</td>
+<td>ecoli</td>
+<td class="st">1193</td>
+<td>14</td>
+<td>14</td>
+<td>10</td>
+<td>200</td>
+<td>17</td>
+<td>7</td>
+<td>10</td>
+</tr>
+<tr>
+<td>A55894</td>
+<td>senterica</td>
+<td class="st">-</td>
+<td>621</td>
+<td>559,603</td>
+<td>554</td>
+<td>836</td>
+<td>617,690</td>
+<td>281,648</td>
+<td>700</td>
+</tr>
+<tr>
+<td>A55899</td>
+<td>ecoli</td>
+<td class="st">5455</td>
+<td>10</td>
+<td>27</td>
+<td>5</td>
+<td>8</td>
+<td>12</td>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<td>A55911</td>
+<td>ecoli</td>
+<td class="st">636</td>
+<td>13</td>
+<td>108</td>
+<td>10</td>
+<td>97</td>
+<td>18</td>
+<td>68</td>
+<td>93</td>
+</tr>
+<tr>
+<td>A55939</td>
+<td>senterica</td>
+<td class="st">-</td>
+<td>621</td>
+<td>559</td>
+<td>552</td>
+<td>765?</td>
+<td>617</td>
+<td>281</td>
+<td>636?</td>
+</tr>
+<tr>
+<td>A55940</td>
+<td>ecoli</td>
+<td class="st">3489</td>
+<td>136</td>
+<td>7</td>
+<td>4</td>
+<td>8</td>
+<td>8</td>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<td>A55941</td>
+<td>ecoli</td>
+<td class="st">3580</td>
+<td>6</td>
+<td>65</td>
+<td>344</td>
+<td>1</td>
+<td>11</td>
+<td>13</td>
+<td>6</td>
+</tr>
+<tr>
+<td>A55948</td>
+<td>ecoli</td>
+<td class="st">648</td>
+<td>92</td>
+<td>4</td>
+<td>87</td>
+<td>96</td>
+<td>70</td>
+<td>58</td>
+<td>2</td>
+</tr>
+<tr>
+<td>A55961</td>
+<td>ecoli</td>
+<td class="st">10</td>
+<td>10</td>
+<td>11</td>
+<td>4</td>
+<td>8</td>
+<td>8</td>
+<td>8</td>
+<td>2</td>
+</tr>
+<tr>
+<td>A55966</td>
+<td>ecoli</td>
+<td class="st">3580</td>
+<td>6</td>
+<td>65</td>
+<td>344</td>
+<td>1</td>
+<td>11</td>
+<td>13</td>
+<td>6</td>
+</tr>
+<tr>
+<td>A56425</td>
+<td>ecoli</td>
+<td class="st">410</td>
+<td>6</td>
+<td>4</td>
+<td>12</td>
+<td>1</td>
+<td>20</td>
+<td>18</td>
+<td>7</td>
+</tr>
+<tr>
+<td>A56428</td>
+<td>ecoli</td>
+<td class="st">1193</td>
+<td>14</td>
+<td>14</td>
+<td>10</td>
+<td>200</td>
+<td>17</td>
+<td>7</td>
+<td>10</td>
+</tr>
+</tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="variants" class="section"><h2>Variants</h2>
+          <div class="report-card">
+            <h3>Variant summary</h3>
+            <div class="report-content">
+  <table>
+    <thead>
+      <tr>
+        <th>Sample</th>
+        <th>Status</th>
+        <th>SNPs</th>
+        <th>INDELs</th>
+        <th>Total Variants</th>
+        <th>Attempts</th>
+      </tr>
+    </thead>
+    <tbody>
+<tr><td>A55724</td><td>Success</td><td>19144</td><td>0</td><td class="error">19144</td><td>1</td></tr>
+<tr><td>A55726</td><td>Success</td><td>36929</td><td>0</td><td class="error">36929</td><td>1</td></tr>
+<tr><td>A55728</td><td>Success</td><td>87757</td><td>0</td><td class="error">87757</td><td>1</td></tr>
+<tr><td>A55733</td><td>Success</td><td>7255</td><td>0</td><td class="error">7255</td><td>1</td></tr>
+<tr><td>A55737</td><td>Success</td><td>19084</td><td>0</td><td class="error">19084</td><td>1</td></tr>
+<tr><td>A55743</td><td>Success</td><td>21324</td><td>0</td><td class="error">21324</td><td>1</td></tr>
+<tr><td>A55759</td><td>Success</td><td>63722</td><td>0</td><td class="error">63722</td><td>1</td></tr>
+<tr><td>A55769</td><td>Success</td><td>7097</td><td>0</td><td class="error">7097</td><td>1</td></tr>
+<tr><td>A55771</td><td>Success</td><td>60509</td><td>0</td><td class="error">60509</td><td>1</td></tr>
+<tr><td>A55784</td><td>Success</td><td>37245</td><td>0</td><td class="error">37245</td><td>1</td></tr>
+<tr><td>A55786</td><td>Success</td><td>61301</td><td>0</td><td class="error">61301</td><td>1</td></tr>
+<tr><td>A55792</td><td>Success</td><td>36275</td><td>0</td><td class="error">36275</td><td>1</td></tr>
+<tr><td>A55793</td><td>Success</td><td>19142</td><td>0</td><td class="error">19142</td><td>1</td></tr>
+<tr><td>A55794</td><td>Success</td><td>67247</td><td>0</td><td class="error">67247</td><td>1</td></tr>
+<tr><td>A55798</td><td>Success</td><td>19190</td><td>0</td><td class="error">19190</td><td>1</td></tr>
+<tr><td>A55807</td><td>Success</td><td>62714</td><td>0</td><td class="error">62714</td><td>1</td></tr>
+<tr><td>A55837</td><td>Success</td><td>13980</td><td>0</td><td class="error">13980</td><td>1</td></tr>
+<tr><td>A55841</td><td>Success</td><td>24466</td><td>0</td><td class="error">24466</td><td>1</td></tr>
+<tr><td>A55842</td><td>Success</td><td>36997</td><td>0</td><td class="error">36997</td><td>1</td></tr>
+<tr><td>A55846</td><td>Success</td><td>24365</td><td>0</td><td class="error">24365</td><td>1</td></tr>
+<tr><td>A55849</td><td>Success</td><td>19276</td><td>0</td><td class="error">19276</td><td>1</td></tr>
+<tr><td>A55852</td><td>Success</td><td>37002</td><td>0</td><td class="error">37002</td><td>1</td></tr>
+<tr><td>A55853</td><td>Success</td><td>60807</td><td>0</td><td class="error">60807</td><td>1</td></tr>
+<tr><td>A55857</td><td>Success</td><td>5411</td><td>0</td><td class="error">5411</td><td>1</td></tr>
+<tr><td>A55859</td><td>Success</td><td>7183</td><td>0</td><td class="error">7183</td><td>1</td></tr>
+<tr><td>A55860</td><td>Success</td><td>67477</td><td>0</td><td class="error">67477</td><td>1</td></tr>
+<tr><td>A55878</td><td>Success</td><td>24060</td><td>0</td><td class="error">24060</td><td>1</td></tr>
+<tr><td>A55893</td><td>Success</td><td>64140</td><td>0</td><td class="error">64140</td><td>1</td></tr>
+<tr><td>A55894</td><td>Success</td><td>9548</td><td>0</td><td class="error">9548</td><td>1</td></tr>
+<tr><td>A55899</td><td>Success</td><td>14795</td><td>0</td><td class="error">14795</td><td>1</td></tr>
+<tr><td>A55911</td><td>Success</td><td>66418</td><td>0</td><td class="error">66418</td><td>1</td></tr>
+<tr><td>A55939</td><td>Success</td><td>5825</td><td>0</td><td class="error">5825</td><td>1</td></tr>
+<tr><td>A55940</td><td>Success</td><td>20220</td><td>0</td><td class="error">20220</td><td>1</td></tr>
+<tr><td>A55941</td><td>Success</td><td>10871</td><td>0</td><td class="error">10871</td><td>1</td></tr>
+<tr><td>A55948</td><td>Success</td><td>63314</td><td>0</td><td class="error">63314</td><td>1</td></tr>
+<tr><td>A55961</td><td>Success</td><td>6917</td><td>0</td><td class="error">6917</td><td>1</td></tr>
+<tr><td>A55966</td><td>Success</td><td>37023</td><td>0</td><td class="error">37023</td><td>1</td></tr>
+<tr><td>A56425</td><td>Success</td><td>34839</td><td>0</td><td class="error">34839</td><td>1</td></tr>
+<tr><td>A56428</td><td>Success</td><td>63885</td><td>0</td><td class="error">63885</td><td>1</td></tr>
+    </tbody>
+  </table>
+            </div>
+          </div>
+      </div>
+      <div id="amr" class="section"><h2>Antimicrobial Resistance</h2>
+        <div class="report-card"><h3>Per-sample AMR reports</h3><ul>
+          <li><a href="assets/sections/A55724_amr.html" target="_blank">AMR Report 1 — A55724</a></li>
+          <li><a href="assets/sections/A55726_amr.html" target="_blank">AMR Report 2 — A55726</a></li>
+          <li><a href="assets/sections/A55728_amr.html" target="_blank">AMR Report 3 — A55728</a></li>
+          <li><a href="assets/sections/A55733_amr.html" target="_blank">AMR Report 4 — A55733</a></li>
+          <li><a href="assets/sections/A55737_amr.html" target="_blank">AMR Report 5 — A55737</a></li>
+          <li><a href="assets/sections/A55743_amr.html" target="_blank">AMR Report 6 — A55743</a></li>
+          <li><a href="assets/sections/A55759_amr.html" target="_blank">AMR Report 7 — A55759</a></li>
+          <li><a href="assets/sections/A55769_amr.html" target="_blank">AMR Report 8 — A55769</a></li>
+          <li><a href="assets/sections/A55771_amr.html" target="_blank">AMR Report 9 — A55771</a></li>
+          <li><a href="assets/sections/A55784_amr.html" target="_blank">AMR Report 10 — A55784</a></li>
+          <li><a href="assets/sections/A55786_amr.html" target="_blank">AMR Report 11 — A55786</a></li>
+          <li><a href="assets/sections/A55792_amr.html" target="_blank">AMR Report 12 — A55792</a></li>
+          <li><a href="assets/sections/A55793_amr.html" target="_blank">AMR Report 13 — A55793</a></li>
+          <li><a href="assets/sections/A55794_amr.html" target="_blank">AMR Report 14 — A55794</a></li>
+          <li><a href="assets/sections/A55798_amr.html" target="_blank">AMR Report 15 — A55798</a></li>
+          <li><a href="assets/sections/A55807_amr.html" target="_blank">AMR Report 16 — A55807</a></li>
+          <li><a href="assets/sections/A55837_amr.html" target="_blank">AMR Report 17 — A55837</a></li>
+          <li><a href="assets/sections/A55841_amr.html" target="_blank">AMR Report 18 — A55841</a></li>
+          <li><a href="assets/sections/A55842_amr.html" target="_blank">AMR Report 19 — A55842</a></li>
+          <li><a href="assets/sections/A55846_amr.html" target="_blank">AMR Report 20 — A55846</a></li>
+          <li><a href="assets/sections/A55849_amr.html" target="_blank">AMR Report 21 — A55849</a></li>
+          <li><a href="assets/sections/A55852_amr.html" target="_blank">AMR Report 22 — A55852</a></li>
+          <li><a href="assets/sections/A55853_amr.html" target="_blank">AMR Report 23 — A55853</a></li>
+          <li><a href="assets/sections/A55857_amr.html" target="_blank">AMR Report 24 — A55857</a></li>
+          <li><a href="assets/sections/A55859_amr.html" target="_blank">AMR Report 25 — A55859</a></li>
+          <li><a href="assets/sections/A55860_amr.html" target="_blank">AMR Report 26 — A55860</a></li>
+          <li><a href="assets/sections/A55878_amr.html" target="_blank">AMR Report 27 — A55878</a></li>
+          <li><a href="assets/sections/A55893_amr.html" target="_blank">AMR Report 28 — A55893</a></li>
+          <li><a href="assets/sections/A55894_amr.html" target="_blank">AMR Report 29 — A55894</a></li>
+          <li><a href="assets/sections/A55899_amr.html" target="_blank">AMR Report 30 — A55899</a></li>
+          <li><a href="assets/sections/A55911_amr.html" target="_blank">AMR Report 31 — A55911</a></li>
+          <li><a href="assets/sections/A55939_amr.html" target="_blank">AMR Report 32 — A55939</a></li>
+          <li><a href="assets/sections/A55940_amr.html" target="_blank">AMR Report 33 — A55940</a></li>
+          <li><a href="assets/sections/A55941_amr.html" target="_blank">AMR Report 34 — A55941</a></li>
+          <li><a href="assets/sections/A55948_amr.html" target="_blank">AMR Report 35 — A55948</a></li>
+          <li><a href="assets/sections/A55961_amr.html" target="_blank">AMR Report 36 — A55961</a></li>
+          <li><a href="assets/sections/A55966_amr.html" target="_blank">AMR Report 37 — A55966</a></li>
+          <li><a href="assets/sections/A56425_amr.html" target="_blank">AMR Report 38 — A56425</a></li>
+          <li><a href="assets/sections/A56428_amr.html" target="_blank">AMR Report 39 — A56428</a></li>
+        </ul></div>
+      </div>
+      <div id="mge" class="section"><h2>Mobile Genetic Elements</h2>
+        <div class="report-card"><h3>Per-sample MGE reports</h3><ul>
+          <li><a href="assets/sections/A55724_mge.html" target="_blank">MGE Report 1 — A55724</a></li>
+          <li><a href="assets/sections/A55726_mge.html" target="_blank">MGE Report 2 — A55726</a></li>
+          <li><a href="assets/sections/A55728_mge.html" target="_blank">MGE Report 3 — A55728</a></li>
+          <li><a href="assets/sections/A55733_mge.html" target="_blank">MGE Report 4 — A55733</a></li>
+          <li><a href="assets/sections/A55737_mge.html" target="_blank">MGE Report 5 — A55737</a></li>
+          <li><a href="assets/sections/A55743_mge.html" target="_blank">MGE Report 6 — A55743</a></li>
+          <li><a href="assets/sections/A55759_mge.html" target="_blank">MGE Report 7 — A55759</a></li>
+          <li><a href="assets/sections/A55769_mge.html" target="_blank">MGE Report 8 — A55769</a></li>
+          <li><a href="assets/sections/A55771_mge.html" target="_blank">MGE Report 9 — A55771</a></li>
+          <li><a href="assets/sections/A55784_mge.html" target="_blank">MGE Report 10 — A55784</a></li>
+          <li><a href="assets/sections/A55786_mge.html" target="_blank">MGE Report 11 — A55786</a></li>
+          <li><a href="assets/sections/A55792_mge.html" target="_blank">MGE Report 12 — A55792</a></li>
+          <li><a href="assets/sections/A55793_mge.html" target="_blank">MGE Report 13 — A55793</a></li>
+          <li><a href="assets/sections/A55794_mge.html" target="_blank">MGE Report 14 — A55794</a></li>
+          <li><a href="assets/sections/A55798_mge.html" target="_blank">MGE Report 15 — A55798</a></li>
+          <li><a href="assets/sections/A55807_mge.html" target="_blank">MGE Report 16 — A55807</a></li>
+          <li><a href="assets/sections/A55837_mge.html" target="_blank">MGE Report 17 — A55837</a></li>
+          <li><a href="assets/sections/A55841_mge.html" target="_blank">MGE Report 18 — A55841</a></li>
+          <li><a href="assets/sections/A55842_mge.html" target="_blank">MGE Report 19 — A55842</a></li>
+          <li><a href="assets/sections/A55846_mge.html" target="_blank">MGE Report 20 — A55846</a></li>
+          <li><a href="assets/sections/A55849_mge.html" target="_blank">MGE Report 21 — A55849</a></li>
+          <li><a href="assets/sections/A55852_mge.html" target="_blank">MGE Report 22 — A55852</a></li>
+          <li><a href="assets/sections/A55853_mge.html" target="_blank">MGE Report 23 — A55853</a></li>
+          <li><a href="assets/sections/A55857_mge.html" target="_blank">MGE Report 24 — A55857</a></li>
+          <li><a href="assets/sections/A55859_mge.html" target="_blank">MGE Report 25 — A55859</a></li>
+          <li><a href="assets/sections/A55860_mge.html" target="_blank">MGE Report 26 — A55860</a></li>
+          <li><a href="assets/sections/A55878_mge.html" target="_blank">MGE Report 27 — A55878</a></li>
+          <li><a href="assets/sections/A55893_mge.html" target="_blank">MGE Report 28 — A55893</a></li>
+          <li><a href="assets/sections/A55894_mge.html" target="_blank">MGE Report 29 — A55894</a></li>
+          <li><a href="assets/sections/A55899_mge.html" target="_blank">MGE Report 30 — A55899</a></li>
+          <li><a href="assets/sections/A55911_mge.html" target="_blank">MGE Report 31 — A55911</a></li>
+          <li><a href="assets/sections/A55939_mge.html" target="_blank">MGE Report 32 — A55939</a></li>
+          <li><a href="assets/sections/A55940_mge.html" target="_blank">MGE Report 33 — A55940</a></li>
+          <li><a href="assets/sections/A55941_mge.html" target="_blank">MGE Report 34 — A55941</a></li>
+          <li><a href="assets/sections/A55948_mge.html" target="_blank">MGE Report 35 — A55948</a></li>
+          <li><a href="assets/sections/A55961_mge.html" target="_blank">MGE Report 36 — A55961</a></li>
+          <li><a href="assets/sections/A55966_mge.html" target="_blank">MGE Report 37 — A55966</a></li>
+          <li><a href="assets/sections/A56425_mge.html" target="_blank">MGE Report 38 — A56425</a></li>
+          <li><a href="assets/sections/A56428_mge.html" target="_blank">MGE Report 39 — A56428</a></li>
+        </ul></div>
+      </div>
+      <div id="virulence" class="section"><h2>Virulence</h2>
+        <div class="report-card"><h3>Per-sample Virulence reports</h3><ul>
+          <li><a href="assets/sections/A55784_virulence.html" target="_blank">Virulence Report 1 — A55784</a></li>
+          <li><a href="assets/sections/A55786_virulence.html" target="_blank">Virulence Report 2 — A55786</a></li>
+          <li><a href="assets/sections/A55792_virulence.html" target="_blank">Virulence Report 3 — A55792</a></li>
+          <li><a href="assets/sections/A55793_virulence.html" target="_blank">Virulence Report 4 — A55793</a></li>
+          <li><a href="assets/sections/A55794_virulence.html" target="_blank">Virulence Report 5 — A55794</a></li>
+          <li><a href="assets/sections/A55798_virulence.html" target="_blank">Virulence Report 6 — A55798</a></li>
+          <li><a href="assets/sections/A55807_virulence.html" target="_blank">Virulence Report 7 — A55807</a></li>
+          <li><a href="assets/sections/A55837_virulence.html" target="_blank">Virulence Report 8 — A55837</a></li>
+          <li><a href="assets/sections/A55841_virulence.html" target="_blank">Virulence Report 9 — A55841</a></li>
+          <li><a href="assets/sections/A55842_virulence.html" target="_blank">Virulence Report 10 — A55842</a></li>
+          <li><a href="assets/sections/A55724_virulence.html" target="_blank">Virulence Report 11 — A55724</a></li>
+          <li><a href="assets/sections/A55846_virulence.html" target="_blank">Virulence Report 12 — A55846</a></li>
+          <li><a href="assets/sections/A55849_virulence.html" target="_blank">Virulence Report 13 — A55849</a></li>
+          <li><a href="assets/sections/A55852_virulence.html" target="_blank">Virulence Report 14 — A55852</a></li>
+          <li><a href="assets/sections/A55853_virulence.html" target="_blank">Virulence Report 15 — A55853</a></li>
+          <li><a href="assets/sections/A55857_virulence.html" target="_blank">Virulence Report 16 — A55857</a></li>
+          <li><a href="assets/sections/A55859_virulence.html" target="_blank">Virulence Report 17 — A55859</a></li>
+          <li><a href="assets/sections/A55860_virulence.html" target="_blank">Virulence Report 18 — A55860</a></li>
+          <li><a href="assets/sections/A55878_virulence.html" target="_blank">Virulence Report 19 — A55878</a></li>
+          <li><a href="assets/sections/A55893_virulence.html" target="_blank">Virulence Report 20 — A55893</a></li>
+          <li><a href="assets/sections/A55894_virulence.html" target="_blank">Virulence Report 21 — A55894</a></li>
+          <li><a href="assets/sections/A55726_virulence.html" target="_blank">Virulence Report 22 — A55726</a></li>
+          <li><a href="assets/sections/A55899_virulence.html" target="_blank">Virulence Report 23 — A55899</a></li>
+          <li><a href="assets/sections/A55911_virulence.html" target="_blank">Virulence Report 24 — A55911</a></li>
+          <li><a href="assets/sections/A55939_virulence.html" target="_blank">Virulence Report 25 — A55939</a></li>
+          <li><a href="assets/sections/A55940_virulence.html" target="_blank">Virulence Report 26 — A55940</a></li>
+          <li><a href="assets/sections/A55941_virulence.html" target="_blank">Virulence Report 27 — A55941</a></li>
+          <li><a href="assets/sections/A55948_virulence.html" target="_blank">Virulence Report 28 — A55948</a></li>
+          <li><a href="assets/sections/A55961_virulence.html" target="_blank">Virulence Report 29 — A55961</a></li>
+          <li><a href="assets/sections/A55966_virulence.html" target="_blank">Virulence Report 30 — A55966</a></li>
+          <li><a href="assets/sections/A56425_virulence.html" target="_blank">Virulence Report 31 — A56425</a></li>
+          <li><a href="assets/sections/A56428_virulence.html" target="_blank">Virulence Report 32 — A56428</a></li>
+          <li><a href="assets/sections/A55728_virulence.html" target="_blank">Virulence Report 33 — A55728</a></li>
+          <li><a href="assets/sections/A55733_virulence.html" target="_blank">Virulence Report 34 — A55733</a></li>
+          <li><a href="assets/sections/A55737_virulence.html" target="_blank">Virulence Report 35 — A55737</a></li>
+          <li><a href="assets/sections/A55743_virulence.html" target="_blank">Virulence Report 36 — A55743</a></li>
+          <li><a href="assets/sections/A55759_virulence.html" target="_blank">Virulence Report 37 — A55759</a></li>
+          <li><a href="assets/sections/A55769_virulence.html" target="_blank">Virulence Report 38 — A55769</a></li>
+          <li><a href="assets/sections/A55771_virulence.html" target="_blank">Virulence Report 39 — A55771</a></li>
+        </ul></div>
+      </div>
+      <div id="blast" class="section"><h2>BLAST</h2>
+        <div class="report-card"><h3>Per-sample BLAST reports</h3><ul>
+          <li><a href="assets/sections/A55724_blast.html" target="_blank">BLAST Report 1 — A55724</a></li>
+          <li><a href="assets/sections/A55726_blast.html" target="_blank">BLAST Report 2 — A55726</a></li>
+          <li><a href="assets/sections/A55728_blast.html" target="_blank">BLAST Report 3 — A55728</a></li>
+          <li><a href="assets/sections/A55733_blast.html" target="_blank">BLAST Report 4 — A55733</a></li>
+          <li><a href="assets/sections/A55737_blast.html" target="_blank">BLAST Report 5 — A55737</a></li>
+          <li><a href="assets/sections/A55743_blast.html" target="_blank">BLAST Report 6 — A55743</a></li>
+          <li><a href="assets/sections/A55759_blast.html" target="_blank">BLAST Report 7 — A55759</a></li>
+          <li><a href="assets/sections/A55769_blast.html" target="_blank">BLAST Report 8 — A55769</a></li>
+          <li><a href="assets/sections/A55771_blast.html" target="_blank">BLAST Report 9 — A55771</a></li>
+          <li><a href="assets/sections/A55784_blast.html" target="_blank">BLAST Report 10 — A55784</a></li>
+          <li><a href="assets/sections/A55786_blast.html" target="_blank">BLAST Report 11 — A55786</a></li>
+          <li><a href="assets/sections/A55792_blast.html" target="_blank">BLAST Report 12 — A55792</a></li>
+          <li><a href="assets/sections/A55793_blast.html" target="_blank">BLAST Report 13 — A55793</a></li>
+          <li><a href="assets/sections/A55794_blast.html" target="_blank">BLAST Report 14 — A55794</a></li>
+          <li><a href="assets/sections/A55798_blast.html" target="_blank">BLAST Report 15 — A55798</a></li>
+          <li><a href="assets/sections/A55807_blast.html" target="_blank">BLAST Report 16 — A55807</a></li>
+          <li><a href="assets/sections/A55837_blast.html" target="_blank">BLAST Report 17 — A55837</a></li>
+          <li><a href="assets/sections/A55841_blast.html" target="_blank">BLAST Report 18 — A55841</a></li>
+          <li><a href="assets/sections/A55842_blast.html" target="_blank">BLAST Report 19 — A55842</a></li>
+          <li><a href="assets/sections/A55846_blast.html" target="_blank">BLAST Report 20 — A55846</a></li>
+          <li><a href="assets/sections/A55849_blast.html" target="_blank">BLAST Report 21 — A55849</a></li>
+          <li><a href="assets/sections/A55852_blast.html" target="_blank">BLAST Report 22 — A55852</a></li>
+          <li><a href="assets/sections/A55853_blast.html" target="_blank">BLAST Report 23 — A55853</a></li>
+          <li><a href="assets/sections/A55857_blast.html" target="_blank">BLAST Report 24 — A55857</a></li>
+          <li><a href="assets/sections/A55859_blast.html" target="_blank">BLAST Report 25 — A55859</a></li>
+          <li><a href="assets/sections/A55860_blast.html" target="_blank">BLAST Report 26 — A55860</a></li>
+          <li><a href="assets/sections/A55878_blast.html" target="_blank">BLAST Report 27 — A55878</a></li>
+          <li><a href="assets/sections/A55893_blast.html" target="_blank">BLAST Report 28 — A55893</a></li>
+          <li><a href="assets/sections/A55894_blast.html" target="_blank">BLAST Report 29 — A55894</a></li>
+          <li><a href="assets/sections/A55899_blast.html" target="_blank">BLAST Report 30 — A55899</a></li>
+          <li><a href="assets/sections/A55911_blast.html" target="_blank">BLAST Report 31 — A55911</a></li>
+          <li><a href="assets/sections/A55939_blast.html" target="_blank">BLAST Report 32 — A55939</a></li>
+          <li><a href="assets/sections/A55940_blast.html" target="_blank">BLAST Report 33 — A55940</a></li>
+          <li><a href="assets/sections/A55941_blast.html" target="_blank">BLAST Report 34 — A55941</a></li>
+          <li><a href="assets/sections/A55948_blast.html" target="_blank">BLAST Report 35 — A55948</a></li>
+          <li><a href="assets/sections/A55961_blast.html" target="_blank">BLAST Report 36 — A55961</a></li>
+          <li><a href="assets/sections/A55966_blast.html" target="_blank">BLAST Report 37 — A55966</a></li>
+          <li><a href="assets/sections/A56425_blast.html" target="_blank">BLAST Report 38 — A56425</a></li>
+          <li><a href="assets/sections/A56428_blast.html" target="_blank">BLAST Report 39 — A56428</a></li>
+        </ul></div>
+      </div>
+      <div id="phylogeny" class="section"><h2>Phylogeny</h2>
+        <div class="report-card">
+          <h3>core_core_genes.png</h3>
+          <div class="image-center"><img src="assets/images/core_core_genes.png" alt="Phylogenetic tree" onerror="this.style.display='none'"></div>
+        </div>
+        <div class="report-card">
+          <h3>accessory_accessory_genes.png</h3>
+          <div class="image-center"><img src="assets/images/accessory_accessory_genes.png" alt="Phylogenetic tree" onerror="this.style.display='none'"></div>
+        </div>
+      </div>
+    </div> <!-- content -->
+  </div> <!-- layout -->
+
+  <div class="logo-combo">
+  <div class="logo-caption-top">rMAP-2.0 Comprehensive Analysis Report Summary: 2026-04-10 10:46:09 UTC</div>
+  <div class="logo-container"><img src="assets/images/rMAP_logo.png" alt="rMAP Logo" style="height:200px;object-fit:contain;margin:10px" onerror="this.style.display='none'"></div>
+  <div class="logo-caption-bottom">This run was generated using rMAP version 2.0 performed on 2026-04-10 10:46:09 UTC... Thank you for using this pipeline!!</div>
+</div>
+  <div class="footer-banner">This report was generated by rMAP 2.0 pipeline</div>
+</div>
+</body></html>

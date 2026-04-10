@@ -198,6 +198,18 @@
         <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
       </a>
 
+      <!-- ESBL-E. coli -->
+      <a class="card" href="./reports/esbl_ecoli.html" data-name="esbl esbl-e. coli esbl e. coli escherichia coli ecoli">
+        <div class="icon ecoli" aria-hidden="true">
+          <img
+            id="esbl-ecoli-img"
+            src="./assets/ecoli.jpg"
+            alt="ESBL Escherichia coli micrograph"
+            loading="lazy">
+        </div>
+        <div class="title"><em>ESBL-E. coli</em></div>
+        <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
+      </a>
     </div>
 
     <footer>
@@ -226,7 +238,6 @@
         if (!next) return;
         tried.add(next);
         img.src = next + (next.includes('?') ? '' : `?v=${Date.now()}`);
-        // console.log(`[${id}] trying:`, img.src);
       }
       img.addEventListener('error', tryNext, { once: false });
     }
@@ -244,6 +255,12 @@
     ]);
 
     setupFallback('ecoli-img', [
+      './assets/ecoli.jpg',
+      '/rMAP-2.0/assets/ecoli.jpg',
+      'https://gmboowa.github.io/rMAP-2.0/assets/ecoli.jpg'
+    ]);
+
+    setupFallback('esbl-ecoli-img', [
       './assets/ecoli.jpg',
       '/rMAP-2.0/assets/ecoli.jpg',
       'https://gmboowa.github.io/rMAP-2.0/assets/ecoli.jpg'
