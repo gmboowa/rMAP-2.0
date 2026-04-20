@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AMR Profiling Results</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-bottom: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #3498db; color: white; position: sticky; top: 0; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .gene { font-weight: bold; color: #e74c3c; }
+        .antibiotic { font-style: italic; color: #27ae60; }
+        .coverage-high { background-color: #e6ffe6; }
+        .coverage-medium { background-color: #fff9e6; }
+        .coverage-low { background-color: #ffe6e6; }
+        .summary-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error-row { background-color: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>Antimicrobial Resistance Profiling Results</h1>
+    <div class="summary-card">
+        <p><strong>Analysis Date:</strong> Sun Apr 19 23:17:54 UTC 2026</p>
+        <p><strong>Database Used:</strong> Custom</p>
+        <p><strong>Parameters:</strong></p>
+        <ul>
+            <li>Minimum Identity: 90%</li>
+            <li>Minimum Coverage: 80%</li>
+            <li>Threads: 2</li>
+        </ul>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Contig</th>
+                <th>Gene</th>
+                <th>%Coverage</th>
+                <th>%Identity</th>
+                <th>Product</th>
+                <th>Resistance</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr>
+<td>ERR10074378</td>
+<td>Contig_79_43.8571</td>
+<td class="gene">aph(6)-Id_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>aph(6)-Id</td>
+<td class="antibiotic">Streptomycin</td>
+</tr>
+<tr>
+<td>ERR10074378</td>
+<td>Contig_229_46.8662</td>
+<td class="gene">blaTEM-1B_1</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>blaTEM-1B</td>
+<td class="antibiotic">Amoxicillin;Ampicillin;Cephalothin;Piperacillin;Ticarcillin</td>
+</tr>
+<tr>
+<td>ERR10074378</td>
+<td>Contig_79_43.8571</td>
+<td class="gene">dfrA14_5</td>
+<td>100.00</td>
+<td>99.79</td>
+<td>dfrA14</td>
+<td class="antibiotic">Trimethoprim</td>
+</tr>
+<tr>
+<td>ERR10074378</td>
+<td>Contig_21_26.7156</td>
+<td class="gene">dfrA1_8</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>dfrA1</td>
+<td class="antibiotic">Trimethoprim</td>
+</tr>
+<tr>
+<td>ERR10074378</td>
+<td>Contig_432_24.1942</td>
+<td class="gene">mdf(A)_1</td>
+<td>99.59</td>
+<td>98.46</td>
+<td>mdf(A)</td>
+<td class="antibiotic"></td>
+</tr>
+<tr>
+<td>ERR10074378</td>
+<td>Contig_79_43.8571</td>
+<td class="gene">sul2_2</td>
+<td>100.00</td>
+<td>100.00</td>
+<td>sul2</td>
+<td class="antibiotic">Sulfamethoxazole</td>
+</tr>
+        </tbody>
+    </table>
+</body>
+</html>
