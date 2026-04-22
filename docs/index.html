@@ -172,7 +172,7 @@
         <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
       </a>
 
-      <!-- ✅ NEW: test_data -->
+      <!-- Test data -->
       <a class="card" href="./eskapee/test_data/" data-name="test_data test dataset demo ecoli test e. coli">
         <div class="icon" aria-hidden="true">
           <img
@@ -181,11 +181,11 @@
             alt="Test dataset"
             loading="lazy">
         </div>
-        <div class="title">Test_data</div>
+        <div class="title">Test data</div>
         <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
       </a>
 
-      <!-- ✅ NEW: non-eskapee -->
+      <!-- Non eskapee -->
       <a class="card" href="./non-eskapee/" data-name="non-eskapee non eskapee non_eskapee noneskapee other pathogens">
         <div class="icon" aria-hidden="true">
           <img
@@ -194,7 +194,7 @@
             alt="Non-ESKAPEE reports"
             loading="lazy">
         </div>
-        <div class="title">Non-eskapee</div>
+        <div class="title">Non eskapee</div>
         <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
       </a>
 
@@ -210,18 +210,32 @@
         <div class="title"><em>ESBL E. coli</em></div>
         <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
       </a>
-      <!-- NEW: MDR Shigella sonnei -->
-<a class="card" href="./reports/MDR_Shigella_sonnei.html" data-name="shigella sonnei shigella mdr esbl xmdr">
-  <div class="icon" aria-hidden="true">
-    <img
-      id="shigella-img"
-      src="./assets/shigella.jpg"
-      alt="Shigella sonnei micrograph"
-      loading="lazy">
-  </div>
-  <div class="title"><em>MDR Shigella sonnei</em></div>
-  <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
-</a>
+
+      <!-- MDR Shigella sonnei -->
+      <a class="card" href="./reports/MDR_Shigella_sonnei.html" data-name="shigella sonnei shigella mdr esbl xmdr">
+        <div class="icon" aria-hidden="true">
+          <img
+            id="shigella-img"
+            src="./assets/shigella.jpg"
+            alt="Shigella sonnei micrograph"
+            loading="lazy">
+        </div>
+        <div class="title"><em>MDR Shigella sonnei</em></div>
+        <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
+      </a>
+
+      <!-- ESBL + CRE isolates -->
+      <a class="card" href="./reports/ESBL_CRE_isolates.html" data-name="esbl cre isolates carbapenem resistant esbl+cre multidrug resistant colistin resistant">
+        <div class="icon" aria-hidden="true">
+          <img
+            id="esbl-cre-img"
+            src="./assets/ESBL_CRE_isolates.jpg"
+            alt="ESBL and CRE isolates micrograph"
+            loading="lazy">
+        </div>
+        <div class="title">ESBL + CRE isolates</div>
+        <div class="chips"><span class="chip"><strong>Rapid microbial analysis report</strong></span></div>
+      </a>
     </div>
 
     <footer>
@@ -300,6 +314,24 @@
       './non-eskapee/assets/images/non-eskapee.jpg',
       '/rMAP-2.0/non-eskapee/assets/images/non-eskapee.jpg',
       'https://gmboowa.github.io/rMAP-2.0/non-eskapee/assets/images/non-eskapee.jpg',
+      './assets/ecoli.jpg',
+      '/rMAP-2.0/assets/ecoli.jpg',
+      'https://gmboowa.github.io/rMAP-2.0/assets/ecoli.jpg'
+    ]);
+
+    setupFallback('shigella-img', [
+      './assets/shigella.jpg',
+      '/rMAP-2.0/assets/shigella.jpg',
+      'https://gmboowa.github.io/rMAP-2.0/assets/shigella.jpg',
+      './assets/ecoli.jpg',
+      '/rMAP-2.0/assets/ecoli.jpg',
+      'https://gmboowa.github.io/rMAP-2.0/assets/ecoli.jpg'
+    ]);
+
+    setupFallback('esbl-cre-img', [
+      './assets/ESBL_CRE_isolates.jpg',
+      '/rMAP-2.0/assets/ESBL_CRE_isolates.jpg',
+      'https://gmboowa.github.io/rMAP-2.0/assets/ESBL_CRE_isolates.jpg',
       './assets/ecoli.jpg',
       '/rMAP-2.0/assets/ecoli.jpg',
       'https://gmboowa.github.io/rMAP-2.0/assets/ecoli.jpg'
