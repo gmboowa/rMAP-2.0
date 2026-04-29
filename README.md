@@ -68,18 +68,6 @@ The workflow is written in **Workflow Description Language (WDL)**, uses **Docke
 
 ## Repository layout (current)
 
-This README reflects the current repository layout (as in the GitHub tree):
-
-```text
-rMAP-2.0/
-  rMAP.wdl
-  README.md
-  docs/
-  test_data/
-  config/
-  databases/
-  workflow.png
-```
 
 - **config/**: example input JSONs (e.g., `inputs_example.json`) plus small reference FASTA artifacts used for testing/examples (e.g., species reference FASTAs and `adapters.fa`).
 - **databases/**: small FASTA databases shipped for convenience (e.g., `resfinder.fa`, `plasmidfinder.fa`, `vfdb.fa`). Large reference bundles are distributed via Zenodo/releases.
@@ -206,7 +194,7 @@ Edit your input JSON file (e.g., `inputs.json`) with paths to your:
 ### Step 2: Run the workflow
 
 ```bash
-java -jar cromwell.jar run rMAP.wdl --inputs inputs.json
+java -jar cromwell-<version>.jar run rMAP.wdl --inputs inputs.json
 ```
 
 ---
