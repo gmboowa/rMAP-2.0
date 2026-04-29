@@ -107,7 +107,7 @@ A hosted end-to-end test HTML report generated from this dataset is available he
 From the repository root:
 
 ```bash
-java -jar cromwell.jar run rMAP.wdl --inputs test_data/inputs_test.json
+java -jar cromwell-<version>.jar run rMAP.wdl --inputs inputs.json
 ```
 
 ### Expected outputs
@@ -603,7 +603,7 @@ rMAP-2.0 is executed with Cromwell using the default configuration for local run
 Run the workflow using Cromwell defaults:
 
 ```bash
-java -jar cromwell.jar run rMAP.wdl --inputs inputs.json
+java -jar cromwell-<version>.jar run rMAP.wdl --inputs inputs.json
 ```
 
 ### HPC / cloud note (optional)
@@ -729,8 +729,8 @@ Ensure Java 17+.
 Confirm your `cromwell.jar` is accessible and not corrupted:
 
 ```bash
-ls -lh cromwell.jar
-java -jar cromwell.jar --version
+ls -lh cromwell-<version>.jar 
+java -jarcromwell-<version>.jar --version
 ```
 
 ### 5) “Local BLAST DB not found”
