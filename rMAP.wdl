@@ -94,7 +94,7 @@ workflow rMAP {
   cpu = cpu_8,
   memory_gb = mem_16,
   min_contig_len = min_assembly_quality
-  
+
   }
 
   call ANNOTATION {
@@ -3188,7 +3188,7 @@ task VIRULENCE_ANALYSIS {
 task BLAST_ANALYSIS {
   input {
     Array[File]? contig_fastas
-    String blast_db = "nt"
+    String blast_db = "/blastdb/eskapee_db"
     Boolean use_local_blast = false
     File? local_blast_db
     Int max_target_seqs = 250
@@ -3242,20 +3242,24 @@ task BLAST_ANALYSIS {
     TMPDIR=$(mktemp -d ./blast_tmp.XXXXXX)
     debug_log "Created temp directory: $TMPDIR"
 
-    # Handle BLAST database setup
-    if [ "~{use_local_blast}" = "true" ] && [ -n "~{local_blast_db}" ]; then
-      echo "Setting up local BLAST database from input file" >> execution.log
-      makeblastdb -in "~{local_blast_db}" -dbtype nucl -parse_seqids \
-                  -title "~{blast_db}" -out "~{blast_db}" \
-                  -logfile "makeblastdb.log" || {
-        echo "Failed to build local DB" >> execution.log
-        exit 1
-      }
-      export BLAST_DB="~{blast_db}"
-    else
-      echo "Using remote or prebuilt DB: ~{blast_db}" >> execution.log
-      export BLAST_DB="~{blast_db}"
-    fi
+    # Use prebuilt BLAST database embedded in Docker image
+    export BLASTDB=/blastdb
+    export BLAST_DB="~{blast_db}"
+
+    {
+      echo "Using prebuilt BLAST database embedded in Docker image" >> execution.log
+      echo "BLASTDB environment variable: ${BLASTDB}" >> execution.log
+      echo "BLAST database path/name: ${BLAST_DB}" >> execution.log
+    }
+
+    # Verify that the embedded BLAST database is accessible
+    blastdbcmd -db "${BLAST_DB}" -info >> execution.log 2>> execution.log || {
+      echo "ERROR: BLAST database '${BLAST_DB}' is not accessible inside the Docker image." >> execution.log
+      echo "Expected database path/name: /blastdb/eskapee_db" >> execution.log
+      echo "Available /blastdb contents:" >> execution.log
+      ls -lh /blastdb >> execution.log 2>&1 || true
+      exit 1
+    }
 
     # System diagnostics
     {
@@ -3451,7 +3455,7 @@ PYEOF
           -outfmt "6 std qlen slen stitle" \
           -out "${sample_dir}/blast_results.tsv" \
           -evalue ~{evalue} \
-          -max_target_seqs 25 \
+          -max_target_seqs ~{max_target_seqs} \
           -max_hsps 1 \
           -culling_limit 1 \
           -task megablast \
@@ -3492,7 +3496,6 @@ PYEOF
       --progress --eta --tagstring "{}" "process_sample {}" :::: "$work_list" \
       1> sample_ids.txt
 
-
     # Finalization with results summary
     {
       echo -e "\n=== PROCESSING COMPLETED ==="
@@ -3506,8 +3509,9 @@ PYEOF
     # Cleanup
     rm -rf "${TMPDIR}"
   >>>
+
   runtime {
-    docker: "gmboowa/blast-analysis:1.9.4"
+    docker: "gmboowa/eskapee-blastdb:1.0"
     cpu: select_first([cpu, 1])
     memory: "~{memory_gb} GB"
     disks: "local-disk 100 HDD"
@@ -3524,11 +3528,9 @@ PYEOF
     Array[String] sample_ids = read_lines("sample_ids.txt")
     File execution_log = "execution.log"
     File parallel_log = "parallel.log"
-    File? makeblastdb_log = "makeblastdb.log"
     File? debug_log = "debug.log"
   }
 }
-
 task TREE_VISUALIZATION {
   input {
     File input_tree
