@@ -278,8 +278,6 @@ Example JSON (update paths to your environment):
   "rMAP.reference_genome": "~/reference.gbk",
   "rMAP.reference_type": "genbank",
 
-  "rMAP.trimmomatic_quality_encoding": "phred33",
-
   "rMAP.do_trimming": true,
   "rMAP.do_quality_control": true,
   "rMAP.do_assembly": true,
@@ -294,9 +292,9 @@ Example JSON (update paths to your environment):
   "rMAP.do_reporting": true,
   "rMAP.do_blast": true,
 
-  "rMAP.use_local_blast": true,
+  "rMAP.use_local_blast": false,
+  "rMAP.blast_db": "/blastdb/eskapee_db",
 
-  "rMAP.local_blast_db": "~/eskapee_db/eskapee_db",
   "rMAP.local_amr_db": "~/resfinder.fa",
   "rMAP.local_mge_db": "~/plasmidfinder.fa",
   "rMAP.local_virulence_db": "~/vfdb.fa",
@@ -333,7 +331,8 @@ Example JSON (update paths to your environment):
 | Phylogeny | FastTree | `staphb/fasttree:2.1.11` |
 | Tree Visualization | ETE3 | `gmboowa/ete3-render:1.18` |
 | AMR/MGE/Virulence | Abricate | `staphb/abricate:1.0.0` |
-| BLAST | BLAST+ | `gmboowa/blast-analysis:1.9.4` |
+| BLAST, recommended embedded ESKAPEE DB mode | BLAST+ with prebuilt ESKAPEE database | `gmboowa/eskapee-blastdb:1.0` |
+| BLAST, advanced local/custom DB mode | BLAST+ only; user supplies local BLAST DB | `gmboowa/blast-analysis:1.9.4` |
 
 ---
 
@@ -392,6 +391,54 @@ Each `call-*` directory contains:
 Interactive HTML reports for several ESKAPEE example cohorts are hosted here:
 
 - https://gmboowa.github.io/rMAP-2.0/
+
+---
+
+## BLAST database options
+
+rMAP-2.0 supports BLASTn-based sequence similarity screening of assembled contigs. There are two intended BLAST database modes:
+
+1. **Embedded ESKAPEE BLAST database mode** — recommended default.
+2. **Local/custom BLAST database mode** — for users who want to provide their own BLAST database.
+
+---
+
+### Option 1: Use the embedded ESKAPEE BLAST database Docker image
+
+This is the recommended mode for most users.
+
+In this mode, rMAP uses the Docker image:
+
+```bash
+gmboowa/eskapee-blastdb:1.0
+```
+This image already contains the ESKAPEE BLAST database at: "/blastdb/eskapee_db"
+
+No local BLAST database download, indexing, or mounting is required.
+
+Use the following settings in your input JSON:
+
+```bash
+{
+  "rMAP.do_blast": true,
+  "rMAP.use_local_blast": false,
+  "rMAP.blast_db": "/blastdb/eskapee_db",
+  "rMAP.blast_max_target_seqs": 250,
+  "rMAP.blast_evalue": 0.000001,
+  "rMAP.blast_min_contig_length": 300
+}
+```
+---
+This mode is useful when:
+
+users do not have enough local disk space for the full BLAST database;
+users want a reproducible prebuilt database snapshot;
+users want the simplest Cromwell/Docker execution mode;
+users are running rMAP on a laptop or workstation.
+
+To verify the embedded database manually:
+
+docker run --rm --entrypoint blastdbcmd gmboowa/eskapee-blastdb:1.0 -db /blastdb/eskapee_db -info
 
 ---
 
