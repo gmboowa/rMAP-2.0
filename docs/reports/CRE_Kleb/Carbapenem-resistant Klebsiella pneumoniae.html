@@ -1,0 +1,2480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>rMAP Analysis Pipeline - Comprehensive Report</title>
+  <style>
+    :root { --primary:#3498db; --secondary:#2c3e50; --light:#f8f9fa; --text:#333; --accent:#fff3cd; }
+    body { font-family:'Segoe UI',Tahoma,Arial,sans-serif; margin:0; background:#f5f5f5; color:var(--text); line-height:1.6; }
+    .container { max-width:1200px; margin:0 auto; padding:20px; }
+    .header { background:var(--secondary); color:#fff; padding:24px; border-radius:6px; margin-bottom:24px; }
+    .logo-combo { margin: 20px 0; }
+    .logo-container { text-align:center; margin:10px 0 }
+    .logo-caption-top, .logo-caption-bottom { text-align:center; margin:6px 0; font-weight:600 }
+    h1,h2,h3{margin-top:0} h1{font-size:2rem;text-align:center}
+    h2{font-size:1.75rem;color:var(--secondary); border-bottom:2px solid #3498db; padding-bottom:8px;}
+    h3{font-size:1.25rem;color:var(--secondary)}
+    .meta{opacity:.9;text-align:center;font-size:.9rem}
+    .layout{display:flex;gap:24px}
+    .nav{position:sticky;top:16px;width:260px;background:#f8f9fa;padding:16px;border-radius:6px;height:fit-content}
+    .nav a{display:block;padding:8px 10px;border-radius:4px;text-decoration:none;color:#2c3e50;margin:4px 0}
+    .nav a:hover{background:#3498db;color:#fff}
+    .content{flex:1;background:#fff;padding:20px;border-radius:6px;box-shadow:0 2px 4px rgba(0,0,0,.05)}
+    .section{margin-bottom:36px;border-bottom:1px solid #eee;padding-bottom:20px}.section:last-child{border:none}
+    .report-card{background:#f8f9fa;padding:16px;border-radius:6px;margin:12px 0}
+    .image-center{text-align:center;margin:12px 0}
+    img{max-width:100%;height:auto;border:1px solid #ddd;border-radius:4px}
+    table{width:100%;border-collapse:collapse;margin:12px 0}
+    th,td{padding:8px 12px;text-align:left;border:1px solid #ddd}
+    th{background-color:#2c3e50;color:white} tr:nth-child(even){background:#f2f2f2}
+    .footer-banner{text-align:center;color:#333;margin:24px 0;padding:10px 12px;background:#fff3cd;border:1px solid #e6cf8b;border-radius:6px;font-weight:600}
+    @media(max-width:768px){.layout{flex-direction:column}.nav{position:static;width:auto}}
+  </style>
+</head>
+<body>
+<div class="container">
+  <div class="logo-combo">
+  <div class="logo-caption-top">rMAP-2.0 Comprehensive Analysis Report Summary: 2026-04-30 13:42:36 UTC</div>
+  <div class="logo-container"><img src="assets/images/rMAP_logo.png" alt="rMAP Logo" style="height:200px;object-fit:contain;margin:10px" onerror="this.style.display='none'"></div>
+  <div class="logo-caption-bottom">This run was generated using rMAP version 2.0 performed on 2026-04-30 13:42:36 UTC... Thank you for using this pipeline!!</div>
+</div>
+
+  <div class="header">
+    <h1>rMAP Analysis Pipeline</h1>
+    <div class="meta">Version 2.0 • Run: 2026-04-30 13:42:36 UTC</div>
+  </div>
+
+  <div class="layout">
+    <nav class="nav">
+      <strong>Sections</strong>
+      <a href="#summary">Summary</a>
+      <a href="#qc">Quality Control</a>
+      <a href="#assembly">Assembly</a>
+      <a href="#annotation">Annotation</a>
+      <a href="#pangenome">Pangenome</a>
+      <a href="#mlst">MLST</a>
+      <a href="#variants">Variants</a>
+      <a href="#amr">AMR</a>
+      <a href="#mge">MGE</a>
+      <a href="#virulence">Virulence</a>
+      <a href="#blast">BLAST</a>
+      <a href="#phylogeny">Phylogeny</a>
+    </nav>
+
+    <div class="content">
+      <div id="summary" class="section">
+        <h2>Analysis Summary</h2>
+        <div class="report-card">
+          <p>This report aggregates results from rMAP modules (QC, assembly/annotation, pangenome/phylogeny, AMR/MGE/virulence/BLAST, and phylogeny).</p>
+        </div>
+      </div>
+
+      <div id="qc" class="section">
+        <h2>Quality Control</h2>
+        <div class="report-card"><h3>Per-sample QC reports</h3><ul>
+          <li><a href="assets/sections/ERR11748533_qc.html" target="_blank">QC Report 1 — ERR11748533</a></li>
+          <li><a href="assets/sections/ERR11748534_qc.html" target="_blank">QC Report 2 — ERR11748534</a></li>
+          <li><a href="assets/sections/ERR11748534_qc.html" target="_blank">QC Report 3 — ERR11748534</a></li>
+          <li><a href="assets/sections/ERR11748535_qc.html" target="_blank">QC Report 4 — ERR11748535</a></li>
+          <li><a href="assets/sections/ERR11748535_qc.html" target="_blank">QC Report 5 — ERR11748535</a></li>
+          <li><a href="assets/sections/ERR11748536_qc.html" target="_blank">QC Report 6 — ERR11748536</a></li>
+          <li><a href="assets/sections/ERR11748536_qc.html" target="_blank">QC Report 7 — ERR11748536</a></li>
+          <li><a href="assets/sections/ERR11748537_qc.html" target="_blank">QC Report 8 — ERR11748537</a></li>
+          <li><a href="assets/sections/ERR11748537_qc.html" target="_blank">QC Report 9 — ERR11748537</a></li>
+          <li><a href="assets/sections/ERR11748538_qc.html" target="_blank">QC Report 10 — ERR11748538</a></li>
+          <li><a href="assets/sections/ERR11748488_qc.html" target="_blank">QC Report 11 — ERR11748488</a></li>
+          <li><a href="assets/sections/ERR11748538_qc.html" target="_blank">QC Report 12 — ERR11748538</a></li>
+          <li><a href="assets/sections/ERR11748539_qc.html" target="_blank">QC Report 13 — ERR11748539</a></li>
+          <li><a href="assets/sections/ERR11748539_qc.html" target="_blank">QC Report 14 — ERR11748539</a></li>
+          <li><a href="assets/sections/ERR11748540_qc.html" target="_blank">QC Report 15 — ERR11748540</a></li>
+          <li><a href="assets/sections/ERR11748540_qc.html" target="_blank">QC Report 16 — ERR11748540</a></li>
+          <li><a href="assets/sections/ERR11748541_qc.html" target="_blank">QC Report 17 — ERR11748541</a></li>
+          <li><a href="assets/sections/ERR11748541_qc.html" target="_blank">QC Report 18 — ERR11748541</a></li>
+          <li><a href="assets/sections/ERR11748542_qc.html" target="_blank">QC Report 19 — ERR11748542</a></li>
+          <li><a href="assets/sections/ERR11748542_qc.html" target="_blank">QC Report 20 — ERR11748542</a></li>
+          <li><a href="assets/sections/ERR11748543_qc.html" target="_blank">QC Report 21 — ERR11748543</a></li>
+          <li><a href="assets/sections/ERR11748489_qc.html" target="_blank">QC Report 22 — ERR11748489</a></li>
+          <li><a href="assets/sections/ERR11748543_qc.html" target="_blank">QC Report 23 — ERR11748543</a></li>
+          <li><a href="assets/sections/ERR11748544_qc.html" target="_blank">QC Report 24 — ERR11748544</a></li>
+          <li><a href="assets/sections/ERR11748544_qc.html" target="_blank">QC Report 25 — ERR11748544</a></li>
+          <li><a href="assets/sections/ERR11748545_qc.html" target="_blank">QC Report 26 — ERR11748545</a></li>
+          <li><a href="assets/sections/ERR11748545_qc.html" target="_blank">QC Report 27 — ERR11748545</a></li>
+          <li><a href="assets/sections/ERR11748546_qc.html" target="_blank">QC Report 28 — ERR11748546</a></li>
+          <li><a href="assets/sections/ERR11748546_qc.html" target="_blank">QC Report 29 — ERR11748546</a></li>
+          <li><a href="assets/sections/ERR11748547_qc.html" target="_blank">QC Report 30 — ERR11748547</a></li>
+          <li><a href="assets/sections/ERR11748547_qc.html" target="_blank">QC Report 31 — ERR11748547</a></li>
+          <li><a href="assets/sections/ERR11748548_qc.html" target="_blank">QC Report 32 — ERR11748548</a></li>
+          <li><a href="assets/sections/ERR11748489_qc.html" target="_blank">QC Report 33 — ERR11748489</a></li>
+          <li><a href="assets/sections/ERR11748548_qc.html" target="_blank">QC Report 34 — ERR11748548</a></li>
+          <li><a href="assets/sections/ERR11748549_qc.html" target="_blank">QC Report 35 — ERR11748549</a></li>
+          <li><a href="assets/sections/ERR11748549_qc.html" target="_blank">QC Report 36 — ERR11748549</a></li>
+          <li><a href="assets/sections/ERR11748550_qc.html" target="_blank">QC Report 37 — ERR11748550</a></li>
+          <li><a href="assets/sections/ERR11748550_qc.html" target="_blank">QC Report 38 — ERR11748550</a></li>
+          <li><a href="assets/sections/ERR11748551_qc.html" target="_blank">QC Report 39 — ERR11748551</a></li>
+          <li><a href="assets/sections/ERR11748551_qc.html" target="_blank">QC Report 40 — ERR11748551</a></li>
+          <li><a href="assets/sections/ERR11748552_qc.html" target="_blank">QC Report 41 — ERR11748552</a></li>
+          <li><a href="assets/sections/ERR11748552_qc.html" target="_blank">QC Report 42 — ERR11748552</a></li>
+          <li><a href="assets/sections/ERR11748553_qc.html" target="_blank">QC Report 43 — ERR11748553</a></li>
+          <li><a href="assets/sections/ERR11748490_qc.html" target="_blank">QC Report 44 — ERR11748490</a></li>
+          <li><a href="assets/sections/ERR11748553_qc.html" target="_blank">QC Report 45 — ERR11748553</a></li>
+          <li><a href="assets/sections/ERR11748554_qc.html" target="_blank">QC Report 46 — ERR11748554</a></li>
+          <li><a href="assets/sections/ERR11748554_qc.html" target="_blank">QC Report 47 — ERR11748554</a></li>
+          <li><a href="assets/sections/ERR11748555_qc.html" target="_blank">QC Report 48 — ERR11748555</a></li>
+          <li><a href="assets/sections/ERR11748555_qc.html" target="_blank">QC Report 49 — ERR11748555</a></li>
+          <li><a href="assets/sections/ERR11748556_qc.html" target="_blank">QC Report 50 — ERR11748556</a></li>
+          <li><a href="assets/sections/ERR11748556_qc.html" target="_blank">QC Report 51 — ERR11748556</a></li>
+          <li><a href="assets/sections/ERR11748557_qc.html" target="_blank">QC Report 52 — ERR11748557</a></li>
+          <li><a href="assets/sections/ERR11748557_qc.html" target="_blank">QC Report 53 — ERR11748557</a></li>
+          <li><a href="assets/sections/ERR11748558_qc.html" target="_blank">QC Report 54 — ERR11748558</a></li>
+          <li><a href="assets/sections/ERR11748490_qc.html" target="_blank">QC Report 55 — ERR11748490</a></li>
+          <li><a href="assets/sections/ERR11748558_qc.html" target="_blank">QC Report 56 — ERR11748558</a></li>
+          <li><a href="assets/sections/ERR11748491_qc.html" target="_blank">QC Report 57 — ERR11748491</a></li>
+          <li><a href="assets/sections/ERR11748491_qc.html" target="_blank">QC Report 58 — ERR11748491</a></li>
+          <li><a href="assets/sections/ERR11748492_qc.html" target="_blank">QC Report 59 — ERR11748492</a></li>
+          <li><a href="assets/sections/ERR11748492_qc.html" target="_blank">QC Report 60 — ERR11748492</a></li>
+          <li><a href="assets/sections/ERR11748493_qc.html" target="_blank">QC Report 61 — ERR11748493</a></li>
+          <li><a href="assets/sections/DRR221025_qc.html" target="_blank">QC Report 62 — DRR221025</a></li>
+          <li><a href="assets/sections/ERR11748493_qc.html" target="_blank">QC Report 63 — ERR11748493</a></li>
+          <li><a href="assets/sections/ERR11748494_qc.html" target="_blank">QC Report 64 — ERR11748494</a></li>
+          <li><a href="assets/sections/ERR11748494_qc.html" target="_blank">QC Report 65 — ERR11748494</a></li>
+          <li><a href="assets/sections/ERR11748495_qc.html" target="_blank">QC Report 66 — ERR11748495</a></li>
+          <li><a href="assets/sections/ERR11748495_qc.html" target="_blank">QC Report 67 — ERR11748495</a></li>
+          <li><a href="assets/sections/ERR11748496_qc.html" target="_blank">QC Report 68 — ERR11748496</a></li>
+          <li><a href="assets/sections/ERR11748496_qc.html" target="_blank">QC Report 69 — ERR11748496</a></li>
+          <li><a href="assets/sections/ERR11748497_qc.html" target="_blank">QC Report 70 — ERR11748497</a></li>
+          <li><a href="assets/sections/ERR11748497_qc.html" target="_blank">QC Report 71 — ERR11748497</a></li>
+          <li><a href="assets/sections/ERR11748498_qc.html" target="_blank">QC Report 72 — ERR11748498</a></li>
+          <li><a href="assets/sections/DRR221025_qc.html" target="_blank">QC Report 73 — DRR221025</a></li>
+          <li><a href="assets/sections/ERR11748498_qc.html" target="_blank">QC Report 74 — ERR11748498</a></li>
+          <li><a href="assets/sections/ERR11748499_qc.html" target="_blank">QC Report 75 — ERR11748499</a></li>
+          <li><a href="assets/sections/ERR11748499_qc.html" target="_blank">QC Report 76 — ERR11748499</a></li>
+          <li><a href="assets/sections/ERR11748500_qc.html" target="_blank">QC Report 77 — ERR11748500</a></li>
+          <li><a href="assets/sections/ERR11748500_qc.html" target="_blank">QC Report 78 — ERR11748500</a></li>
+          <li><a href="assets/sections/ERR11748501_qc.html" target="_blank">QC Report 79 — ERR11748501</a></li>
+          <li><a href="assets/sections/ERR11748501_qc.html" target="_blank">QC Report 80 — ERR11748501</a></li>
+          <li><a href="assets/sections/ERR11748502_qc.html" target="_blank">QC Report 81 — ERR11748502</a></li>
+          <li><a href="assets/sections/ERR11748502_qc.html" target="_blank">QC Report 82 — ERR11748502</a></li>
+          <li><a href="assets/sections/ERR11748503_qc.html" target="_blank">QC Report 83 — ERR11748503</a></li>
+          <li><a href="assets/sections/ERR11748485_qc.html" target="_blank">QC Report 84 — ERR11748485</a></li>
+          <li><a href="assets/sections/ERR11748503_qc.html" target="_blank">QC Report 85 — ERR11748503</a></li>
+          <li><a href="assets/sections/ERR11748504_qc.html" target="_blank">QC Report 86 — ERR11748504</a></li>
+          <li><a href="assets/sections/ERR11748504_qc.html" target="_blank">QC Report 87 — ERR11748504</a></li>
+          <li><a href="assets/sections/ERR11748505_qc.html" target="_blank">QC Report 88 — ERR11748505</a></li>
+          <li><a href="assets/sections/ERR11748505_qc.html" target="_blank">QC Report 89 — ERR11748505</a></li>
+          <li><a href="assets/sections/ERR11748506_qc.html" target="_blank">QC Report 90 — ERR11748506</a></li>
+          <li><a href="assets/sections/ERR11748506_qc.html" target="_blank">QC Report 91 — ERR11748506</a></li>
+          <li><a href="assets/sections/ERR11748507_qc.html" target="_blank">QC Report 92 — ERR11748507</a></li>
+          <li><a href="assets/sections/ERR11748507_qc.html" target="_blank">QC Report 93 — ERR11748507</a></li>
+          <li><a href="assets/sections/ERR11748508_qc.html" target="_blank">QC Report 94 — ERR11748508</a></li>
+          <li><a href="assets/sections/ERR11748485_qc.html" target="_blank">QC Report 95 — ERR11748485</a></li>
+          <li><a href="assets/sections/ERR11748508_qc.html" target="_blank">QC Report 96 — ERR11748508</a></li>
+          <li><a href="assets/sections/ERR11748509_qc.html" target="_blank">QC Report 97 — ERR11748509</a></li>
+          <li><a href="assets/sections/ERR11748509_qc.html" target="_blank">QC Report 98 — ERR11748509</a></li>
+          <li><a href="assets/sections/ERR11748510_qc.html" target="_blank">QC Report 99 — ERR11748510</a></li>
+          <li><a href="assets/sections/ERR11748510_qc.html" target="_blank">QC Report 100 — ERR11748510</a></li>
+          <li><a href="assets/sections/ERR11748511_qc.html" target="_blank">QC Report 101 — ERR11748511</a></li>
+          <li><a href="assets/sections/ERR11748511_qc.html" target="_blank">QC Report 102 — ERR11748511</a></li>
+          <li><a href="assets/sections/ERR11748512_qc.html" target="_blank">QC Report 103 — ERR11748512</a></li>
+          <li><a href="assets/sections/ERR11748512_qc.html" target="_blank">QC Report 104 — ERR11748512</a></li>
+          <li><a href="assets/sections/ERR11748513_qc.html" target="_blank">QC Report 105 — ERR11748513</a></li>
+          <li><a href="assets/sections/ERR11748486_qc.html" target="_blank">QC Report 106 — ERR11748486</a></li>
+          <li><a href="assets/sections/ERR11748513_qc.html" target="_blank">QC Report 107 — ERR11748513</a></li>
+          <li><a href="assets/sections/ERR11748514_qc.html" target="_blank">QC Report 108 — ERR11748514</a></li>
+          <li><a href="assets/sections/ERR11748514_qc.html" target="_blank">QC Report 109 — ERR11748514</a></li>
+          <li><a href="assets/sections/ERR11748515_qc.html" target="_blank">QC Report 110 — ERR11748515</a></li>
+          <li><a href="assets/sections/ERR11748515_qc.html" target="_blank">QC Report 111 — ERR11748515</a></li>
+          <li><a href="assets/sections/ERR11748516_qc.html" target="_blank">QC Report 112 — ERR11748516</a></li>
+          <li><a href="assets/sections/ERR11748516_qc.html" target="_blank">QC Report 113 — ERR11748516</a></li>
+          <li><a href="assets/sections/ERR11748517_qc.html" target="_blank">QC Report 114 — ERR11748517</a></li>
+          <li><a href="assets/sections/ERR11748517_qc.html" target="_blank">QC Report 115 — ERR11748517</a></li>
+          <li><a href="assets/sections/ERR11748518_qc.html" target="_blank">QC Report 116 — ERR11748518</a></li>
+          <li><a href="assets/sections/ERR11748486_qc.html" target="_blank">QC Report 117 — ERR11748486</a></li>
+          <li><a href="assets/sections/ERR11748518_qc.html" target="_blank">QC Report 118 — ERR11748518</a></li>
+          <li><a href="assets/sections/ERR11748519_qc.html" target="_blank">QC Report 119 — ERR11748519</a></li>
+          <li><a href="assets/sections/ERR11748519_qc.html" target="_blank">QC Report 120 — ERR11748519</a></li>
+          <li><a href="assets/sections/ERR11748520_qc.html" target="_blank">QC Report 121 — ERR11748520</a></li>
+          <li><a href="assets/sections/ERR11748520_qc.html" target="_blank">QC Report 122 — ERR11748520</a></li>
+          <li><a href="assets/sections/ERR11748521_qc.html" target="_blank">QC Report 123 — ERR11748521</a></li>
+          <li><a href="assets/sections/ERR11748521_qc.html" target="_blank">QC Report 124 — ERR11748521</a></li>
+          <li><a href="assets/sections/ERR11748522_qc.html" target="_blank">QC Report 125 — ERR11748522</a></li>
+          <li><a href="assets/sections/ERR11748522_qc.html" target="_blank">QC Report 126 — ERR11748522</a></li>
+          <li><a href="assets/sections/ERR11748523_qc.html" target="_blank">QC Report 127 — ERR11748523</a></li>
+          <li><a href="assets/sections/ERR11748487_qc.html" target="_blank">QC Report 128 — ERR11748487</a></li>
+          <li><a href="assets/sections/ERR11748523_qc.html" target="_blank">QC Report 129 — ERR11748523</a></li>
+          <li><a href="assets/sections/ERR11748524_qc.html" target="_blank">QC Report 130 — ERR11748524</a></li>
+          <li><a href="assets/sections/ERR11748524_qc.html" target="_blank">QC Report 131 — ERR11748524</a></li>
+          <li><a href="assets/sections/ERR11748525_qc.html" target="_blank">QC Report 132 — ERR11748525</a></li>
+          <li><a href="assets/sections/ERR11748525_qc.html" target="_blank">QC Report 133 — ERR11748525</a></li>
+          <li><a href="assets/sections/ERR11748526_qc.html" target="_blank">QC Report 134 — ERR11748526</a></li>
+          <li><a href="assets/sections/ERR11748526_qc.html" target="_blank">QC Report 135 — ERR11748526</a></li>
+          <li><a href="assets/sections/ERR11748527_qc.html" target="_blank">QC Report 136 — ERR11748527</a></li>
+          <li><a href="assets/sections/ERR11748527_qc.html" target="_blank">QC Report 137 — ERR11748527</a></li>
+          <li><a href="assets/sections/ERR11748528_qc.html" target="_blank">QC Report 138 — ERR11748528</a></li>
+          <li><a href="assets/sections/ERR11748487_qc.html" target="_blank">QC Report 139 — ERR11748487</a></li>
+          <li><a href="assets/sections/ERR11748528_qc.html" target="_blank">QC Report 140 — ERR11748528</a></li>
+          <li><a href="assets/sections/ERR11748529_qc.html" target="_blank">QC Report 141 — ERR11748529</a></li>
+          <li><a href="assets/sections/ERR11748529_qc.html" target="_blank">QC Report 142 — ERR11748529</a></li>
+          <li><a href="assets/sections/ERR11748530_qc.html" target="_blank">QC Report 143 — ERR11748530</a></li>
+          <li><a href="assets/sections/ERR11748530_qc.html" target="_blank">QC Report 144 — ERR11748530</a></li>
+          <li><a href="assets/sections/ERR11748531_qc.html" target="_blank">QC Report 145 — ERR11748531</a></li>
+          <li><a href="assets/sections/ERR11748531_qc.html" target="_blank">QC Report 146 — ERR11748531</a></li>
+          <li><a href="assets/sections/ERR11748532_qc.html" target="_blank">QC Report 147 — ERR11748532</a></li>
+          <li><a href="assets/sections/ERR11748532_qc.html" target="_blank">QC Report 148 — ERR11748532</a></li>
+          <li><a href="assets/sections/ERR11748533_qc.html" target="_blank">QC Report 149 — ERR11748533</a></li>
+          <li><a href="assets/sections/ERR11748488_qc.html" target="_blank">QC Report 150 — ERR11748488</a></li>
+        </ul></div>
+          <div class="report-card">
+            <h3>Read trimming</h3>
+            <div class="report-content">
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Input Pairs</th>
+                <th>Both Surviving</th>
+                <th>Forward Only</th>
+                <th>Reverse Only</th>
+                <th>Dropped (%)</th>
+                <th>Survival Rate (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>DRR221025</td>
+                <td>1123258</td>
+                <td>976162</td>
+                <td>85051</td>
+                <td>8202</td>
+                <td>4.79%</td>
+                <td class="good">95.21%</td>
+            </tr>
+            <tr>
+                <td>ERR11748485</td>
+                <td>1108278</td>
+                <td>999446</td>
+                <td>56285</td>
+                <td>26512</td>
+                <td>2.35%</td>
+                <td class="good">97.65%</td>
+            </tr>
+            <tr>
+                <td>ERR11748486</td>
+                <td>1594351</td>
+                <td>1453283</td>
+                <td>53356</td>
+                <td>52839</td>
+                <td>2.19%</td>
+                <td class="good">97.81%</td>
+            </tr>
+            <tr>
+                <td>ERR11748487</td>
+                <td>757023</td>
+                <td>669124</td>
+                <td>51681</td>
+                <td>15503</td>
+                <td>2.74%</td>
+                <td class="good">97.26%</td>
+            </tr>
+            <tr>
+                <td>ERR11748488</td>
+                <td>1051117</td>
+                <td>965706</td>
+                <td>40826</td>
+                <td>25745</td>
+                <td>1.79%</td>
+                <td class="good">98.21%</td>
+            </tr>
+            <tr>
+                <td>ERR11748489</td>
+                <td>940173</td>
+                <td>849529</td>
+                <td>50815</td>
+                <td>18670</td>
+                <td>2.25%</td>
+                <td class="good">97.75%</td>
+            </tr>
+            <tr>
+                <td>ERR11748490</td>
+                <td>1145421</td>
+                <td>1017622</td>
+                <td>71842</td>
+                <td>25690</td>
+                <td>2.64%</td>
+                <td class="good">97.36%</td>
+            </tr>
+            <tr>
+                <td>ERR11748491</td>
+                <td>1025431</td>
+                <td>917107</td>
+                <td>65054</td>
+                <td>18411</td>
+                <td>2.42%</td>
+                <td class="good">97.58%</td>
+            </tr>
+            <tr>
+                <td>ERR11748492</td>
+                <td>1151419</td>
+                <td>1041445</td>
+                <td>60422</td>
+                <td>23429</td>
+                <td>2.27%</td>
+                <td class="good">97.73%</td>
+            </tr>
+            <tr>
+                <td>ERR11748493</td>
+                <td>1101716</td>
+                <td>974267</td>
+                <td>80656</td>
+                <td>17512</td>
+                <td>2.66%</td>
+                <td class="good">97.34%</td>
+            </tr>
+            <tr>
+                <td>ERR11748494</td>
+                <td>1040533</td>
+                <td>903048</td>
+                <td>86942</td>
+                <td>19418</td>
+                <td>2.99%</td>
+                <td class="good">97.01%</td>
+            </tr>
+            <tr>
+                <td>ERR11748495</td>
+                <td>1061636</td>
+                <td>967366</td>
+                <td>49086</td>
+                <td>23872</td>
+                <td>2.01%</td>
+                <td class="good">97.99%</td>
+            </tr>
+            <tr>
+                <td>ERR11748496</td>
+                <td>2255229</td>
+                <td>2068402</td>
+                <td>71989</td>
+                <td>78452</td>
+                <td>1.61%</td>
+                <td class="good">98.39%</td>
+            </tr>
+            <tr>
+                <td>ERR11748497</td>
+                <td>1055330</td>
+                <td>948108</td>
+                <td>62646</td>
+                <td>19545</td>
+                <td>2.37%</td>
+                <td class="good">97.63%</td>
+            </tr>
+            <tr>
+                <td>ERR11748498</td>
+                <td>607284</td>
+                <td>541907</td>
+                <td>42516</td>
+                <td>7943</td>
+                <td>2.46%</td>
+                <td class="good">97.54%</td>
+            </tr>
+            <tr>
+                <td>ERR11748499</td>
+                <td>1069323</td>
+                <td>949386</td>
+                <td>76497</td>
+                <td>16166</td>
+                <td>2.55%</td>
+                <td class="good">97.45%</td>
+            </tr>
+            <tr>
+                <td>ERR11748500</td>
+                <td>908701</td>
+                <td>797279</td>
+                <td>73020</td>
+                <td>13266</td>
+                <td>2.77%</td>
+                <td class="good">97.23%</td>
+            </tr>
+            <tr>
+                <td>ERR11748501</td>
+                <td>1077799</td>
+                <td>976738</td>
+                <td>55423</td>
+                <td>21362</td>
+                <td>2.25%</td>
+                <td class="good">97.75%</td>
+            </tr>
+            <tr>
+                <td>ERR11748502</td>
+                <td>1101281</td>
+                <td>963803</td>
+                <td>92743</td>
+                <td>14390</td>
+                <td>2.76%</td>
+                <td class="good">97.24%</td>
+            </tr>
+            <tr>
+                <td>ERR11748503</td>
+                <td>1114334</td>
+                <td>1016389</td>
+                <td>52518</td>
+                <td>22307</td>
+                <td>2.07%</td>
+                <td class="good">97.93%</td>
+            </tr>
+            <tr>
+                <td>ERR11748504</td>
+                <td>877109</td>
+                <td>785387</td>
+                <td>53700</td>
+                <td>16519</td>
+                <td>2.45%</td>
+                <td class="good">97.55%</td>
+            </tr>
+            <tr>
+                <td>ERR11748505</td>
+                <td>870693</td>
+                <td>769048</td>
+                <td>64699</td>
+                <td>13402</td>
+                <td>2.70%</td>
+                <td class="good">97.30%</td>
+            </tr>
+            <tr>
+                <td>ERR11748506</td>
+                <td>1010835</td>
+                <td>825855</td>
+                <td>114821</td>
+                <td>17169</td>
+                <td>5.24%</td>
+                <td class="good">94.76%</td>
+            </tr>
+            <tr>
+                <td>ERR11748507</td>
+                <td>894720</td>
+                <td>807644</td>
+                <td>48785</td>
+                <td>17475</td>
+                <td>2.33%</td>
+                <td class="good">97.67%</td>
+            </tr>
+            <tr>
+                <td>ERR11748508</td>
+                <td>1014138</td>
+                <td>889323</td>
+                <td>81084</td>
+                <td>15670</td>
+                <td>2.77%</td>
+                <td class="good">97.23%</td>
+            </tr>
+            <tr>
+                <td>ERR11748509</td>
+                <td>1011440</td>
+                <td>899562</td>
+                <td>70457</td>
+                <td>15481</td>
+                <td>2.56%</td>
+                <td class="good">97.44%</td>
+            </tr>
+            <tr>
+                <td>ERR11748510</td>
+                <td>1005098</td>
+                <td>871216</td>
+                <td>90357</td>
+                <td>13522</td>
+                <td>2.99%</td>
+                <td class="good">97.01%</td>
+            </tr>
+            <tr>
+                <td>ERR11748511</td>
+                <td>929902</td>
+                <td>795340</td>
+                <td>95925</td>
+                <td>10290</td>
+                <td>3.05%</td>
+                <td class="good">96.95%</td>
+            </tr>
+            <tr>
+                <td>ERR11748512</td>
+                <td>1092767</td>
+                <td>958671</td>
+                <td>87469</td>
+                <td>15605</td>
+                <td>2.84%</td>
+                <td class="good">97.16%</td>
+            </tr>
+            <tr>
+                <td>ERR11748513</td>
+                <td>695010</td>
+                <td>583676</td>
+                <td>80818</td>
+                <td>8025</td>
+                <td>3.24%</td>
+                <td class="good">96.76%</td>
+            </tr>
+            <tr>
+                <td>ERR11748514</td>
+                <td>1154084</td>
+                <td>1075508</td>
+                <td>30145</td>
+                <td>34566</td>
+                <td>1.20%</td>
+                <td class="good">98.80%</td>
+            </tr>
+            <tr>
+                <td>ERR11748515</td>
+                <td>1240922</td>
+                <td>1140213</td>
+                <td>52078</td>
+                <td>26396</td>
+                <td>1.79%</td>
+                <td class="good">98.21%</td>
+            </tr>
+            <tr>
+                <td>ERR11748516</td>
+                <td>1117164</td>
+                <td>947058</td>
+                <td>122539</td>
+                <td>12621</td>
+                <td>3.13%</td>
+                <td class="good">96.87%</td>
+            </tr>
+            <tr>
+                <td>ERR11748517</td>
+                <td>658613</td>
+                <td>608180</td>
+                <td>25336</td>
+                <td>14788</td>
+                <td>1.57%</td>
+                <td class="good">98.43%</td>
+            </tr>
+            <tr>
+                <td>ERR11748518</td>
+                <td>1076557</td>
+                <td>984264</td>
+                <td>50947</td>
+                <td>21177</td>
+                <td>1.87%</td>
+                <td class="good">98.13%</td>
+            </tr>
+            <tr>
+                <td>ERR11748519</td>
+                <td>1099900</td>
+                <td>994078</td>
+                <td>59910</td>
+                <td>22363</td>
+                <td>2.14%</td>
+                <td class="good">97.86%</td>
+            </tr>
+            <tr>
+                <td>ERR11748520</td>
+                <td>1028622</td>
+                <td>923685</td>
+                <td>55726</td>
+                <td>24281</td>
+                <td>2.42%</td>
+                <td class="good">97.58%</td>
+            </tr>
+            <tr>
+                <td>ERR11748521</td>
+                <td>1102199</td>
+                <td>1002279</td>
+                <td>55850</td>
+                <td>22828</td>
+                <td>1.93%</td>
+                <td class="good">98.07%</td>
+            </tr>
+            <tr>
+                <td>ERR11748522</td>
+                <td>1565112</td>
+                <td>1427450</td>
+                <td>65018</td>
+                <td>40678</td>
+                <td>2.04%</td>
+                <td class="good">97.96%</td>
+            </tr>
+            <tr>
+                <td>ERR11748523</td>
+                <td>1316206</td>
+                <td>1199103</td>
+                <td>69122</td>
+                <td>21935</td>
+                <td>1.98%</td>
+                <td class="good">98.02%</td>
+            </tr>
+            <tr>
+                <td>ERR11748524</td>
+                <td>1089799</td>
+                <td>1005630</td>
+                <td>43048</td>
+                <td>22887</td>
+                <td>1.67%</td>
+                <td class="good">98.33%</td>
+            </tr>
+            <tr>
+                <td>ERR11748525</td>
+                <td>1025240</td>
+                <td>921683</td>
+                <td>68791</td>
+                <td>12974</td>
+                <td>2.13%</td>
+                <td class="good">97.87%</td>
+            </tr>
+            <tr>
+                <td>ERR11748526</td>
+                <td>1380120</td>
+                <td>1266036</td>
+                <td>64091</td>
+                <td>25070</td>
+                <td>1.81%</td>
+                <td class="good">98.19%</td>
+            </tr>
+            <tr>
+                <td>ERR11748527</td>
+                <td>1078744</td>
+                <td>994257</td>
+                <td>45041</td>
+                <td>20053</td>
+                <td>1.80%</td>
+                <td class="good">98.20%</td>
+            </tr>
+            <tr>
+                <td>ERR11748528</td>
+                <td>876401</td>
+                <td>798085</td>
+                <td>43111</td>
+                <td>17248</td>
+                <td>2.05%</td>
+                <td class="good">97.95%</td>
+            </tr>
+            <tr>
+                <td>ERR11748529</td>
+                <td>1109217</td>
+                <td>1025255</td>
+                <td>40360</td>
+                <td>25322</td>
+                <td>1.65%</td>
+                <td class="good">98.35%</td>
+            </tr>
+            <tr>
+                <td>ERR11748530</td>
+                <td>1128808</td>
+                <td>998524</td>
+                <td>77655</td>
+                <td>20995</td>
+                <td>2.80%</td>
+                <td class="good">97.20%</td>
+            </tr>
+            <tr>
+                <td>ERR11748531</td>
+                <td>697744</td>
+                <td>629873</td>
+                <td>41473</td>
+                <td>10754</td>
+                <td>2.24%</td>
+                <td class="good">97.76%</td>
+            </tr>
+            <tr>
+                <td>ERR11748532</td>
+                <td>1431385</td>
+                <td>1296723</td>
+                <td>65412</td>
+                <td>36496</td>
+                <td>2.29%</td>
+                <td class="good">97.71%</td>
+            </tr>
+            <tr>
+                <td>ERR11748533</td>
+                <td>732219</td>
+                <td>670158</td>
+                <td>33261</td>
+                <td>14725</td>
+                <td>1.92%</td>
+                <td class="good">98.08%</td>
+            </tr>
+            <tr>
+                <td>ERR11748534</td>
+                <td>1084553</td>
+                <td>978733</td>
+                <td>68305</td>
+                <td>14478</td>
+                <td>2.12%</td>
+                <td class="good">97.88%</td>
+            </tr>
+            <tr>
+                <td>ERR11748535</td>
+                <td>953255</td>
+                <td>842743</td>
+                <td>73852</td>
+                <td>13052</td>
+                <td>2.48%</td>
+                <td class="good">97.52%</td>
+            </tr>
+            <tr>
+                <td>ERR11748536</td>
+                <td>987071</td>
+                <td>890302</td>
+                <td>58804</td>
+                <td>15952</td>
+                <td>2.23%</td>
+                <td class="good">97.77%</td>
+            </tr>
+            <tr>
+                <td>ERR11748537</td>
+                <td>805996</td>
+                <td>700149</td>
+                <td>76498</td>
+                <td>8222</td>
+                <td>2.62%</td>
+                <td class="good">97.38%</td>
+            </tr>
+            <tr>
+                <td>ERR11748538</td>
+                <td>926603</td>
+                <td>823060</td>
+                <td>68525</td>
+                <td>12685</td>
+                <td>2.41%</td>
+                <td class="good">97.59%</td>
+            </tr>
+            <tr>
+                <td>ERR11748539</td>
+                <td>1380588</td>
+                <td>1218992</td>
+                <td>90311</td>
+                <td>32670</td>
+                <td>2.80%</td>
+                <td class="good">97.20%</td>
+            </tr>
+            <tr>
+                <td>ERR11748540</td>
+                <td>1052644</td>
+                <td>948492</td>
+                <td>39528</td>
+                <td>46509</td>
+                <td>1.72%</td>
+                <td class="good">98.28%</td>
+            </tr>
+            <tr>
+                <td>ERR11748541</td>
+                <td>745585</td>
+                <td>641803</td>
+                <td>68490</td>
+                <td>11934</td>
+                <td>3.13%</td>
+                <td class="good">96.87%</td>
+            </tr>
+            <tr>
+                <td>ERR11748542</td>
+                <td>1063636</td>
+                <td>905546</td>
+                <td>98842</td>
+                <td>24493</td>
+                <td>3.27%</td>
+                <td class="good">96.73%</td>
+            </tr>
+            <tr>
+                <td>ERR11748543</td>
+                <td>1020349</td>
+                <td>907342</td>
+                <td>57073</td>
+                <td>31630</td>
+                <td>2.38%</td>
+                <td class="good">97.62%</td>
+            </tr>
+            <tr>
+                <td>ERR11748544</td>
+                <td>919499</td>
+                <td>809897</td>
+                <td>66540</td>
+                <td>17382</td>
+                <td>2.79%</td>
+                <td class="good">97.21%</td>
+            </tr>
+            <tr>
+                <td>ERR11748545</td>
+                <td>952979</td>
+                <td>785151</td>
+                <td>110483</td>
+                <td>21305</td>
+                <td>3.78%</td>
+                <td class="good">96.22%</td>
+            </tr>
+            <tr>
+                <td>ERR11748546</td>
+                <td>876109</td>
+                <td>683668</td>
+                <td>141363</td>
+                <td>14562</td>
+                <td>4.17%</td>
+                <td class="good">95.83%</td>
+            </tr>
+            <tr>
+                <td>ERR11748547</td>
+                <td>1102388</td>
+                <td>974013</td>
+                <td>61169</td>
+                <td>40434</td>
+                <td>2.43%</td>
+                <td class="good">97.57%</td>
+            </tr>
+            <tr>
+                <td>ERR11748548</td>
+                <td>1068296</td>
+                <td>908112</td>
+                <td>107222</td>
+                <td>19544</td>
+                <td>3.13%</td>
+                <td class="good">96.87%</td>
+            </tr>
+            <tr>
+                <td>ERR11748549</td>
+                <td>1010776</td>
+                <td>896089</td>
+                <td>59741</td>
+                <td>29741</td>
+                <td>2.49%</td>
+                <td class="good">97.51%</td>
+            </tr>
+            <tr>
+                <td>ERR11748550</td>
+                <td>995553</td>
+                <td>858855</td>
+                <td>86847</td>
+                <td>20204</td>
+                <td>2.98%</td>
+                <td class="good">97.02%</td>
+            </tr>
+            <tr>
+                <td>ERR11748551</td>
+                <td>984728</td>
+                <td>756656</td>
+                <td>180748</td>
+                <td>10442</td>
+                <td>3.75%</td>
+                <td class="good">96.25%</td>
+            </tr>
+            <tr>
+                <td>ERR11748552</td>
+                <td>1158820</td>
+                <td>1041238</td>
+                <td>61792</td>
+                <td>30340</td>
+                <td>2.20%</td>
+                <td class="good">97.80%</td>
+            </tr>
+            <tr>
+                <td>ERR11748553</td>
+                <td>1285357</td>
+                <td>1098878</td>
+                <td>116401</td>
+                <td>29167</td>
+                <td>3.18%</td>
+                <td class="good">96.82%</td>
+            </tr>
+            <tr>
+                <td>ERR11748554</td>
+                <td>997071</td>
+                <td>883424</td>
+                <td>60510</td>
+                <td>28537</td>
+                <td>2.47%</td>
+                <td class="good">97.53%</td>
+            </tr>
+            <tr>
+                <td>ERR11748555</td>
+                <td>1027540</td>
+                <td>888827</td>
+                <td>83485</td>
+                <td>24735</td>
+                <td>2.97%</td>
+                <td class="good">97.03%</td>
+            </tr>
+            <tr>
+                <td>ERR11748556</td>
+                <td>1054618</td>
+                <td>838721</td>
+                <td>153655</td>
+                <td>20532</td>
+                <td>3.95%</td>
+                <td class="good">96.05%</td>
+            </tr>
+            <tr>
+                <td>ERR11748557</td>
+                <td>841953</td>
+                <td>737821</td>
+                <td>64608</td>
+                <td>16965</td>
+                <td>2.68%</td>
+                <td class="good">97.32%</td>
+            </tr>
+            <tr>
+                <td>ERR11748558</td>
+                <td>860009</td>
+                <td>697773</td>
+                <td>116659</td>
+                <td>13406</td>
+                <td>3.74%</td>
+                <td class="good">96.26%</td>
+            </tr>
+        </tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="assembly" class="section"><h2>Assembly</h2>
+          <div class="report-card">
+            <h3>Assembly statistics</h3>
+            <div class="report-content">
+    <table>
+        <thead>
+            <tr>
+                <th>Sample</th>
+                <th>Contigs</th>
+                <th>Total Length</th>
+                <th>Min Length</th>
+                <th>Max Length</th>
+                <th>Avg Length</th>
+                <th>N50</th>
+            </tr>
+        </thead>
+        <tbody>
+<tr><td>DRR221025</td><td>721</td><td>5542803</td><td>78</td><td>279745</td><td>7687</td><td>95173</td></tr>
+<tr><td>ERR11748485</td><td>1922</td><td>6144004</td><td>78</td><td>317947</td><td>3196</td><td>98699</td></tr>
+<tr><td>ERR11748486</td><td>2866</td><td>6345162</td><td>78</td><td>224833</td><td>2213</td><td>64200</td></tr>
+<tr><td>ERR11748487</td><td>390</td><td>5538408</td><td>78</td><td>331666</td><td>14201</td><td>132313</td></tr>
+<tr><td>ERR11748488</td><td>463</td><td>5546160</td><td>78</td><td>285293</td><td>11978</td><td>114419</td></tr>
+<tr><td>ERR11748489</td><td>963</td><td>5816688</td><td>78</td><td>207289</td><td>6040</td><td>100271</td></tr>
+<tr><td>ERR11748490</td><td>2829</td><td>6246687</td><td>78</td><td>287270</td><td>2208</td><td>78114</td></tr>
+<tr><td>ERR11748491</td><td>462</td><td>5545745</td><td>78</td><td>331664</td><td>12003</td><td>132334</td></tr>
+<tr><td>ERR11748492</td><td>579</td><td>5703482</td><td>78</td><td>347123</td><td>9850</td><td>110286</td></tr>
+<tr><td>ERR11748493</td><td>493</td><td>5552732</td><td>78</td><td>268410</td><td>11263</td><td>114419</td></tr>
+<tr><td>ERR11748494</td><td>393</td><td>5537429</td><td>78</td><td>331667</td><td>14090</td><td>119536</td></tr>
+<tr><td>ERR11748495</td><td>703</td><td>5675914</td><td>78</td><td>207227</td><td>8073</td><td>105088</td></tr>
+<tr><td>ERR11748496</td><td>653</td><td>5705557</td><td>78</td><td>345324</td><td>8737</td><td>94233</td></tr>
+<tr><td>ERR11748497</td><td>428</td><td>5543226</td><td>78</td><td>285293</td><td>12951</td><td>119699</td></tr>
+<tr><td>ERR11748498</td><td>772</td><td>5751198</td><td>78</td><td>207281</td><td>7449</td><td>100271</td></tr>
+<tr><td>ERR11748499</td><td>491</td><td>5480256</td><td>78</td><td>271977</td><td>11161</td><td>105928</td></tr>
+<tr><td>ERR11748500</td><td>10548</td><td>8069305</td><td>78</td><td>58131</td><td>765</td><td>6565</td></tr>
+<tr><td>ERR11748501</td><td>490</td><td>5401522</td><td>78</td><td>272020</td><td>11023</td><td>108098</td></tr>
+<tr><td>ERR11748502</td><td>474</td><td>5551286</td><td>78</td><td>331667</td><td>11711</td><td>132329</td></tr>
+<tr><td>ERR11748503</td><td>429</td><td>5503445</td><td>78</td><td>295131</td><td>12828</td><td>152152</td></tr>
+<tr><td>ERR11748504</td><td>459</td><td>5549535</td><td>78</td><td>268790</td><td>12090</td><td>110006</td></tr>
+<tr><td>ERR11748505</td><td>458</td><td>5685674</td><td>78</td><td>285234</td><td>12414</td><td>109905</td></tr>
+<tr><td>ERR11748506</td><td>415</td><td>5501257</td><td>78</td><td>331666</td><td>13256</td><td>147516</td></tr>
+<tr><td>ERR11748507</td><td>565</td><td>5637522</td><td>78</td><td>331671</td><td>9977</td><td>140727</td></tr>
+<tr><td>ERR11748508</td><td>455</td><td>5576066</td><td>78</td><td>331665</td><td>12255</td><td>132325</td></tr>
+<tr><td>ERR11748509</td><td>440</td><td>5546120</td><td>78</td><td>331666</td><td>12604</td><td>114419</td></tr>
+<tr><td>ERR11748510</td><td>485</td><td>5627232</td><td>78</td><td>295131</td><td>11602</td><td>131142</td></tr>
+<tr><td>ERR11748511</td><td>411</td><td>5534230</td><td>78</td><td>268410</td><td>13465</td><td>114419</td></tr>
+<tr><td>ERR11748512</td><td>447</td><td>5680267</td><td>78</td><td>285234</td><td>12707</td><td>114518</td></tr>
+<tr><td>ERR11748513</td><td>434</td><td>5648006</td><td>78</td><td>331264</td><td>13013</td><td>114419</td></tr>
+<tr><td>ERR11748514</td><td>445</td><td>5682754</td><td>78</td><td>331667</td><td>12770</td><td>132339</td></tr>
+<tr><td>ERR11748515</td><td>528</td><td>5427728</td><td>78</td><td>237187</td><td>10279</td><td>100567</td></tr>
+<tr><td>ERR11748516</td><td>391</td><td>5622303</td><td>78</td><td>324043</td><td>14379</td><td>145443</td></tr>
+<tr><td>ERR11748517</td><td>471</td><td>5508305</td><td>78</td><td>331666</td><td>11694</td><td>147516</td></tr>
+<tr><td>ERR11748518</td><td>480</td><td>5560459</td><td>78</td><td>268829</td><td>11584</td><td>129342</td></tr>
+<tr><td>ERR11748519</td><td>486</td><td>5561920</td><td>78</td><td>248680</td><td>11444</td><td>126716</td></tr>
+<tr><td>ERR11748520</td><td>610</td><td>5577587</td><td>78</td><td>334613</td><td>9143</td><td>126978</td></tr>
+<tr><td>ERR11748521</td><td>796</td><td>5738037</td><td>78</td><td>295131</td><td>7208</td><td>151467</td></tr>
+<tr><td>ERR11748522</td><td>1197</td><td>5894478</td><td>78</td><td>269167</td><td>4924</td><td>105176</td></tr>
+<tr><td>ERR11748523</td><td>474</td><td>5561077</td><td>78</td><td>334219</td><td>11732</td><td>129714</td></tr>
+<tr><td>ERR11748524</td><td>488</td><td>5562126</td><td>78</td><td>268825</td><td>11397</td><td>126918</td></tr>
+<tr><td>ERR11748525</td><td>467</td><td>5654539</td><td>78</td><td>331666</td><td>12108</td><td>123681</td></tr>
+<tr><td>ERR11748526</td><td>484</td><td>5544514</td><td>78</td><td>331666</td><td>11455</td><td>126140</td></tr>
+<tr><td>ERR11748527</td><td>470</td><td>5546747</td><td>78</td><td>285293</td><td>11801</td><td>119536</td></tr>
+<tr><td>ERR11748528</td><td>419</td><td>5534806</td><td>78</td><td>331665</td><td>13209</td><td>141927</td></tr>
+<tr><td>ERR11748529</td><td>433</td><td>5542812</td><td>78</td><td>285151</td><td>12800</td><td>132332</td></tr>
+<tr><td>ERR11748530</td><td>359</td><td>5494075</td><td>78</td><td>331666</td><td>15303</td><td>141927</td></tr>
+<tr><td>ERR11748531</td><td>469</td><td>5545677</td><td>78</td><td>285234</td><td>11824</td><td>109905</td></tr>
+<tr><td>ERR11748532</td><td>1878</td><td>5761094</td><td>78</td><td>345294</td><td>3067</td><td>114583</td></tr>
+<tr><td>ERR11748533</td><td>429</td><td>5543185</td><td>78</td><td>285289</td><td>12921</td><td>109905</td></tr>
+<tr><td>ERR11748534</td><td>417</td><td>5541473</td><td>78</td><td>331665</td><td>13288</td><td>133619</td></tr>
+<tr><td>ERR11748535</td><td>446</td><td>5543321</td><td>78</td><td>285234</td><td>12428</td><td>119537</td></tr>
+<tr><td>ERR11748536</td><td>427</td><td>5542054</td><td>78</td><td>331666</td><td>12979</td><td>132332</td></tr>
+<tr><td>ERR11748537</td><td>435</td><td>5542834</td><td>78</td><td>331527</td><td>12742</td><td>116951</td></tr>
+<tr><td>ERR11748538</td><td>700</td><td>5573024</td><td>78</td><td>331666</td><td>7961</td><td>132329</td></tr>
+<tr><td>ERR11748539</td><td>382</td><td>5537547</td><td>78</td><td>285256</td><td>14496</td><td>132689</td></tr>
+<tr><td>ERR11748540</td><td>429</td><td>5542063</td><td>78</td><td>285293</td><td>12918</td><td>114419</td></tr>
+<tr><td>ERR11748541</td><td>413</td><td>5539331</td><td>78</td><td>331667</td><td>13412</td><td>109905</td></tr>
+<tr><td>ERR11748542</td><td>470</td><td>5518531</td><td>78</td><td>331666</td><td>11741</td><td>131212</td></tr>
+<tr><td>ERR11748543</td><td>803</td><td>5756091</td><td>78</td><td>209147</td><td>7168</td><td>97120</td></tr>
+<tr><td>ERR11748544</td><td>388</td><td>5570662</td><td>78</td><td>331664</td><td>14357</td><td>132679</td></tr>
+<tr><td>ERR11748545</td><td>452</td><td>5544342</td><td>78</td><td>285234</td><td>12266</td><td>110755</td></tr>
+<tr><td>ERR11748546</td><td>794</td><td>5753837</td><td>78</td><td>207407</td><td>7246</td><td>104704</td></tr>
+<tr><td>ERR11748547</td><td>746</td><td>5751487</td><td>78</td><td>280943</td><td>7709</td><td>96059</td></tr>
+<tr><td>ERR11748548</td><td>790</td><td>5754948</td><td>78</td><td>280943</td><td>7284</td><td>105088</td></tr>
+<tr><td>ERR11748549</td><td>726</td><td>5749709</td><td>78</td><td>280943</td><td>7919</td><td>99817</td></tr>
+<tr><td>ERR11748550</td><td>418</td><td>5540533</td><td>78</td><td>331665</td><td>13254</td><td>117355</td></tr>
+<tr><td>ERR11748551</td><td>747</td><td>5748998</td><td>78</td><td>280944</td><td>7696</td><td>100271</td></tr>
+<tr><td>ERR11748552</td><td>748</td><td>5750350</td><td>78</td><td>185338</td><td>7687</td><td>99817</td></tr>
+<tr><td>ERR11748553</td><td>730</td><td>5749291</td><td>78</td><td>280944</td><td>7875</td><td>100369</td></tr>
+<tr><td>ERR11748554</td><td>723</td><td>5748714</td><td>78</td><td>280943</td><td>7951</td><td>104703</td></tr>
+<tr><td>ERR11748555</td><td>759</td><td>5751288</td><td>78</td><td>280943</td><td>7577</td><td>104704</td></tr>
+<tr><td>ERR11748556</td><td>785</td><td>5753923</td><td>78</td><td>287608</td><td>7329</td><td>105088</td></tr>
+<tr><td>ERR11748557</td><td>725</td><td>5749512</td><td>78</td><td>287572</td><td>7930</td><td>104704</td></tr>
+<tr><td>ERR11748558</td><td>467</td><td>5544548</td><td>78</td><td>285353</td><td>11872</td><td>106333</td></tr>
+        </tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="annotation" class="section"><h2>Annotation</h2>
+          <div class="report-card">
+            <h3>Annotation summary</h3>
+            <div class="report-content">
+        <table>
+          <tr><th>Sample ID</th><th>Gene Count</th></tr>
+<tr><td>DRR221025</td><td>5146</td></tr>
+<tr><td>ERR11748485</td><td>5546</td></tr>
+<tr><td>ERR11748486</td><td>5640</td></tr>
+<tr><td>ERR11748487</td><td>5150</td></tr>
+<tr><td>ERR11748488</td><td>5150</td></tr>
+<tr><td>ERR11748489</td><td>5292</td></tr>
+<tr><td>ERR11748490</td><td>5410</td></tr>
+<tr><td>ERR11748491</td><td>5150</td></tr>
+<tr><td>ERR11748492</td><td>5222</td></tr>
+<tr><td>ERR11748493</td><td>5157</td></tr>
+<tr><td>ERR11748494</td><td>5156</td></tr>
+<tr><td>ERR11748495</td><td>5206</td></tr>
+<tr><td>ERR11748496</td><td>5301</td></tr>
+<tr><td>ERR11748497</td><td>5153</td></tr>
+<tr><td>ERR11748498</td><td>5258</td></tr>
+<tr><td>ERR11748499</td><td>5014</td></tr>
+<tr><td>ERR11748500</td><td>6695</td></tr>
+<tr><td>ERR11748501</td><td>4940</td></tr>
+<tr><td>ERR11748502</td><td>5156</td></tr>
+<tr><td>ERR11748503</td><td>5104</td></tr>
+<tr><td>ERR11748504</td><td>5163</td></tr>
+<tr><td>ERR11748505</td><td>5314</td></tr>
+<tr><td>ERR11748506</td><td>5100</td></tr>
+<tr><td>ERR11748507</td><td>5200</td></tr>
+<tr><td>ERR11748508</td><td>5194</td></tr>
+<tr><td>ERR11748509</td><td>5157</td></tr>
+<tr><td>ERR11748510</td><td>5206</td></tr>
+<tr><td>ERR11748511</td><td>5149</td></tr>
+<tr><td>ERR11748512</td><td>5304</td></tr>
+<tr><td>ERR11748513</td><td>5261</td></tr>
+<tr><td>ERR11748514</td><td>5307</td></tr>
+<tr><td>ERR11748515</td><td>4960</td></tr>
+<tr><td>ERR11748516</td><td>5182</td></tr>
+<tr><td>ERR11748517</td><td>5103</td></tr>
+<tr><td>ERR11748518</td><td>5157</td></tr>
+<tr><td>ERR11748519</td><td>5156</td></tr>
+<tr><td>ERR11748520</td><td>5161</td></tr>
+<tr><td>ERR11748521</td><td>5282</td></tr>
+<tr><td>ERR11748522</td><td>5403</td></tr>
+<tr><td>ERR11748523</td><td>5160</td></tr>
+<tr><td>ERR11748524</td><td>5157</td></tr>
+<tr><td>ERR11748525</td><td>5239</td></tr>
+<tr><td>ERR11748526</td><td>5143</td></tr>
+<tr><td>ERR11748527</td><td>5150</td></tr>
+<tr><td>ERR11748528</td><td>5144</td></tr>
+<tr><td>ERR11748529</td><td>5151</td></tr>
+<tr><td>ERR11748530</td><td>5096</td></tr>
+<tr><td>ERR11748531</td><td>5152</td></tr>
+<tr><td>ERR11748532</td><td>5175</td></tr>
+<tr><td>ERR11748533</td><td>5149</td></tr>
+<tr><td>ERR11748534</td><td>5153</td></tr>
+<tr><td>ERR11748535</td><td>5148</td></tr>
+<tr><td>ERR11748536</td><td>5150</td></tr>
+<tr><td>ERR11748537</td><td>5149</td></tr>
+<tr><td>ERR11748538</td><td>5154</td></tr>
+<tr><td>ERR11748539</td><td>5150</td></tr>
+<tr><td>ERR11748540</td><td>5153</td></tr>
+<tr><td>ERR11748541</td><td>5154</td></tr>
+<tr><td>ERR11748542</td><td>5111</td></tr>
+<tr><td>ERR11748543</td><td>5262</td></tr>
+<tr><td>ERR11748544</td><td>5192</td></tr>
+<tr><td>ERR11748545</td><td>5155</td></tr>
+<tr><td>ERR11748546</td><td>5263</td></tr>
+<tr><td>ERR11748547</td><td>5259</td></tr>
+<tr><td>ERR11748548</td><td>5259</td></tr>
+<tr><td>ERR11748549</td><td>5265</td></tr>
+<tr><td>ERR11748550</td><td>5148</td></tr>
+<tr><td>ERR11748551</td><td>5265</td></tr>
+<tr><td>ERR11748552</td><td>5265</td></tr>
+<tr><td>ERR11748553</td><td>5260</td></tr>
+<tr><td>ERR11748554</td><td>5264</td></tr>
+<tr><td>ERR11748555</td><td>5260</td></tr>
+<tr><td>ERR11748556</td><td>5256</td></tr>
+<tr><td>ERR11748557</td><td>5261</td></tr>
+<tr><td>ERR11748558</td><td>5148</td></tr>
+</table>
+            </div>
+          </div>
+      </div>
+      <div id="pangenome" class="section"><h2>Pangenome</h2>
+          <div class="report-card">
+            <h3>Pangenome report</h3>
+            <div class="report-content">
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>Pangenome Analysis Report</title>
+<style>body{font-family:Arial,Helvetica,sans-serif;margin:20px}h1{color:#2c3e50}</style>
+</head>
+<body>
+  <h1>Pangenome Analysis</h1>
+  <p id="status">Roary completed successfully. (This page will show Roary results if available.)</p>
+  <img id="heatmap" src="gene_presence_heatmap.png" alt="Gene presence/absence heatmap" onerror="this.style.display='none'">
+</body>
+</html>
+            </div>
+          </div>
+        <div class="report-card">
+          <h3>Gene Presence/Absence Heatmap</h3>
+          <div class="image-center"><img src="assets/images/gene_presence_heatmap.png" alt="Gene heatmap" onerror="this.style.display='none'"></div>
+        </div>
+      </div>
+      <div id="mlst" class="section"><h2>MLST</h2>
+          <div class="report-card">
+            <h3>Combined MLST</h3>
+            <div class="report-content">
+    <table>
+<thead><tr>
+<th>Sample ID</th>
+<th>Species</th>
+<th>ST</th>
+<th>gapA</th>
+<th>infB</th>
+<th>mdh</th>
+<th>pgi</th>
+<th>phoE</th>
+<th>rpoB</th>
+<th>tonB</th>
+</tr></thead><tbody>
+<tr>
+<td>DRR221025</td>
+<td>kpneumoniae</td>
+<td class="st">340</td>
+<td>3</td>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>18</td>
+</tr>
+<tr>
+<td>ERR11748485</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748486</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748487</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748488</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748489</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748490</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748491</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748492</td>
+<td>kpneumoniae</td>
+<td class="st">15</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>ERR11748493</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748494</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748495</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748496</td>
+<td>kpneumoniae</td>
+<td class="st">152</td>
+<td>2</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>56</td>
+</tr>
+<tr>
+<td>ERR11748497</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748498</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748499</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748500</td>
+<td>kpneumoniae</td>
+<td class="st">2497</td>
+<td>3</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>1</td>
+<td>46</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748501</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748502</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748503</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748504</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748505</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748506</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748507</td>
+<td>kpneumoniae</td>
+<td class="st">17</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748508</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748509</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748510</td>
+<td>kpneumoniae</td>
+<td class="st">17</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748511</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748512</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748513</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748514</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748515</td>
+<td>kpneumoniae</td>
+<td class="st">13</td>
+<td>2</td>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+<td>10</td>
+<td>1</td>
+<td>19</td>
+</tr>
+<tr>
+<td>ERR11748516</td>
+<td>kpneumoniae</td>
+<td class="st">-</td>
+<td>4</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>21</td>
+<td>1</td>
+<td>352</td>
+</tr>
+<tr>
+<td>ERR11748517</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748518</td>
+<td>kpneumoniae</td>
+<td class="st">48</td>
+<td>2</td>
+<td>5</td>
+<td>2</td>
+<td>2</td>
+<td>7</td>
+<td>1</td>
+<td>10</td>
+</tr>
+<tr>
+<td>ERR11748519</td>
+<td>kpneumoniae</td>
+<td class="st">48</td>
+<td>2</td>
+<td>5</td>
+<td>2</td>
+<td>2</td>
+<td>7</td>
+<td>1</td>
+<td>10</td>
+</tr>
+<tr>
+<td>ERR11748520</td>
+<td>kpneumoniae</td>
+<td class="st">48</td>
+<td>2</td>
+<td>5</td>
+<td>2</td>
+<td>2</td>
+<td>7</td>
+<td>1</td>
+<td>10</td>
+</tr>
+<tr>
+<td>ERR11748521</td>
+<td>kpneumoniae</td>
+<td class="st">17</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748522</td>
+<td>kpneumoniae</td>
+<td class="st">1927</td>
+<td>2</td>
+<td>1</td>
+<td>171</td>
+<td>1</td>
+<td>10</td>
+<td>4</td>
+<td>13</td>
+</tr>
+<tr>
+<td>ERR11748523</td>
+<td>kpneumoniae</td>
+<td class="st">48</td>
+<td>2</td>
+<td>5</td>
+<td>2</td>
+<td>2</td>
+<td>7</td>
+<td>1</td>
+<td>10</td>
+</tr>
+<tr>
+<td>ERR11748524</td>
+<td>kpneumoniae</td>
+<td class="st">48</td>
+<td>2</td>
+<td>5</td>
+<td>2</td>
+<td>2</td>
+<td>7</td>
+<td>1</td>
+<td>10</td>
+</tr>
+<tr>
+<td>ERR11748525</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748526</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748527</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748528</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748529</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748530</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748531</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748532</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748533</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748534</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748535</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748536</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748537</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748538</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748539</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748540</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748541</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748542</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748543</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748544</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748545</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748546</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748547</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748548</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748549</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748550</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+<tr>
+<td>ERR11748551</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748552</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748553</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748554</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748555</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748556</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748557</td>
+<td>kpneumoniae</td>
+<td class="st">39</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>9</td>
+<td>1</td>
+<td>14</td>
+</tr>
+<tr>
+<td>ERR11748558</td>
+<td>kpneumoniae</td>
+<td class="st">2621</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>4</td>
+<td>131</td>
+<td>4</td>
+</tr>
+</tbody>
+    </table>
+            </div>
+          </div>
+      </div>
+      <div id="variants" class="section"><h2>Variants</h2>
+          <div class="report-card">
+            <h3>Variant summary</h3>
+            <div class="report-content">
+  <table>
+    <thead>
+      <tr>
+        <th>Sample</th>
+        <th>Status</th>
+        <th>SNPs</th>
+        <th>INDELs</th>
+        <th>Total Variants</th>
+        <th>Attempts</th>
+      </tr>
+    </thead>
+    <tbody>
+<tr><td>DRR221025</td><td>Success</td><td>4561</td><td>0</td><td class="error">4561</td><td>1</td></tr>
+<tr><td>ERR11748485</td><td>Success</td><td>24856</td><td>0</td><td class="error">24856</td><td>1</td></tr>
+<tr><td>ERR11748486</td><td>Success</td><td>18897</td><td>0</td><td class="error">18897</td><td>1</td></tr>
+<tr><td>ERR11748487</td><td>Success</td><td>24866</td><td>0</td><td class="error">24866</td><td>1</td></tr>
+<tr><td>ERR11748488</td><td>Success</td><td>25005</td><td>0</td><td class="error">25005</td><td>1</td></tr>
+<tr><td>ERR11748489</td><td>Success</td><td>25330</td><td>0</td><td class="error">25330</td><td>1</td></tr>
+<tr><td>ERR11748490</td><td>Success</td><td>22537</td><td>0</td><td class="error">22537</td><td>1</td></tr>
+<tr><td>ERR11748491</td><td>Success</td><td>24962</td><td>0</td><td class="error">24962</td><td>1</td></tr>
+<tr><td>ERR11748492</td><td>Success</td><td>25756</td><td>0</td><td class="error">25756</td><td>1</td></tr>
+<tr><td>ERR11748493</td><td>Success</td><td>24974</td><td>0</td><td class="error">24974</td><td>1</td></tr>
+<tr><td>ERR11748494</td><td>Success</td><td>25169</td><td>0</td><td class="error">25169</td><td>1</td></tr>
+<tr><td>ERR11748495</td><td>Success</td><td>25434</td><td>0</td><td class="error">25434</td><td>1</td></tr>
+<tr><td>ERR11748496</td><td>Success</td><td>25171</td><td>0</td><td class="error">25171</td><td>1</td></tr>
+<tr><td>ERR11748497</td><td>Success</td><td>25005</td><td>0</td><td class="error">25005</td><td>1</td></tr>
+<tr><td>ERR11748498</td><td>Success</td><td>25081</td><td>0</td><td class="error">25081</td><td>1</td></tr>
+<tr><td>ERR11748499</td><td>Success</td><td>24641</td><td>0</td><td class="error">24641</td><td>1</td></tr>
+<tr><td>ERR11748500</td><td>Success</td><td>5508</td><td>0</td><td class="error">5508</td><td>1</td></tr>
+<tr><td>ERR11748501</td><td>Success</td><td>24458</td><td>0</td><td class="error">24458</td><td>1</td></tr>
+<tr><td>ERR11748502</td><td>Success</td><td>24956</td><td>0</td><td class="error">24956</td><td>1</td></tr>
+<tr><td>ERR11748503</td><td>Success</td><td>25056</td><td>0</td><td class="error">25056</td><td>1</td></tr>
+<tr><td>ERR11748504</td><td>Success</td><td>24878</td><td>0</td><td class="error">24878</td><td>1</td></tr>
+<tr><td>ERR11748505</td><td>Success</td><td>26134</td><td>0</td><td class="error">26134</td><td>1</td></tr>
+<tr><td>ERR11748506</td><td>Success</td><td>24869</td><td>0</td><td class="error">24869</td><td>1</td></tr>
+<tr><td>ERR11748507</td><td>Success</td><td>25133</td><td>0</td><td class="error">25133</td><td>1</td></tr>
+<tr><td>ERR11748508</td><td>Success</td><td>25244</td><td>0</td><td class="error">25244</td><td>1</td></tr>
+<tr><td>ERR11748509</td><td>Success</td><td>24924</td><td>0</td><td class="error">24924</td><td>1</td></tr>
+<tr><td>ERR11748510</td><td>Success</td><td>25153</td><td>0</td><td class="error">25153</td><td>1</td></tr>
+<tr><td>ERR11748511</td><td>Success</td><td>24895</td><td>0</td><td class="error">24895</td><td>1</td></tr>
+<tr><td>ERR11748512</td><td>Success</td><td>26155</td><td>0</td><td class="error">26155</td><td>1</td></tr>
+<tr><td>ERR11748513</td><td>Success</td><td>24593</td><td>0</td><td class="error">24593</td><td>1</td></tr>
+<tr><td>ERR11748514</td><td>Success</td><td>26196</td><td>0</td><td class="error">26196</td><td>1</td></tr>
+<tr><td>ERR11748515</td><td>Success</td><td>25248</td><td>0</td><td class="error">25248</td><td>1</td></tr>
+<tr><td>ERR11748516</td><td>Success</td><td>24626</td><td>0</td><td class="error">24626</td><td>1</td></tr>
+<tr><td>ERR11748517</td><td>Success</td><td>24679</td><td>0</td><td class="error">24679</td><td>1</td></tr>
+<tr><td>ERR11748518</td><td>Success</td><td>25681</td><td>0</td><td class="error">25681</td><td>1</td></tr>
+<tr><td>ERR11748519</td><td>Success</td><td>25708</td><td>0</td><td class="error">25708</td><td>1</td></tr>
+<tr><td>ERR11748520</td><td>Success</td><td>25663</td><td>0</td><td class="error">25663</td><td>1</td></tr>
+<tr><td>ERR11748521</td><td>Success</td><td>25015</td><td>0</td><td class="error">25015</td><td>1</td></tr>
+<tr><td>ERR11748522</td><td>Success</td><td>24819</td><td>0</td><td class="error">24819</td><td>1</td></tr>
+<tr><td>ERR11748523</td><td>Success</td><td>25748</td><td>0</td><td class="error">25748</td><td>1</td></tr>
+<tr><td>ERR11748524</td><td>Success</td><td>25710</td><td>0</td><td class="error">25710</td><td>1</td></tr>
+<tr><td>ERR11748525</td><td>Success</td><td>25119</td><td>0</td><td class="error">25119</td><td>1</td></tr>
+<tr><td>ERR11748526</td><td>Success</td><td>24981</td><td>0</td><td class="error">24981</td><td>1</td></tr>
+<tr><td>ERR11748527</td><td>Success</td><td>24984</td><td>0</td><td class="error">24984</td><td>1</td></tr>
+<tr><td>ERR11748528</td><td>Success</td><td>24908</td><td>0</td><td class="error">24908</td><td>1</td></tr>
+<tr><td>ERR11748529</td><td>Success</td><td>24990</td><td>0</td><td class="error">24990</td><td>1</td></tr>
+<tr><td>ERR11748530</td><td>Success</td><td>25015</td><td>0</td><td class="error">25015</td><td>1</td></tr>
+<tr><td>ERR11748531</td><td>Success</td><td>24791</td><td>0</td><td class="error">24791</td><td>1</td></tr>
+<tr><td>ERR11748532</td><td>Success</td><td>24957</td><td>0</td><td class="error">24957</td><td>1</td></tr>
+<tr><td>ERR11748533</td><td>Success</td><td>24816</td><td>0</td><td class="error">24816</td><td>1</td></tr>
+<tr><td>ERR11748534</td><td>Success</td><td>25013</td><td>0</td><td class="error">25013</td><td>1</td></tr>
+<tr><td>ERR11748535</td><td>Success</td><td>24905</td><td>0</td><td class="error">24905</td><td>1</td></tr>
+<tr><td>ERR11748536</td><td>Success</td><td>24945</td><td>0</td><td class="error">24945</td><td>1</td></tr>
+<tr><td>ERR11748537</td><td>Success</td><td>24863</td><td>0</td><td class="error">24863</td><td>1</td></tr>
+<tr><td>ERR11748538</td><td>Success</td><td>24925</td><td>0</td><td class="error">24925</td><td>1</td></tr>
+<tr><td>ERR11748539</td><td>Success</td><td>25092</td><td>0</td><td class="error">25092</td><td>1</td></tr>
+<tr><td>ERR11748540</td><td>Success</td><td>24959</td><td>0</td><td class="error">24959</td><td>1</td></tr>
+<tr><td>ERR11748541</td><td>Success</td><td>24790</td><td>0</td><td class="error">24790</td><td>1</td></tr>
+<tr><td>ERR11748542</td><td>Success</td><td>24698</td><td>0</td><td class="error">24698</td><td>1</td></tr>
+<tr><td>ERR11748543</td><td>Success</td><td>25363</td><td>0</td><td class="error">25363</td><td>1</td></tr>
+<tr><td>ERR11748544</td><td>Success</td><td>24964</td><td>0</td><td class="error">24964</td><td>1</td></tr>
+<tr><td>ERR11748545</td><td>Success</td><td>24876</td><td>0</td><td class="error">24876</td><td>1</td></tr>
+<tr><td>ERR11748546</td><td>Success</td><td>25236</td><td>0</td><td class="error">25236</td><td>1</td></tr>
+<tr><td>ERR11748547</td><td>Success</td><td>25453</td><td>0</td><td class="error">25453</td><td>1</td></tr>
+<tr><td>ERR11748548</td><td>Success</td><td>25391</td><td>0</td><td class="error">25391</td><td>1</td></tr>
+<tr><td>ERR11748549</td><td>Success</td><td>25374</td><td>0</td><td class="error">25374</td><td>1</td></tr>
+<tr><td>ERR11748550</td><td>Success</td><td>24903</td><td>0</td><td class="error">24903</td><td>1</td></tr>
+<tr><td>ERR11748551</td><td>Success</td><td>25274</td><td>0</td><td class="error">25274</td><td>1</td></tr>
+<tr><td>ERR11748552</td><td>Success</td><td>25432</td><td>0</td><td class="error">25432</td><td>1</td></tr>
+<tr><td>ERR11748553</td><td>Success</td><td>25446</td><td>0</td><td class="error">25446</td><td>1</td></tr>
+<tr><td>ERR11748554</td><td>Success</td><td>25350</td><td>0</td><td class="error">25350</td><td>1</td></tr>
+<tr><td>ERR11748555</td><td>Success</td><td>25370</td><td>0</td><td class="error">25370</td><td>1</td></tr>
+<tr><td>ERR11748556</td><td>Success</td><td>25335</td><td>0</td><td class="error">25335</td><td>1</td></tr>
+<tr><td>ERR11748557</td><td>Success</td><td>25303</td><td>0</td><td class="error">25303</td><td>1</td></tr>
+<tr><td>ERR11748558</td><td>Success</td><td>24838</td><td>0</td><td class="error">24838</td><td>1</td></tr>
+    </tbody>
+  </table>
+            </div>
+          </div>
+      </div>
+      <div id="amr" class="section"><h2>Antimicrobial Resistance</h2>
+        <div class="report-card"><h3>Per-sample AMR reports</h3><ul>
+          <li><a href="assets/sections/DRR221025_amr.html" target="_blank">AMR Report 1 — DRR221025</a></li>
+          <li><a href="assets/sections/ERR11748485_amr.html" target="_blank">AMR Report 2 — ERR11748485</a></li>
+          <li><a href="assets/sections/ERR11748486_amr.html" target="_blank">AMR Report 3 — ERR11748486</a></li>
+          <li><a href="assets/sections/ERR11748487_amr.html" target="_blank">AMR Report 4 — ERR11748487</a></li>
+          <li><a href="assets/sections/ERR11748488_amr.html" target="_blank">AMR Report 5 — ERR11748488</a></li>
+          <li><a href="assets/sections/ERR11748489_amr.html" target="_blank">AMR Report 6 — ERR11748489</a></li>
+          <li><a href="assets/sections/ERR11748490_amr.html" target="_blank">AMR Report 7 — ERR11748490</a></li>
+          <li><a href="assets/sections/ERR11748491_amr.html" target="_blank">AMR Report 8 — ERR11748491</a></li>
+          <li><a href="assets/sections/ERR11748492_amr.html" target="_blank">AMR Report 9 — ERR11748492</a></li>
+          <li><a href="assets/sections/ERR11748493_amr.html" target="_blank">AMR Report 10 — ERR11748493</a></li>
+          <li><a href="assets/sections/ERR11748494_amr.html" target="_blank">AMR Report 11 — ERR11748494</a></li>
+          <li><a href="assets/sections/ERR11748495_amr.html" target="_blank">AMR Report 12 — ERR11748495</a></li>
+          <li><a href="assets/sections/ERR11748496_amr.html" target="_blank">AMR Report 13 — ERR11748496</a></li>
+          <li><a href="assets/sections/ERR11748497_amr.html" target="_blank">AMR Report 14 — ERR11748497</a></li>
+          <li><a href="assets/sections/ERR11748498_amr.html" target="_blank">AMR Report 15 — ERR11748498</a></li>
+          <li><a href="assets/sections/ERR11748499_amr.html" target="_blank">AMR Report 16 — ERR11748499</a></li>
+          <li><a href="assets/sections/ERR11748500_amr.html" target="_blank">AMR Report 17 — ERR11748500</a></li>
+          <li><a href="assets/sections/ERR11748501_amr.html" target="_blank">AMR Report 18 — ERR11748501</a></li>
+          <li><a href="assets/sections/ERR11748502_amr.html" target="_blank">AMR Report 19 — ERR11748502</a></li>
+          <li><a href="assets/sections/ERR11748503_amr.html" target="_blank">AMR Report 20 — ERR11748503</a></li>
+          <li><a href="assets/sections/ERR11748504_amr.html" target="_blank">AMR Report 21 — ERR11748504</a></li>
+          <li><a href="assets/sections/ERR11748505_amr.html" target="_blank">AMR Report 22 — ERR11748505</a></li>
+          <li><a href="assets/sections/ERR11748506_amr.html" target="_blank">AMR Report 23 — ERR11748506</a></li>
+          <li><a href="assets/sections/ERR11748507_amr.html" target="_blank">AMR Report 24 — ERR11748507</a></li>
+          <li><a href="assets/sections/ERR11748508_amr.html" target="_blank">AMR Report 25 — ERR11748508</a></li>
+          <li><a href="assets/sections/ERR11748509_amr.html" target="_blank">AMR Report 26 — ERR11748509</a></li>
+          <li><a href="assets/sections/ERR11748510_amr.html" target="_blank">AMR Report 27 — ERR11748510</a></li>
+          <li><a href="assets/sections/ERR11748511_amr.html" target="_blank">AMR Report 28 — ERR11748511</a></li>
+          <li><a href="assets/sections/ERR11748512_amr.html" target="_blank">AMR Report 29 — ERR11748512</a></li>
+          <li><a href="assets/sections/ERR11748513_amr.html" target="_blank">AMR Report 30 — ERR11748513</a></li>
+          <li><a href="assets/sections/ERR11748514_amr.html" target="_blank">AMR Report 31 — ERR11748514</a></li>
+          <li><a href="assets/sections/ERR11748515_amr.html" target="_blank">AMR Report 32 — ERR11748515</a></li>
+          <li><a href="assets/sections/ERR11748516_amr.html" target="_blank">AMR Report 33 — ERR11748516</a></li>
+          <li><a href="assets/sections/ERR11748517_amr.html" target="_blank">AMR Report 34 — ERR11748517</a></li>
+          <li><a href="assets/sections/ERR11748518_amr.html" target="_blank">AMR Report 35 — ERR11748518</a></li>
+          <li><a href="assets/sections/ERR11748519_amr.html" target="_blank">AMR Report 36 — ERR11748519</a></li>
+          <li><a href="assets/sections/ERR11748520_amr.html" target="_blank">AMR Report 37 — ERR11748520</a></li>
+          <li><a href="assets/sections/ERR11748521_amr.html" target="_blank">AMR Report 38 — ERR11748521</a></li>
+          <li><a href="assets/sections/ERR11748522_amr.html" target="_blank">AMR Report 39 — ERR11748522</a></li>
+          <li><a href="assets/sections/ERR11748523_amr.html" target="_blank">AMR Report 40 — ERR11748523</a></li>
+          <li><a href="assets/sections/ERR11748524_amr.html" target="_blank">AMR Report 41 — ERR11748524</a></li>
+          <li><a href="assets/sections/ERR11748525_amr.html" target="_blank">AMR Report 42 — ERR11748525</a></li>
+          <li><a href="assets/sections/ERR11748526_amr.html" target="_blank">AMR Report 43 — ERR11748526</a></li>
+          <li><a href="assets/sections/ERR11748527_amr.html" target="_blank">AMR Report 44 — ERR11748527</a></li>
+          <li><a href="assets/sections/ERR11748528_amr.html" target="_blank">AMR Report 45 — ERR11748528</a></li>
+          <li><a href="assets/sections/ERR11748529_amr.html" target="_blank">AMR Report 46 — ERR11748529</a></li>
+          <li><a href="assets/sections/ERR11748530_amr.html" target="_blank">AMR Report 47 — ERR11748530</a></li>
+          <li><a href="assets/sections/ERR11748531_amr.html" target="_blank">AMR Report 48 — ERR11748531</a></li>
+          <li><a href="assets/sections/ERR11748532_amr.html" target="_blank">AMR Report 49 — ERR11748532</a></li>
+          <li><a href="assets/sections/ERR11748533_amr.html" target="_blank">AMR Report 50 — ERR11748533</a></li>
+          <li><a href="assets/sections/ERR11748534_amr.html" target="_blank">AMR Report 51 — ERR11748534</a></li>
+          <li><a href="assets/sections/ERR11748535_amr.html" target="_blank">AMR Report 52 — ERR11748535</a></li>
+          <li><a href="assets/sections/ERR11748536_amr.html" target="_blank">AMR Report 53 — ERR11748536</a></li>
+          <li><a href="assets/sections/ERR11748537_amr.html" target="_blank">AMR Report 54 — ERR11748537</a></li>
+          <li><a href="assets/sections/ERR11748538_amr.html" target="_blank">AMR Report 55 — ERR11748538</a></li>
+          <li><a href="assets/sections/ERR11748539_amr.html" target="_blank">AMR Report 56 — ERR11748539</a></li>
+          <li><a href="assets/sections/ERR11748540_amr.html" target="_blank">AMR Report 57 — ERR11748540</a></li>
+          <li><a href="assets/sections/ERR11748541_amr.html" target="_blank">AMR Report 58 — ERR11748541</a></li>
+          <li><a href="assets/sections/ERR11748542_amr.html" target="_blank">AMR Report 59 — ERR11748542</a></li>
+          <li><a href="assets/sections/ERR11748543_amr.html" target="_blank">AMR Report 60 — ERR11748543</a></li>
+          <li><a href="assets/sections/ERR11748544_amr.html" target="_blank">AMR Report 61 — ERR11748544</a></li>
+          <li><a href="assets/sections/ERR11748545_amr.html" target="_blank">AMR Report 62 — ERR11748545</a></li>
+          <li><a href="assets/sections/ERR11748546_amr.html" target="_blank">AMR Report 63 — ERR11748546</a></li>
+          <li><a href="assets/sections/ERR11748547_amr.html" target="_blank">AMR Report 64 — ERR11748547</a></li>
+          <li><a href="assets/sections/ERR11748548_amr.html" target="_blank">AMR Report 65 — ERR11748548</a></li>
+          <li><a href="assets/sections/ERR11748549_amr.html" target="_blank">AMR Report 66 — ERR11748549</a></li>
+          <li><a href="assets/sections/ERR11748550_amr.html" target="_blank">AMR Report 67 — ERR11748550</a></li>
+          <li><a href="assets/sections/ERR11748551_amr.html" target="_blank">AMR Report 68 — ERR11748551</a></li>
+          <li><a href="assets/sections/ERR11748552_amr.html" target="_blank">AMR Report 69 — ERR11748552</a></li>
+          <li><a href="assets/sections/ERR11748553_amr.html" target="_blank">AMR Report 70 — ERR11748553</a></li>
+          <li><a href="assets/sections/ERR11748554_amr.html" target="_blank">AMR Report 71 — ERR11748554</a></li>
+          <li><a href="assets/sections/ERR11748555_amr.html" target="_blank">AMR Report 72 — ERR11748555</a></li>
+          <li><a href="assets/sections/ERR11748556_amr.html" target="_blank">AMR Report 73 — ERR11748556</a></li>
+          <li><a href="assets/sections/ERR11748557_amr.html" target="_blank">AMR Report 74 — ERR11748557</a></li>
+          <li><a href="assets/sections/ERR11748558_amr.html" target="_blank">AMR Report 75 — ERR11748558</a></li>
+        </ul></div>
+      </div>
+      <div id="mge" class="section"><h2>Mobile Genetic Elements</h2>
+        <div class="report-card"><h3>Per-sample MGE reports</h3><ul>
+          <li><a href="assets/sections/DRR221025_mge.html" target="_blank">MGE Report 1 — DRR221025</a></li>
+          <li><a href="assets/sections/ERR11748485_mge.html" target="_blank">MGE Report 2 — ERR11748485</a></li>
+          <li><a href="assets/sections/ERR11748486_mge.html" target="_blank">MGE Report 3 — ERR11748486</a></li>
+          <li><a href="assets/sections/ERR11748487_mge.html" target="_blank">MGE Report 4 — ERR11748487</a></li>
+          <li><a href="assets/sections/ERR11748488_mge.html" target="_blank">MGE Report 5 — ERR11748488</a></li>
+          <li><a href="assets/sections/ERR11748489_mge.html" target="_blank">MGE Report 6 — ERR11748489</a></li>
+          <li><a href="assets/sections/ERR11748490_mge.html" target="_blank">MGE Report 7 — ERR11748490</a></li>
+          <li><a href="assets/sections/ERR11748491_mge.html" target="_blank">MGE Report 8 — ERR11748491</a></li>
+          <li><a href="assets/sections/ERR11748492_mge.html" target="_blank">MGE Report 9 — ERR11748492</a></li>
+          <li><a href="assets/sections/ERR11748493_mge.html" target="_blank">MGE Report 10 — ERR11748493</a></li>
+          <li><a href="assets/sections/ERR11748494_mge.html" target="_blank">MGE Report 11 — ERR11748494</a></li>
+          <li><a href="assets/sections/ERR11748495_mge.html" target="_blank">MGE Report 12 — ERR11748495</a></li>
+          <li><a href="assets/sections/ERR11748496_mge.html" target="_blank">MGE Report 13 — ERR11748496</a></li>
+          <li><a href="assets/sections/ERR11748497_mge.html" target="_blank">MGE Report 14 — ERR11748497</a></li>
+          <li><a href="assets/sections/ERR11748498_mge.html" target="_blank">MGE Report 15 — ERR11748498</a></li>
+          <li><a href="assets/sections/ERR11748499_mge.html" target="_blank">MGE Report 16 — ERR11748499</a></li>
+          <li><a href="assets/sections/ERR11748500_mge.html" target="_blank">MGE Report 17 — ERR11748500</a></li>
+          <li><a href="assets/sections/ERR11748501_mge.html" target="_blank">MGE Report 18 — ERR11748501</a></li>
+          <li><a href="assets/sections/ERR11748502_mge.html" target="_blank">MGE Report 19 — ERR11748502</a></li>
+          <li><a href="assets/sections/ERR11748503_mge.html" target="_blank">MGE Report 20 — ERR11748503</a></li>
+          <li><a href="assets/sections/ERR11748504_mge.html" target="_blank">MGE Report 21 — ERR11748504</a></li>
+          <li><a href="assets/sections/ERR11748505_mge.html" target="_blank">MGE Report 22 — ERR11748505</a></li>
+          <li><a href="assets/sections/ERR11748506_mge.html" target="_blank">MGE Report 23 — ERR11748506</a></li>
+          <li><a href="assets/sections/ERR11748507_mge.html" target="_blank">MGE Report 24 — ERR11748507</a></li>
+          <li><a href="assets/sections/ERR11748508_mge.html" target="_blank">MGE Report 25 — ERR11748508</a></li>
+          <li><a href="assets/sections/ERR11748509_mge.html" target="_blank">MGE Report 26 — ERR11748509</a></li>
+          <li><a href="assets/sections/ERR11748510_mge.html" target="_blank">MGE Report 27 — ERR11748510</a></li>
+          <li><a href="assets/sections/ERR11748511_mge.html" target="_blank">MGE Report 28 — ERR11748511</a></li>
+          <li><a href="assets/sections/ERR11748512_mge.html" target="_blank">MGE Report 29 — ERR11748512</a></li>
+          <li><a href="assets/sections/ERR11748513_mge.html" target="_blank">MGE Report 30 — ERR11748513</a></li>
+          <li><a href="assets/sections/ERR11748514_mge.html" target="_blank">MGE Report 31 — ERR11748514</a></li>
+          <li><a href="assets/sections/ERR11748515_mge.html" target="_blank">MGE Report 32 — ERR11748515</a></li>
+          <li><a href="assets/sections/ERR11748516_mge.html" target="_blank">MGE Report 33 — ERR11748516</a></li>
+          <li><a href="assets/sections/ERR11748517_mge.html" target="_blank">MGE Report 34 — ERR11748517</a></li>
+          <li><a href="assets/sections/ERR11748518_mge.html" target="_blank">MGE Report 35 — ERR11748518</a></li>
+          <li><a href="assets/sections/ERR11748519_mge.html" target="_blank">MGE Report 36 — ERR11748519</a></li>
+          <li><a href="assets/sections/ERR11748520_mge.html" target="_blank">MGE Report 37 — ERR11748520</a></li>
+          <li><a href="assets/sections/ERR11748521_mge.html" target="_blank">MGE Report 38 — ERR11748521</a></li>
+          <li><a href="assets/sections/ERR11748522_mge.html" target="_blank">MGE Report 39 — ERR11748522</a></li>
+          <li><a href="assets/sections/ERR11748523_mge.html" target="_blank">MGE Report 40 — ERR11748523</a></li>
+          <li><a href="assets/sections/ERR11748524_mge.html" target="_blank">MGE Report 41 — ERR11748524</a></li>
+          <li><a href="assets/sections/ERR11748525_mge.html" target="_blank">MGE Report 42 — ERR11748525</a></li>
+          <li><a href="assets/sections/ERR11748526_mge.html" target="_blank">MGE Report 43 — ERR11748526</a></li>
+          <li><a href="assets/sections/ERR11748527_mge.html" target="_blank">MGE Report 44 — ERR11748527</a></li>
+          <li><a href="assets/sections/ERR11748528_mge.html" target="_blank">MGE Report 45 — ERR11748528</a></li>
+          <li><a href="assets/sections/ERR11748529_mge.html" target="_blank">MGE Report 46 — ERR11748529</a></li>
+          <li><a href="assets/sections/ERR11748530_mge.html" target="_blank">MGE Report 47 — ERR11748530</a></li>
+          <li><a href="assets/sections/ERR11748531_mge.html" target="_blank">MGE Report 48 — ERR11748531</a></li>
+          <li><a href="assets/sections/ERR11748532_mge.html" target="_blank">MGE Report 49 — ERR11748532</a></li>
+          <li><a href="assets/sections/ERR11748533_mge.html" target="_blank">MGE Report 50 — ERR11748533</a></li>
+          <li><a href="assets/sections/ERR11748534_mge.html" target="_blank">MGE Report 51 — ERR11748534</a></li>
+          <li><a href="assets/sections/ERR11748535_mge.html" target="_blank">MGE Report 52 — ERR11748535</a></li>
+          <li><a href="assets/sections/ERR11748536_mge.html" target="_blank">MGE Report 53 — ERR11748536</a></li>
+          <li><a href="assets/sections/ERR11748537_mge.html" target="_blank">MGE Report 54 — ERR11748537</a></li>
+          <li><a href="assets/sections/ERR11748538_mge.html" target="_blank">MGE Report 55 — ERR11748538</a></li>
+          <li><a href="assets/sections/ERR11748539_mge.html" target="_blank">MGE Report 56 — ERR11748539</a></li>
+          <li><a href="assets/sections/ERR11748540_mge.html" target="_blank">MGE Report 57 — ERR11748540</a></li>
+          <li><a href="assets/sections/ERR11748541_mge.html" target="_blank">MGE Report 58 — ERR11748541</a></li>
+          <li><a href="assets/sections/ERR11748542_mge.html" target="_blank">MGE Report 59 — ERR11748542</a></li>
+          <li><a href="assets/sections/ERR11748543_mge.html" target="_blank">MGE Report 60 — ERR11748543</a></li>
+          <li><a href="assets/sections/ERR11748544_mge.html" target="_blank">MGE Report 61 — ERR11748544</a></li>
+          <li><a href="assets/sections/ERR11748545_mge.html" target="_blank">MGE Report 62 — ERR11748545</a></li>
+          <li><a href="assets/sections/ERR11748546_mge.html" target="_blank">MGE Report 63 — ERR11748546</a></li>
+          <li><a href="assets/sections/ERR11748547_mge.html" target="_blank">MGE Report 64 — ERR11748547</a></li>
+          <li><a href="assets/sections/ERR11748548_mge.html" target="_blank">MGE Report 65 — ERR11748548</a></li>
+          <li><a href="assets/sections/ERR11748549_mge.html" target="_blank">MGE Report 66 — ERR11748549</a></li>
+          <li><a href="assets/sections/ERR11748550_mge.html" target="_blank">MGE Report 67 — ERR11748550</a></li>
+          <li><a href="assets/sections/ERR11748551_mge.html" target="_blank">MGE Report 68 — ERR11748551</a></li>
+          <li><a href="assets/sections/ERR11748552_mge.html" target="_blank">MGE Report 69 — ERR11748552</a></li>
+          <li><a href="assets/sections/ERR11748553_mge.html" target="_blank">MGE Report 70 — ERR11748553</a></li>
+          <li><a href="assets/sections/ERR11748554_mge.html" target="_blank">MGE Report 71 — ERR11748554</a></li>
+          <li><a href="assets/sections/ERR11748555_mge.html" target="_blank">MGE Report 72 — ERR11748555</a></li>
+          <li><a href="assets/sections/ERR11748556_mge.html" target="_blank">MGE Report 73 — ERR11748556</a></li>
+          <li><a href="assets/sections/ERR11748557_mge.html" target="_blank">MGE Report 74 — ERR11748557</a></li>
+          <li><a href="assets/sections/ERR11748558_mge.html" target="_blank">MGE Report 75 — ERR11748558</a></li>
+        </ul></div>
+      </div>
+      <div id="virulence" class="section"><h2>Virulence</h2>
+        <div class="report-card"><h3>Per-sample Virulence reports</h3><ul>
+          <li><a href="assets/sections/ERR11748493_virulence.html" target="_blank">Virulence Report 1 — ERR11748493</a></li>
+          <li><a href="assets/sections/ERR11748494_virulence.html" target="_blank">Virulence Report 2 — ERR11748494</a></li>
+          <li><a href="assets/sections/ERR11748495_virulence.html" target="_blank">Virulence Report 3 — ERR11748495</a></li>
+          <li><a href="assets/sections/ERR11748496_virulence.html" target="_blank">Virulence Report 4 — ERR11748496</a></li>
+          <li><a href="assets/sections/ERR11748497_virulence.html" target="_blank">Virulence Report 5 — ERR11748497</a></li>
+          <li><a href="assets/sections/ERR11748498_virulence.html" target="_blank">Virulence Report 6 — ERR11748498</a></li>
+          <li><a href="assets/sections/ERR11748499_virulence.html" target="_blank">Virulence Report 7 — ERR11748499</a></li>
+          <li><a href="assets/sections/ERR11748500_virulence.html" target="_blank">Virulence Report 8 — ERR11748500</a></li>
+          <li><a href="assets/sections/ERR11748501_virulence.html" target="_blank">Virulence Report 9 — ERR11748501</a></li>
+          <li><a href="assets/sections/ERR11748502_virulence.html" target="_blank">Virulence Report 10 — ERR11748502</a></li>
+          <li><a href="assets/sections/DRR221025_virulence.html" target="_blank">Virulence Report 11 — DRR221025</a></li>
+          <li><a href="assets/sections/ERR11748503_virulence.html" target="_blank">Virulence Report 12 — ERR11748503</a></li>
+          <li><a href="assets/sections/ERR11748504_virulence.html" target="_blank">Virulence Report 13 — ERR11748504</a></li>
+          <li><a href="assets/sections/ERR11748505_virulence.html" target="_blank">Virulence Report 14 — ERR11748505</a></li>
+          <li><a href="assets/sections/ERR11748506_virulence.html" target="_blank">Virulence Report 15 — ERR11748506</a></li>
+          <li><a href="assets/sections/ERR11748507_virulence.html" target="_blank">Virulence Report 16 — ERR11748507</a></li>
+          <li><a href="assets/sections/ERR11748508_virulence.html" target="_blank">Virulence Report 17 — ERR11748508</a></li>
+          <li><a href="assets/sections/ERR11748509_virulence.html" target="_blank">Virulence Report 18 — ERR11748509</a></li>
+          <li><a href="assets/sections/ERR11748510_virulence.html" target="_blank">Virulence Report 19 — ERR11748510</a></li>
+          <li><a href="assets/sections/ERR11748511_virulence.html" target="_blank">Virulence Report 20 — ERR11748511</a></li>
+          <li><a href="assets/sections/ERR11748512_virulence.html" target="_blank">Virulence Report 21 — ERR11748512</a></li>
+          <li><a href="assets/sections/ERR11748485_virulence.html" target="_blank">Virulence Report 22 — ERR11748485</a></li>
+          <li><a href="assets/sections/ERR11748513_virulence.html" target="_blank">Virulence Report 23 — ERR11748513</a></li>
+          <li><a href="assets/sections/ERR11748514_virulence.html" target="_blank">Virulence Report 24 — ERR11748514</a></li>
+          <li><a href="assets/sections/ERR11748515_virulence.html" target="_blank">Virulence Report 25 — ERR11748515</a></li>
+          <li><a href="assets/sections/ERR11748516_virulence.html" target="_blank">Virulence Report 26 — ERR11748516</a></li>
+          <li><a href="assets/sections/ERR11748517_virulence.html" target="_blank">Virulence Report 27 — ERR11748517</a></li>
+          <li><a href="assets/sections/ERR11748518_virulence.html" target="_blank">Virulence Report 28 — ERR11748518</a></li>
+          <li><a href="assets/sections/ERR11748519_virulence.html" target="_blank">Virulence Report 29 — ERR11748519</a></li>
+          <li><a href="assets/sections/ERR11748520_virulence.html" target="_blank">Virulence Report 30 — ERR11748520</a></li>
+          <li><a href="assets/sections/ERR11748521_virulence.html" target="_blank">Virulence Report 31 — ERR11748521</a></li>
+          <li><a href="assets/sections/ERR11748522_virulence.html" target="_blank">Virulence Report 32 — ERR11748522</a></li>
+          <li><a href="assets/sections/ERR11748486_virulence.html" target="_blank">Virulence Report 33 — ERR11748486</a></li>
+          <li><a href="assets/sections/ERR11748523_virulence.html" target="_blank">Virulence Report 34 — ERR11748523</a></li>
+          <li><a href="assets/sections/ERR11748524_virulence.html" target="_blank">Virulence Report 35 — ERR11748524</a></li>
+          <li><a href="assets/sections/ERR11748525_virulence.html" target="_blank">Virulence Report 36 — ERR11748525</a></li>
+          <li><a href="assets/sections/ERR11748526_virulence.html" target="_blank">Virulence Report 37 — ERR11748526</a></li>
+          <li><a href="assets/sections/ERR11748527_virulence.html" target="_blank">Virulence Report 38 — ERR11748527</a></li>
+          <li><a href="assets/sections/ERR11748528_virulence.html" target="_blank">Virulence Report 39 — ERR11748528</a></li>
+          <li><a href="assets/sections/ERR11748529_virulence.html" target="_blank">Virulence Report 40 — ERR11748529</a></li>
+          <li><a href="assets/sections/ERR11748530_virulence.html" target="_blank">Virulence Report 41 — ERR11748530</a></li>
+          <li><a href="assets/sections/ERR11748531_virulence.html" target="_blank">Virulence Report 42 — ERR11748531</a></li>
+          <li><a href="assets/sections/ERR11748532_virulence.html" target="_blank">Virulence Report 43 — ERR11748532</a></li>
+          <li><a href="assets/sections/ERR11748487_virulence.html" target="_blank">Virulence Report 44 — ERR11748487</a></li>
+          <li><a href="assets/sections/ERR11748533_virulence.html" target="_blank">Virulence Report 45 — ERR11748533</a></li>
+          <li><a href="assets/sections/ERR11748534_virulence.html" target="_blank">Virulence Report 46 — ERR11748534</a></li>
+          <li><a href="assets/sections/ERR11748535_virulence.html" target="_blank">Virulence Report 47 — ERR11748535</a></li>
+          <li><a href="assets/sections/ERR11748536_virulence.html" target="_blank">Virulence Report 48 — ERR11748536</a></li>
+          <li><a href="assets/sections/ERR11748537_virulence.html" target="_blank">Virulence Report 49 — ERR11748537</a></li>
+          <li><a href="assets/sections/ERR11748538_virulence.html" target="_blank">Virulence Report 50 — ERR11748538</a></li>
+          <li><a href="assets/sections/ERR11748539_virulence.html" target="_blank">Virulence Report 51 — ERR11748539</a></li>
+          <li><a href="assets/sections/ERR11748540_virulence.html" target="_blank">Virulence Report 52 — ERR11748540</a></li>
+          <li><a href="assets/sections/ERR11748541_virulence.html" target="_blank">Virulence Report 53 — ERR11748541</a></li>
+          <li><a href="assets/sections/ERR11748542_virulence.html" target="_blank">Virulence Report 54 — ERR11748542</a></li>
+          <li><a href="assets/sections/ERR11748488_virulence.html" target="_blank">Virulence Report 55 — ERR11748488</a></li>
+          <li><a href="assets/sections/ERR11748543_virulence.html" target="_blank">Virulence Report 56 — ERR11748543</a></li>
+          <li><a href="assets/sections/ERR11748544_virulence.html" target="_blank">Virulence Report 57 — ERR11748544</a></li>
+          <li><a href="assets/sections/ERR11748545_virulence.html" target="_blank">Virulence Report 58 — ERR11748545</a></li>
+          <li><a href="assets/sections/ERR11748546_virulence.html" target="_blank">Virulence Report 59 — ERR11748546</a></li>
+          <li><a href="assets/sections/ERR11748547_virulence.html" target="_blank">Virulence Report 60 — ERR11748547</a></li>
+          <li><a href="assets/sections/ERR11748548_virulence.html" target="_blank">Virulence Report 61 — ERR11748548</a></li>
+          <li><a href="assets/sections/ERR11748549_virulence.html" target="_blank">Virulence Report 62 — ERR11748549</a></li>
+          <li><a href="assets/sections/ERR11748550_virulence.html" target="_blank">Virulence Report 63 — ERR11748550</a></li>
+          <li><a href="assets/sections/ERR11748551_virulence.html" target="_blank">Virulence Report 64 — ERR11748551</a></li>
+          <li><a href="assets/sections/ERR11748552_virulence.html" target="_blank">Virulence Report 65 — ERR11748552</a></li>
+          <li><a href="assets/sections/ERR11748489_virulence.html" target="_blank">Virulence Report 66 — ERR11748489</a></li>
+          <li><a href="assets/sections/ERR11748553_virulence.html" target="_blank">Virulence Report 67 — ERR11748553</a></li>
+          <li><a href="assets/sections/ERR11748554_virulence.html" target="_blank">Virulence Report 68 — ERR11748554</a></li>
+          <li><a href="assets/sections/ERR11748555_virulence.html" target="_blank">Virulence Report 69 — ERR11748555</a></li>
+          <li><a href="assets/sections/ERR11748556_virulence.html" target="_blank">Virulence Report 70 — ERR11748556</a></li>
+          <li><a href="assets/sections/ERR11748557_virulence.html" target="_blank">Virulence Report 71 — ERR11748557</a></li>
+          <li><a href="assets/sections/ERR11748558_virulence.html" target="_blank">Virulence Report 72 — ERR11748558</a></li>
+          <li><a href="assets/sections/ERR11748490_virulence.html" target="_blank">Virulence Report 73 — ERR11748490</a></li>
+          <li><a href="assets/sections/ERR11748491_virulence.html" target="_blank">Virulence Report 74 — ERR11748491</a></li>
+          <li><a href="assets/sections/ERR11748492_virulence.html" target="_blank">Virulence Report 75 — ERR11748492</a></li>
+        </ul></div>
+      </div>
+      <div id="blast" class="section"><h2>BLAST</h2>
+        <div class="report-card"><h3>Per-sample BLAST reports</h3><ul>
+          <li><a href="assets/sections/DRR221025_blast.html" target="_blank">BLAST Report 1 — DRR221025</a></li>
+          <li><a href="assets/sections/ERR11748485_blast.html" target="_blank">BLAST Report 2 — ERR11748485</a></li>
+          <li><a href="assets/sections/ERR11748486_blast.html" target="_blank">BLAST Report 3 — ERR11748486</a></li>
+          <li><a href="assets/sections/ERR11748487_blast.html" target="_blank">BLAST Report 4 — ERR11748487</a></li>
+          <li><a href="assets/sections/ERR11748488_blast.html" target="_blank">BLAST Report 5 — ERR11748488</a></li>
+          <li><a href="assets/sections/ERR11748489_blast.html" target="_blank">BLAST Report 6 — ERR11748489</a></li>
+          <li><a href="assets/sections/ERR11748490_blast.html" target="_blank">BLAST Report 7 — ERR11748490</a></li>
+          <li><a href="assets/sections/ERR11748491_blast.html" target="_blank">BLAST Report 8 — ERR11748491</a></li>
+          <li><a href="assets/sections/ERR11748492_blast.html" target="_blank">BLAST Report 9 — ERR11748492</a></li>
+          <li><a href="assets/sections/ERR11748493_blast.html" target="_blank">BLAST Report 10 — ERR11748493</a></li>
+          <li><a href="assets/sections/ERR11748494_blast.html" target="_blank">BLAST Report 11 — ERR11748494</a></li>
+          <li><a href="assets/sections/ERR11748495_blast.html" target="_blank">BLAST Report 12 — ERR11748495</a></li>
+          <li><a href="assets/sections/ERR11748496_blast.html" target="_blank">BLAST Report 13 — ERR11748496</a></li>
+          <li><a href="assets/sections/ERR11748497_blast.html" target="_blank">BLAST Report 14 — ERR11748497</a></li>
+          <li><a href="assets/sections/ERR11748498_blast.html" target="_blank">BLAST Report 15 — ERR11748498</a></li>
+          <li><a href="assets/sections/ERR11748499_blast.html" target="_blank">BLAST Report 16 — ERR11748499</a></li>
+          <li><a href="assets/sections/ERR11748500_blast.html" target="_blank">BLAST Report 17 — ERR11748500</a></li>
+          <li><a href="assets/sections/ERR11748501_blast.html" target="_blank">BLAST Report 18 — ERR11748501</a></li>
+          <li><a href="assets/sections/ERR11748502_blast.html" target="_blank">BLAST Report 19 — ERR11748502</a></li>
+          <li><a href="assets/sections/ERR11748503_blast.html" target="_blank">BLAST Report 20 — ERR11748503</a></li>
+          <li><a href="assets/sections/ERR11748504_blast.html" target="_blank">BLAST Report 21 — ERR11748504</a></li>
+          <li><a href="assets/sections/ERR11748505_blast.html" target="_blank">BLAST Report 22 — ERR11748505</a></li>
+          <li><a href="assets/sections/ERR11748506_blast.html" target="_blank">BLAST Report 23 — ERR11748506</a></li>
+          <li><a href="assets/sections/ERR11748507_blast.html" target="_blank">BLAST Report 24 — ERR11748507</a></li>
+          <li><a href="assets/sections/ERR11748508_blast.html" target="_blank">BLAST Report 25 — ERR11748508</a></li>
+          <li><a href="assets/sections/ERR11748509_blast.html" target="_blank">BLAST Report 26 — ERR11748509</a></li>
+          <li><a href="assets/sections/ERR11748510_blast.html" target="_blank">BLAST Report 27 — ERR11748510</a></li>
+          <li><a href="assets/sections/ERR11748511_blast.html" target="_blank">BLAST Report 28 — ERR11748511</a></li>
+          <li><a href="assets/sections/ERR11748512_blast.html" target="_blank">BLAST Report 29 — ERR11748512</a></li>
+          <li><a href="assets/sections/ERR11748513_blast.html" target="_blank">BLAST Report 30 — ERR11748513</a></li>
+          <li><a href="assets/sections/ERR11748514_blast.html" target="_blank">BLAST Report 31 — ERR11748514</a></li>
+          <li><a href="assets/sections/ERR11748515_blast.html" target="_blank">BLAST Report 32 — ERR11748515</a></li>
+          <li><a href="assets/sections/ERR11748516_blast.html" target="_blank">BLAST Report 33 — ERR11748516</a></li>
+          <li><a href="assets/sections/ERR11748517_blast.html" target="_blank">BLAST Report 34 — ERR11748517</a></li>
+          <li><a href="assets/sections/ERR11748518_blast.html" target="_blank">BLAST Report 35 — ERR11748518</a></li>
+          <li><a href="assets/sections/ERR11748519_blast.html" target="_blank">BLAST Report 36 — ERR11748519</a></li>
+          <li><a href="assets/sections/ERR11748520_blast.html" target="_blank">BLAST Report 37 — ERR11748520</a></li>
+          <li><a href="assets/sections/ERR11748521_blast.html" target="_blank">BLAST Report 38 — ERR11748521</a></li>
+          <li><a href="assets/sections/ERR11748522_blast.html" target="_blank">BLAST Report 39 — ERR11748522</a></li>
+          <li><a href="assets/sections/ERR11748523_blast.html" target="_blank">BLAST Report 40 — ERR11748523</a></li>
+          <li><a href="assets/sections/ERR11748524_blast.html" target="_blank">BLAST Report 41 — ERR11748524</a></li>
+          <li><a href="assets/sections/ERR11748525_blast.html" target="_blank">BLAST Report 42 — ERR11748525</a></li>
+          <li><a href="assets/sections/ERR11748526_blast.html" target="_blank">BLAST Report 43 — ERR11748526</a></li>
+          <li><a href="assets/sections/ERR11748527_blast.html" target="_blank">BLAST Report 44 — ERR11748527</a></li>
+          <li><a href="assets/sections/ERR11748528_blast.html" target="_blank">BLAST Report 45 — ERR11748528</a></li>
+          <li><a href="assets/sections/ERR11748529_blast.html" target="_blank">BLAST Report 46 — ERR11748529</a></li>
+          <li><a href="assets/sections/ERR11748530_blast.html" target="_blank">BLAST Report 47 — ERR11748530</a></li>
+          <li><a href="assets/sections/ERR11748531_blast.html" target="_blank">BLAST Report 48 — ERR11748531</a></li>
+          <li><a href="assets/sections/ERR11748532_blast.html" target="_blank">BLAST Report 49 — ERR11748532</a></li>
+          <li><a href="assets/sections/ERR11748533_blast.html" target="_blank">BLAST Report 50 — ERR11748533</a></li>
+          <li><a href="assets/sections/ERR11748534_blast.html" target="_blank">BLAST Report 51 — ERR11748534</a></li>
+          <li><a href="assets/sections/ERR11748535_blast.html" target="_blank">BLAST Report 52 — ERR11748535</a></li>
+          <li><a href="assets/sections/ERR11748536_blast.html" target="_blank">BLAST Report 53 — ERR11748536</a></li>
+          <li><a href="assets/sections/ERR11748537_blast.html" target="_blank">BLAST Report 54 — ERR11748537</a></li>
+          <li><a href="assets/sections/ERR11748538_blast.html" target="_blank">BLAST Report 55 — ERR11748538</a></li>
+          <li><a href="assets/sections/ERR11748539_blast.html" target="_blank">BLAST Report 56 — ERR11748539</a></li>
+          <li><a href="assets/sections/ERR11748540_blast.html" target="_blank">BLAST Report 57 — ERR11748540</a></li>
+          <li><a href="assets/sections/ERR11748541_blast.html" target="_blank">BLAST Report 58 — ERR11748541</a></li>
+          <li><a href="assets/sections/ERR11748542_blast.html" target="_blank">BLAST Report 59 — ERR11748542</a></li>
+          <li><a href="assets/sections/ERR11748543_blast.html" target="_blank">BLAST Report 60 — ERR11748543</a></li>
+          <li><a href="assets/sections/ERR11748544_blast.html" target="_blank">BLAST Report 61 — ERR11748544</a></li>
+          <li><a href="assets/sections/ERR11748545_blast.html" target="_blank">BLAST Report 62 — ERR11748545</a></li>
+          <li><a href="assets/sections/ERR11748546_blast.html" target="_blank">BLAST Report 63 — ERR11748546</a></li>
+          <li><a href="assets/sections/ERR11748547_blast.html" target="_blank">BLAST Report 64 — ERR11748547</a></li>
+          <li><a href="assets/sections/ERR11748548_blast.html" target="_blank">BLAST Report 65 — ERR11748548</a></li>
+          <li><a href="assets/sections/ERR11748549_blast.html" target="_blank">BLAST Report 66 — ERR11748549</a></li>
+          <li><a href="assets/sections/ERR11748550_blast.html" target="_blank">BLAST Report 67 — ERR11748550</a></li>
+          <li><a href="assets/sections/ERR11748551_blast.html" target="_blank">BLAST Report 68 — ERR11748551</a></li>
+          <li><a href="assets/sections/ERR11748552_blast.html" target="_blank">BLAST Report 69 — ERR11748552</a></li>
+          <li><a href="assets/sections/ERR11748553_blast.html" target="_blank">BLAST Report 70 — ERR11748553</a></li>
+          <li><a href="assets/sections/ERR11748554_blast.html" target="_blank">BLAST Report 71 — ERR11748554</a></li>
+          <li><a href="assets/sections/ERR11748555_blast.html" target="_blank">BLAST Report 72 — ERR11748555</a></li>
+          <li><a href="assets/sections/ERR11748556_blast.html" target="_blank">BLAST Report 73 — ERR11748556</a></li>
+          <li><a href="assets/sections/ERR11748557_blast.html" target="_blank">BLAST Report 74 — ERR11748557</a></li>
+          <li><a href="assets/sections/ERR11748558_blast.html" target="_blank">BLAST Report 75 — ERR11748558</a></li>
+        </ul></div>
+      </div>
+      <div id="phylogeny" class="section"><h2>Phylogeny</h2>
+        <div class="report-card">
+          <h3>core_core_genes.png</h3>
+          <div class="image-center"><img src="assets/images/core_core_genes.png" alt="Phylogenetic tree" onerror="this.style.display='none'"></div>
+        </div>
+        <div class="report-card">
+          <h3>accessory_accessory_genes.png</h3>
+          <div class="image-center"><img src="assets/images/accessory_accessory_genes.png" alt="Phylogenetic tree" onerror="this.style.display='none'"></div>
+        </div>
+      </div>
+    </div> <!-- content -->
+  </div> <!-- layout -->
+
+  <div class="logo-combo">
+  <div class="logo-caption-top">rMAP-2.0 Comprehensive Analysis Report Summary: 2026-04-30 13:42:36 UTC</div>
+  <div class="logo-container"><img src="assets/images/rMAP_logo.png" alt="rMAP Logo" style="height:200px;object-fit:contain;margin:10px" onerror="this.style.display='none'"></div>
+  <div class="logo-caption-bottom">This run was generated using rMAP version 2.0 performed on 2026-04-30 13:42:36 UTC... Thank you for using this pipeline!!</div>
+</div>
+  <div class="footer-banner">This report was generated by rMAP 2.0 pipeline</div>
+</div>
+</body></html>
