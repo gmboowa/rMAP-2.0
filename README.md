@@ -1,8 +1,8 @@
 # rMAP-2.0
 
-rMAP-2.0 is a modular, containerized bioinformatics workflow for analyzing microbial genomic data and profiling **AMR**, **mobilome**, **virulome**, and **phylogenomics**, with support for **MLST typing**, **variant calling**, and **BLASTn-based** sequence similarity search. It bundles the required tools and dependencies to enable reproducible, scalable analysis of NGS data in research and public health settings.
+rMAP-2.0 is a modular, containerized bioinformatics workflow for analyzing microbial genomic data & profiling **AMR**, **mobilome**, **virulome** & **phylogenomics**, with support for **MLST typing**, **variant calling** & **BLASTn-based** sequence similarity search. It bundles the required tools & dependencies to enable reproducible, scalable analysis of NGS data in research & public health settings.
 
-rMAP-2.0 is optimized for profiling the resistome and other genomic features of ESKAPEE pathogens (*Enterococcus faecium*, *Staphylococcus aureus*, *Klebsiella pneumoniae*, *Acinetobacter baumannii*, *Pseudomonas aeruginosa*, *Enterobacter* species, and *Escherichia coli*) using whole-genome sequencing (WGS) paired-end reads.
+rMAP-2.0 is optimized for profiling the resistome & other genomic features of ESKAPEE pathogens (*Enterococcus faecium*, *Staphylococcus aureus*, *Klebsiella pneumoniae*, *Acinetobacter baumannii*, *Pseudomonas aeruginosa*, *Enterobacter* species & *Escherichia coli*) using whole-genome sequencing (WGS) paired-end reads.
 
 ---
 
@@ -60,9 +60,9 @@ rMAP-2.0 is optimized for profiling the resistome and other genomic features of 
 **Pipeline Type:** WDL-based, Docker-enabled  
 **Workflow Engine:** Cromwell  
 
-rMAP-2.0 is a containerized, modular workflow for microbial genomics that integrates trimming, quality control, *de novo* assembly, annotation, variant calling, MLST typing, AMR profiling, mobile genetic element analysis, pangenome analysis, phylogeny, and tree visualization.
+rMAP-2.0 is a containerized, modular workflow for microbial genomics that integrates trimming, quality control, *de novo* assembly, annotation, variant calling, MLST typing, AMR profiling, mobile genetic element analysis, pangenome analysis, phylogeny & tree visualization.
 
-The workflow is written in **Workflow Description Language (WDL)**, uses **Docker containers** for tool standardization, and runs on the **Cromwell execution engine**. The primary deliverable is a **single consolidated, navigable HTML report** (with per-module outputs preserved in the Cromwell execution directories).
+The workflow is written in **Workflow Description Language (WDL)**, uses **Docker containers** for tool standardization & runs on the **Cromwell execution engine**. The primary deliverable is a **single consolidated, navigable HTML report** (with per-module outputs preserved in the Cromwell execution directories).
 
 ---
 
@@ -159,7 +159,7 @@ cd rMAP-2.0
 Download `cromwell.jar` from the Cromwell releases page (or use your site-provided Cromwell).  
 Place it in your working directory or provide its full path in commands below.
 
-### Step 3: Confirm Docker is running (and check allocated resources)
+### Step 3: Confirm Docker is running & allocated compute resources
 
 ```bash
 docker info >/dev/null && echo "Docker is running"
@@ -432,7 +432,7 @@ docker run --rm --entrypoint blastdbcmd gmboowa/eskapee-blastdb:1.0 -db /blastdb
 
 ## Databases (local BLAST + updates)
 
-rMAP-2.0 supports fully offline operation by allowing users to run against **local, versioned reference databases**. For convenience and reproducibility, we provide a **prebuilt ESKAPEE reference BLAST database snapshot** and also document how to rebuild the database from public genomes (e.g., RefSeq) when users need a customized or refreshed reference set.
+rMAP-2.0 supports fully offline operation by allowing users to run against **local, versioned reference databases**. For convenience & reproducibility, we provide a **prebuilt ESKAPEE reference BLAST database snapshot** & also document how to rebuild the database from public genomes (e.g., RefSeq) when users need a customized or refreshed reference set.
 
 ---
 
@@ -442,7 +442,7 @@ We distribute a ready-to-use ESKAPEE reference database snapshot via Zenodo:
 
 Zenodo record: https://zenodo.org/records/18001238
 
-#### Download, verify, and unpack
+#### Download, verify & unpack
 
 ```bash
 # 1) Download the archive from Zenodo (or via your browser)
@@ -559,20 +559,13 @@ Then point rMAP-2.0 to these FASTAs in your inputs JSON:
 }
 ```
 
----
-
-### Database refresh cadence & reproducibility
-
-To support reproducible analyses, we plan to refresh and publish reference snapshots on a defined cadence:
-
-- **Hotfix updates:** on-demand when major upstream reference updates or critical issues are identified
 
 ---
 
 ### Notes on BLAST usage
 
 - For large batches, using a local ESKAPEE BLAST database may require substantial disk space (tens of GB depending on scope & assembly level).
-- NCBI imposes usage limits on BLAST queries from a single IP address; local databases improve throughput, reproducibility, and compliance with query limits.
+- NCBI imposes usage limits on BLAST queries from a single IP address; local databases improve throughput, reproducibility & compliance with query limits.
 
 ---
 
@@ -598,7 +591,7 @@ Interactive test reports generated by rMAP-2.0 are hosted on GitHub Pages:
 
 ## Execution (Cromwell)
 
-rMAP-2.0 is executed with Cromwell using the default configuration for local runs. This repository does **not** ship backend configuration files (e.g., `cromwell.*.conf`) and does **not** require custom backend configuration for standard local execution.
+rMAP-2.0 is executed with Cromwell using the default configuration for local runs. This repository does **not** ship backend configuration files (e.g., `cromwell.*.conf`) & does **not** require custom backend configuration for standard local execution.
 
 Run the workflow using Cromwell defaults:
 
@@ -614,7 +607,7 @@ If you plan to run on HPC schedulers or cloud backends, those environments typic
 
 ## Offline use & data sovereignty
 
-rMAP-2.0 is designed to support **data sovereignty** by allowing analyses to run fully on-premises (workstation or HPC) with local inputs & local outputs—no data upload is required by the workflow. All results, intermediate files, and the final consolidated HTML report are written to your local/project storage under the Cromwell execution directories.
+rMAP-2.0 is designed to support **data sovereignty** by allowing analyses to run fully on-premises (workstation or HPC) with local inputs & local outputs—no data upload is required by the workflow. All results, intermediate files & the final consolidated HTML report are written to your local/project storage under the Cromwell execution directories.
 
 rMAP-2.0 uses Docker containers for tool standardization. After the first successful container pull, images are cached locally, so subsequent runs can proceed offline (provided the required images are already present on the machine/cluster).
 
@@ -624,12 +617,12 @@ For sequence similarity screening, rMAP-2.0 supports offline BLAST by allowing u
 
 ## Releases & reproducibility
 
-rMAP-2.0 is versioned and released to support reproducible, comparable analyses across machines (laptop/HPC/cloud) and over time.
+rMAP-2.0 is versioned & released to support reproducible, comparable analyses across machines (laptop/HPC/cloud) and over time.
 
 ### What a GitHub Release contains
 
 Each release (e.g., `vX.Y.Z`) is an immutable snapshot of:
-- **Workflow source:** `rMAP.wdl` and all referenced tasks/modules used for that version
+- **Workflow source:** `rMAP.wdl` & all referenced tasks/modules used for that version
 - **Executable example inputs:** curated JSON templates, including the Quick start test dataset configuration (`test_data/inputs_test.json`)
 - **Prebuilt reference artifacts (optional):**
   - a versioned ESKAPEE BLAST database tarball (or pointers to Zenodo snapshots)
@@ -639,12 +632,12 @@ Each release (e.g., `vX.Y.Z`) is an immutable snapshot of:
 
 ### Container pinning
 
-rMAP-2.0 relies on Docker images to standardize tool versions and ensure consistent outputs. For best reproducibility:
+rMAP-2.0 relies on Docker images to standardize tool versions & ensure consistent outputs. For best reproducibility:
 - Prefer pinned tags (avoid `latest` when possible)
 - Keep the “Tools used (with Docker images)” table aligned to the current release
 - Record for each run:
   - GitHub Release tag (e.g., `vX.Y.Z`)
-  - container tags and ideally digests
+  - container tags 
   - database snapshot version (Zenodo record/version or local rebuild date)
 
 Capture image digests used in a run:
@@ -657,12 +650,12 @@ docker image inspect --format='{{index .RepoDigests 0}}' <image:tag>
 
 ## Intended use & limitations
 
-rMAP-2.0 is designed for end-to-end analysis of **bacterial isolate** whole-genome sequencing (WGS), with an emphasis on **Illumina short-read paired-end data** and standardized reporting for research and public health use cases (e.g., AMR profiling, MLST, assembly/annotation, pangenome & phylogeny). The workflow is most appropriate when samples represent single-organism isolates (or near-isolates) and when users want a reproducible, containerized pipeline with a consolidated HTML report.
+rMAP-2.0 is designed for end-to-end analysis of **bacterial isolate** whole-genome sequencing (WGS), with an emphasis on **Illumina short-read paired-end data** & standardized reporting for research & public health use cases (e.g., AMR profiling, MLST, assembly/annotation, pangenome & phylogeny). The workflow is most appropriate when samples represent single-organism isolates (or near-isolates) & when users want a reproducible, containerized pipeline with a consolidated HTML report.
 
 ### Limitations / non-target use cases
 
 - **Metagenomics & mixed communities:** rMAP-2.0 is not intended for complex metagenomic samples (e.g., stool, wastewater) where multiple organisms & uneven abundance require dedicated taxonomic profiling, binning & contamination-aware assembly workflows.
-- **Long-read–only datasets:** rMAP-2.0 is optimized and validated for Illumina short-read PE inputs; long-read (ONT/PacBio) or hybrid assemblies may require additional tuning and are not the primary target in this release.
+- **Long-read–only datasets:** rMAP-2.0 is optimized & validated for Illumina short-read PE inputs; long-read (ONT/PacBio) or hybrid assemblies may require additional tuning & are not the primary target in this release.
 - **Species/cohort composition:** Some multi-isolate analyses (pangenome/phylogeny) assume broadly comparable genomes; mixed-species cohorts may yield reduced interpretability unless intentionally included (e.g., as outgroups).
 - **Container runtime constraints:** rMAP-2.0 uses Docker for tool standardization. On some HPC systems where Docker is restricted, execution may require Apptainer/Singularity (or a site-approved container runtime).
 
@@ -703,7 +696,7 @@ If this fails, start Docker Desktop (macOS/Windows) or your Docker service (Linu
 
 ### 2) Out of disk space
 
-Cromwell and containers can produce large intermediate files. Confirm free space:
+Cromwell & containers can produce large intermediate files. Confirm free space:
 
 ```bash
 df -h
@@ -726,7 +719,7 @@ Ensure Java 17+.
 
 ### 4) Cromwell fails to start
 
-Confirm your `cromwell.jar` is accessible and not corrupted:
+Confirm your `cromwell.jar` is accessible & not corrupted:
 
 ```bash
 ls -lh cromwell-<version>.jar 
@@ -735,7 +728,7 @@ java -jarcromwell-<version>.jar --version
 
 ### 5) “Local BLAST DB not found”
 
-Ensure `rMAP.local_blast_db` points to the DB prefix and files exist:
+Ensure `rMAP.local_blast_db` points to the DB prefix & files exist:
 
 ```bash
 ls -lh /path/to/eskapee_db*
@@ -753,7 +746,7 @@ find docs -type f -print0 | xargs -0 sed -i '' 's/example_data/test_data/g'
 
 ## Support / Issues
 
-- Bug reports, feature requests, and questions:  
+- Bug reports, feature requests & questions:  
   https://github.com/gmboowa/rMAP-2.0/issues
 
 When filing an issue, please include:
@@ -762,7 +755,7 @@ When filing an issue, please include:
 - Cromwell version
 - Docker version
 - The command you ran
-- The failing task name (`call-...`) and `stderr` log (if available)
+- The failing task name (`call-...`) & `stderr` log (if available)
 
 ---
 
@@ -770,7 +763,7 @@ When filing an issue, please include:
 
 If you use rMAP-2.0 in your work, please cite:
 
-- **rMAP 2.0: A modular, reproducible and scalable WDL-Cromwell-Docker workflow for genomic analysis of ESKAPEE pathogens**  
+- **rMAP 2.0: A modular, reproducible & scalable WDL-Cromwell-Docker workflow for genomic analysis of ESKAPEE pathogens**  
   *Bioinformatics Advances* — [See journal page](https://academic.oup.com/bioinformaticsadvances/advance-article/doi/10.1093/bioadv/vbag046/8483022)
 
 - **rMAP: the Rapid Microbial Analysis Pipeline for ESKAPEE bacterial group whole-genome sequence data**  
@@ -794,20 +787,20 @@ If using the prebuilt ESKAPEE reference DB snapshot, cite the Zenodo record:
 
 ## License
 
-This project is licensed under the MIT License.
+MIT License for permissive open-source reuse
 
 ---
 
 ## Acknowledgements
 
-- rMAP-2.0 builds on many excellent open-source bioinformatics tools. We acknowledge & thank the authors & maintainers of these tools and their communities.
-- The workflow design emphasizes reproducibility, portability, and practical reporting for bacterial genomics in research & public health settings.
+- rMAP-2.0 builds on many excellent open-source bioinformatics tools. We acknowledge & thank the authors & maintainers of these tools & their communities.
+- The workflow design emphasizes reproducibility, portability & practical reporting for bacterial genomics in research & public health settings.
 
 ---
 ## Resources & External Databases
 
 The following external resources are required or recommended for running rMAP-2.0.  
-Due to size and licensing restrictions, these are **not fully hosted in this repository** & must be downloaded separately if needed.
+Due to size & licensing restrictions, these are **not fully hosted in this repository** & must be downloaded separately if needed.
 
 We provide guidance & links below.
 
@@ -848,7 +841,7 @@ Documentation: https://github.com/ncbi/amr
 ```bash
 amrfinder -u
 ```
-This will automatically download and update the AMRFinderPlus database.
+This will automatically download & update the AMRFinderPlus database.
 
 ### 5. CARD (Comprehensive Antibiotic Resistance Database)
 Website: https://card.mcmaster.ca
@@ -863,14 +856,8 @@ mv nucleotide_fasta_protein_homolog_model.fasta card.fa
 ---
 ### MLST schemas (note)
 
-If you are performing MLST typing across many samples, we recommend downloading and setting up PubMLST schemes locally when operating at scale. A local installation can improve throughput, avoids dependency on internet connectivity, and supports reproducible analysis across species.
+If you are performing MLST typing across many samples, we recommend downloading & setting up PubMLST schemes locally when operating at scale. A local installation can improve throughput, avoids dependency on internet connectivity & supports reproducible analysis across species.
 
-### Recommended “run record” for reproducibility
-
-For each analysis (especially publications), record:
-- rMAP-2.0 release tag (or commit SHA if no release)
-- Inputs JSON used
-- Database snapshot version (Zenodo or local rebuild date)
-- Docker image tags and (ideally) digests
+---
 - Cromwell version and the exact command used
 - Hardware summary (CPU/RAM)
