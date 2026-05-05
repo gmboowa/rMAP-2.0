@@ -1,0 +1,5 @@
+version: 1.2
+workflows:
+  - name: rMAP
+    subclass: WDL
+    primaryDescriptorPath: /rMAP.wdl
