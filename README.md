@@ -804,9 +804,63 @@ This project is licensed under the MIT License.
 - The workflow design emphasizes reproducibility, portability, and practical reporting for bacterial genomics in research & public health settings.
 
 ---
+## Resources & External Databases
 
-## Appendix
+The following external resources are required or recommended for running rMAP-2.0.  
+Due to size and licensing restrictions, these are **not fully hosted in this repository** & must be downloaded separately if needed.
 
+We provide guidance & links below.
+
+### 1. Virulence Factor Database (VFDB)
+
+- Website: http://www.mgc.ac.cn/VFs/
+- Download (FASTA): http://www.mgc.ac.cn/VFs/download.htm
+
+```bash
+mkdir -p databases/vfdb
+cd databases/vfdb
+wget http://www.mgc.ac.cn/VFs/Down/VFDB_setA_nt.fas.gz
+gunzip VFDB_setA_nt.fas.gz
+mv VFDB_setA_nt.fas vfdb.fa
+```
+
+### 2. Illumina Adapters (Trimmomatic)
+
+Provided in repo: config/adapters.fa
+Source: Trimmomatic GitHub
+
+```bash
+mkdir -p config
+wget https://raw.githubusercontent.com/timflutre/trimmomatic/master/adapters/TruSeq3-PE.fa
+mv TruSeq3-PE.fa adapters.fa
+```
+### 3. ResFinder Database
+Website: https://bitbucket.org/genomicepidemiology/resfinder_db
+```bash
+mkdir -p databases/resfinder
+cd databases/resfinder
+git clone https://bitbucket.org/genomicepidemiology/resfinder_db.git
+cat resfinder_db/*.fsa > resfinder.fa
+```
+### 4. AMRFinderPlus Database
+Maintained by NCBI
+Documentation: https://github.com/ncbi/amr
+```bash
+amrfinder -u
+```
+This will automatically download and update the AMRFinderPlus database.
+
+### 5. CARD (Comprehensive Antibiotic Resistance Database)
+Website: https://card.mcmaster.ca
+Download: https://card.mcmaster.ca/download
+```bash
+mkdir -p databases/card
+cd databases/card
+wget https://card.mcmaster.ca/latest/data
+tar -xvf data
+mv nucleotide_fasta_protein_homolog_model.fasta card.fa
+```
+---
 ### MLST schemas (note)
 
 If you are performing MLST typing across many samples, we recommend downloading and setting up PubMLST schemes locally when operating at scale. A local installation can improve throughput, avoids dependency on internet connectivity, and supports reproducible analysis across species.
